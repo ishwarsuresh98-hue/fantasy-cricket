@@ -1,0 +1,317 @@
+'use client'
+
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import type { Season, Match, Player, FantasyTeam, FantasySelection } from '@/types'
+import { PLAYER_ROLE_LABELS } from '@/lib/scoring'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
+interface TeamBuilderProps {
+  season: Season
+  nextMatch: Match
+  players: Player[]
+  myTeam: FantasyTeam | null
+  existingSelections: FantasySelection[]
+  userId: string
+}
+
+const ROLE_COLORS: Record<string, string> = {
+  batsman: 'bg-blue-100 text-blue-700',
+  bowler: 'bg-red-100 text-red-700',
+  all_rounder: 'bg-purple-100 text-purple-700',
+  wicket_keeper: 'bg-orange-100 text-orange-700',
+}
+
+export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId }: TeamBuilderProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+
+  const [teamName, setTeamName] = useState(myTeam?.team_name ?? '')
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(
+    new Set(existingSelections.map((s) => s.player_id))
+  )
+  const [captainId, setCaptainId] = useState<string | null>(
+    existingSelections.find((s) => s.is_captain)?.player_id ?? null
+  )
+  const [vcId, setVcId] = useState<string | null>(
+    existingSelections.find((s) => s.is_vice_captain)?.player_id ?? null
+  )
+  const [roleFilter, setRoleFilter] = useState<string>('all')
+  const [search, setSearch] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+
+  const maxPlayers = season.players_per_team
+  const budget = season.team_budget
+
+  const selectedPlayers = players.filter((p) => selectedIds.has(p.id))
+  const budgetUsed = selectedPlayers.reduce((sum, p) => sum + p.price, 0)
+  const budgetRemaining = budget - budgetUsed
+
+  const filteredPlayers = players.filter((p) => {
+    if (roleFilter !== 'all' && p.role !== roleFilter) return false
+    if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false
+    return true
+  })
+
+  function togglePlayer(player: Player) {
+    const newSet = new Set(selectedIds)
+    if (newSet.has(player.id)) {
+      newSet.delete(player.id)
+      if (captainId === player.id) setCaptainId(null)
+      if (vcId === player.id) setVcId(null)
+    } else {
+      if (newSet.size >= maxPlayers) return
+      if (budgetUsed + player.price > budget) return
+      newSet.add(player.id)
+    }
+    setSelectedIds(newSet)
+  }
+
+  function setCaptain(playerId: string) {
+    if (!selectedIds.has(playerId)) return
+    if (captainId === playerId) { setCaptainId(null); return }
+    if (vcId === playerId) setVcId(null)
+    setCaptainId(playerId)
+  }
+
+  function setVC(playerId: string) {
+    if (!selectedIds.has(playerId)) return
+    if (vcId === playerId) { setVcId(null); return }
+    if (captainId === playerId) setCaptainId(null)
+    setVcId(playerId)
+  }
+
+  async function handleSave() {
+    setError(null)
+    if (!teamName.trim()) { setError('Please enter a team name.'); return }
+    if (selectedIds.size !== maxPlayers) { setError(`Select exactly ${maxPlayers} players.`); return }
+    if (!captainId) { setError('Select a captain.'); return }
+    if (!vcId) { setError('Select a vice-captain.'); return }
+
+    const supabase = createClient()
+
+    // Create team if doesn't exist
+    let teamId = myTeam?.id
+    if (!teamId) {
+      const { data: newTeam, error: teamErr } = await supabase
+        .from('fantasy_teams')
+        .insert({ user_id: userId, season_id: season.id, team_name: teamName.trim() })
+        .select()
+        .single()
+      if (teamErr) { setError(teamErr.message); return }
+      teamId = newTeam.id
+    } else if (teamName.trim() !== myTeam?.team_name) {
+      await supabase.from('fantasy_teams').update({ team_name: teamName.trim() }).eq('id', teamId)
+    }
+
+    // Delete existing selections for this match
+    await supabase.from('fantasy_selections').delete().eq('fantasy_team_id', teamId).eq('match_id', nextMatch.id)
+
+    // Insert new selections
+    const insertData = Array.from(selectedIds).map((pid) => ({
+      fantasy_team_id: teamId!,
+      match_id: nextMatch.id,
+      player_id: pid,
+      is_captain: pid === captainId,
+      is_vice_captain: pid === vcId,
+    }))
+
+    const { error: selErr } = await supabase.from('fantasy_selections').insert(insertData)
+    if (selErr) { setError(selErr.message); return }
+
+    setSuccess(true)
+    startTransition(() => { router.refresh() })
+    setTimeout(() => setSuccess(false), 3000)
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">My Team</h1>
+        <p className="text-muted-foreground mt-1">
+          Picking for Match {nextMatch.match_number} vs {nextMatch.opponent} •{' '}
+          {new Date(nextMatch.match_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
+        </p>
+      </div>
+
+      {/* Team name */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-end gap-4">
+            <div className="flex-1 space-y-1.5">
+              <Label htmlFor="teamName">Team Name</Label>
+              <Input
+                id="teamName"
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                placeholder="e.g. Thunder Strikers"
+                maxLength={40}
+              />
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">Budget</p>
+              <p className={`text-2xl font-bold ${budgetRemaining < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                {budgetRemaining} <span className="text-sm font-normal">remaining</span>
+              </p>
+              <p className="text-xs text-muted-foreground">{budgetUsed} / {budget} used</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">Players</p>
+              <p className={`text-2xl font-bold ${selectedIds.size === maxPlayers ? 'text-emerald-600' : 'text-gray-700'}`}>
+                {selectedIds.size} / {maxPlayers}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Player pool */}
+        <div className="lg:col-span-2 space-y-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Player Pool</CardTitle>
+              <div className="flex gap-2 flex-wrap pt-1">
+                {['all', 'batsman', 'bowler', 'all_rounder', 'wicket_keeper'].map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setRoleFilter(r)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                      roleFilter === r ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {r === 'all' ? 'All' : PLAYER_ROLE_LABELS[r]}
+                  </button>
+                ))}
+              </div>
+              <Input
+                placeholder="Search players..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="mt-2"
+              />
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y max-h-[480px] overflow-y-auto">
+                {filteredPlayers.map((player) => {
+                  const isSelected = selectedIds.has(player.id)
+                  const isAffordable = !isSelected && budgetUsed + player.price <= budget
+                  const isFull = !isSelected && selectedIds.size >= maxPlayers
+                  const disabled = (!isSelected && !isAffordable) || isFull
+
+                  return (
+                    <div
+                      key={player.id}
+                      onClick={() => !disabled && togglePlayer(player)}
+                      className={`flex items-center justify-between px-4 py-3 transition-colors ${
+                        isSelected ? 'bg-emerald-50' : disabled ? 'opacity-50' : 'hover:bg-gray-50 cursor-pointer'
+                      } ${!disabled ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                          isSelected ? 'bg-emerald-600 border-emerald-600' : 'border-gray-300'
+                        }`}>
+                          {isSelected && <span className="text-white text-xs">✓</span>}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{player.name}</p>
+                          <Badge className={`text-xs ${ROLE_COLORS[player.role]} hover:${ROLE_COLORS[player.role]}`}>
+                            {PLAYER_ROLE_LABELS[player.role]}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isSelected && (
+                          <>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setCaptain(player.id) }}
+                              className={`px-2 py-0.5 rounded text-xs font-bold border transition-colors ${
+                                captainId === player.id
+                                  ? 'bg-yellow-400 border-yellow-400 text-white'
+                                  : 'border-gray-300 text-gray-500 hover:border-yellow-400 hover:text-yellow-600'
+                              }`}
+                            >C</button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setVC(player.id) }}
+                              className={`px-2 py-0.5 rounded text-xs font-bold border transition-colors ${
+                                vcId === player.id
+                                  ? 'bg-blue-400 border-blue-400 text-white'
+                                  : 'border-gray-300 text-gray-500 hover:border-blue-400 hover:text-blue-600'
+                              }`}
+                            >VC</button>
+                          </>
+                        )}
+                        <span className="text-sm font-semibold text-emerald-700 w-8 text-right">{player.price}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Selected team sidebar */}
+        <div className="space-y-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Selected XI</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {selectedPlayers.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  Click players to add them
+                </p>
+              ) : (
+                <div className="divide-y">
+                  {selectedPlayers.map((p) => (
+                    <div key={p.id} className="flex items-center justify-between px-4 py-2.5">
+                      <div>
+                        <p className="text-sm font-medium">{p.name}</p>
+                        <p className="text-xs text-muted-foreground">{PLAYER_ROLE_LABELS[p.role]}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {captainId === p.id && (
+                          <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs px-1.5">C</Badge>
+                        )}
+                        {vcId === p.id && (
+                          <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 text-xs px-1.5">VC</Badge>
+                        )}
+                        <span className="text-xs text-muted-foreground ml-1">{p.price}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded-md">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-3 py-2 rounded-md">
+              Team saved successfully!
+            </div>
+          )}
+
+          <Button
+            onClick={handleSave}
+            disabled={isPending}
+            className="w-full"
+          >
+            {isPending ? 'Saving...' : myTeam ? 'Update Team' : 'Save Team'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
