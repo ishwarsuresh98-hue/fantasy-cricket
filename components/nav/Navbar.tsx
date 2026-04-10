@@ -38,13 +38,16 @@ export default function Navbar({ profile }: NavbarProps) {
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <nav className="sticky top-0 z-50 bg-[#262162] border-b border-[#1a1748] shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg text-emerald-700">
+          <Link href="/dashboard" className="flex items-center gap-2.5 font-bold text-white">
             <span className="text-2xl">🏏</span>
-            <span className="hidden sm:block">Fantasy Cricket</span>
+            <div className="hidden sm:block">
+              <span className="text-white font-extrabold tracking-tight">SLOUGH CC</span>
+              <span className="text-[#fbf927] ml-1.5 font-semibold text-sm">Fantasy</span>
+            </div>
           </Link>
 
           {/* Nav links */}
@@ -55,8 +58,8 @@ export default function Navbar({ profile }: NavbarProps) {
                 href={href}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   pathname === href || pathname.startsWith(href + '/')
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-[#fbf927] text-[#262162] font-semibold'
+                    : 'text-white/80 hover:bg-white/10 hover:text-white'
                 }`}
               >
                 {label}
@@ -67,8 +70,8 @@ export default function Navbar({ profile }: NavbarProps) {
                 href="/admin"
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   pathname.startsWith('/admin')
-                    ? 'bg-amber-50 text-amber-700'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-[#b5211e] text-white font-semibold'
+                    : 'text-white/80 hover:bg-white/10 hover:text-white'
                 }`}
               >
                 Admin
@@ -80,15 +83,15 @@ export default function Navbar({ profile }: NavbarProps) {
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <button className={cn(buttonVariants({ variant: 'ghost' }), 'flex items-center gap-2 px-2')} />
+                <button className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/10 transition-colors" />
               }
             >
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-emerald-100 text-emerald-700 text-sm font-semibold">
+                <AvatarFallback className="bg-[#fbf927] text-[#262162] text-sm font-bold">
                   {profile.display_name.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="hidden sm:block text-sm font-medium">{profile.display_name}</span>
+              <span className="hidden sm:block text-sm font-medium text-white">{profile.display_name}</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <div className="px-3 py-2">
@@ -96,7 +99,6 @@ export default function Navbar({ profile }: NavbarProps) {
                 <p className="text-xs text-muted-foreground capitalize">{profile.role}</p>
               </div>
               <DropdownMenuSeparator />
-              {/* Mobile nav links */}
               <div className="md:hidden">
                 {NAV_LINKS.map(({ href, label }) => (
                   <DropdownMenuItem key={href} render={<Link href={href} />}>

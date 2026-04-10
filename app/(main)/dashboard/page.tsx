@@ -22,7 +22,7 @@ export default async function DashboardPage() {
         <h2 className="text-2xl font-bold text-gray-800">No Active Season</h2>
         <p className="text-gray-500">An admin needs to create and activate a season to get started.</p>
         {profile?.role === 'admin' && (
-          <Link href="/admin" className={cn(buttonVariants(), 'mt-2')}>
+          <Link href="/admin" className={cn(buttonVariants(), 'mt-2 bg-[#262162] hover:bg-[#1a1748]')}>
             Go to Admin Panel
           </Link>
         )}
@@ -47,29 +47,33 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 mt-1">{s.name}</p>
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div>
+          <h1 className="text-3xl font-bold text-[#262162]">Dashboard</h1>
+          <p className="text-gray-500 mt-0.5">{s.name}</p>
+        </div>
       </div>
 
+      {/* Stats grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="border-l-4 border-l-[#262162]">
           <CardHeader className="pb-1 pt-4 px-4">
             <CardTitle className="text-sm text-muted-foreground font-medium">My Points</CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <p className="text-3xl font-bold text-emerald-600">{myTeam?.total_points ?? 0}</p>
+            <p className="text-3xl font-bold text-[#262162]">{myTeam?.total_points ?? 0}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-[#fbf927]">
           <CardHeader className="pb-1 pt-4 px-4">
             <CardTitle className="text-sm text-muted-foreground font-medium">My Rank</CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <p className="text-3xl font-bold text-blue-600">{rank ? `#${rank}` : '—'}</p>
+            <p className="text-3xl font-bold text-[#262162]">{rank ? `#${rank}` : '—'}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-[#b5211e]">
           <CardHeader className="pb-1 pt-4 px-4">
             <CardTitle className="text-sm text-muted-foreground font-medium">Matches Played</CardTitle>
           </CardHeader>
@@ -77,7 +81,7 @@ export default async function DashboardPage() {
             <p className="text-3xl font-bold text-gray-800">{completedMatches.length}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-gray-300">
           <CardHeader className="pb-1 pt-4 px-4">
             <CardTitle className="text-sm text-muted-foreground font-medium">Total Teams</CardTitle>
           </CardHeader>
@@ -87,22 +91,27 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
+      {/* Team & Next Match */}
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">My Fantasy Team</CardTitle>
+            <CardTitle className="text-lg text-[#262162]">My Fantasy Team</CardTitle>
           </CardHeader>
           <CardContent>
             {myTeam ? (
               <div className="space-y-3">
                 <p className="text-xl font-semibold">{myTeam.team_name}</p>
                 <p className="text-sm text-muted-foreground">{myTeam.total_points} points this season</p>
-                <Link href="/team" className={cn(buttonVariants({ size: 'sm' }))}>Manage Team</Link>
+                <Link href="/team" className={cn(buttonVariants({ size: 'sm' }), 'bg-[#262162] hover:bg-[#1a1748]')}>
+                  Manage Team
+                </Link>
               </div>
             ) : (
               <div className="space-y-3">
                 <p className="text-muted-foreground text-sm">You haven&apos;t created a fantasy team yet.</p>
-                <Link href="/team" className={cn(buttonVariants({ size: 'sm' }))}>Create Team</Link>
+                <Link href="/team" className={cn(buttonVariants({ size: 'sm' }), 'bg-[#262162] hover:bg-[#1a1748]')}>
+                  Create Team
+                </Link>
               </div>
             )}
           </CardContent>
@@ -110,14 +119,16 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Next Match</CardTitle>
+            <CardTitle className="text-lg text-[#262162]">Next Match</CardTitle>
           </CardHeader>
           <CardContent>
             {nextMatch ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary">Match {nextMatch.match_number}</Badge>
-                  <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Upcoming</Badge>
+                  <Badge className="bg-[#fefde8] text-[#262162] border border-[#fbf927] hover:bg-[#fefde8]">
+                    Upcoming
+                  </Badge>
                 </div>
                 <p className="text-xl font-semibold">vs {nextMatch.opponent}</p>
                 {nextMatch.venue && <p className="text-sm text-muted-foreground">{nextMatch.venue}</p>}
@@ -126,7 +137,7 @@ export default async function DashboardPage() {
                     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
                   })}
                 </p>
-                <Link href="/team" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}>
+                <Link href="/team" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'border-[#262162] text-[#262162] hover:bg-[#eeedf8]')}>
                   Select Team for This Match
                 </Link>
               </div>
@@ -137,10 +148,11 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
+      {/* Recent matches */}
       {completedMatches.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Recent Matches</CardTitle>
+            <CardTitle className="text-lg text-[#262162]">Recent Matches</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -148,7 +160,7 @@ export default async function DashboardPage() {
                 <Link
                   key={m.id}
                   href={`/matches/${m.id}`}
-                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-[#eeedf8] transition-colors"
                 >
                   <div>
                     <span className="font-medium">Match {m.match_number} vs {m.opponent}</span>

@@ -38,16 +38,16 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Link href="/matches" className="text-sm text-muted-foreground hover:underline">Matches</Link>
+            <Link href="/matches" className="text-sm text-muted-foreground hover:text-[#262162] hover:underline">Matches</Link>
             <span className="text-muted-foreground">/</span>
             <span className="text-sm">Match {match.match_number}</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">vs {match.opponent}</h1>
+          <h1 className="text-3xl font-bold text-[#262162]">vs {match.opponent}</h1>
           <div className="flex items-center gap-2 mt-2">
             <Badge variant="outline">Match {match.match_number}</Badge>
             {match.status === 'completed'
               ? <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">Completed</Badge>
-              : <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Upcoming</Badge>
+              : <Badge className="bg-[#fefde8] text-[#262162] border border-[#fbf927] hover:bg-[#fefde8]">Upcoming</Badge>
             }
           </div>
           {match.venue && <p className="text-muted-foreground mt-1">{match.venue}</p>}
@@ -57,13 +57,17 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
             })}
           </p>
           {match.result && (
-            <p className="text-emerald-700 font-semibold mt-1">{match.result}</p>
+            <p className="text-[#b5211e] font-semibold mt-1">{match.result}</p>
           )}
         </div>
         {isAdmin && (
           <Link
             href={`/admin/matches/${match.id}/stats`}
-            className={cn(buttonVariants({ variant: match.status === 'completed' ? 'outline' : 'default' }))}
+            className={cn(buttonVariants({ variant: match.status === 'completed' ? 'outline' : 'default' }),
+              match.status === 'completed'
+                ? 'border-[#262162] text-[#262162] hover:bg-[#eeedf8]'
+                : 'bg-[#262162] hover:bg-[#1a1748] text-white'
+            )}
           >
             {match.status === 'completed' ? 'Edit Stats' : 'Enter Stats'}
           </Link>
@@ -72,8 +76,8 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
 
       {match.status === 'completed' && performances && performances.length > 0 ? (
         <Card>
-          <CardHeader>
-            <CardTitle>Player Scorecard</CardTitle>
+          <CardHeader className="bg-[#262162] rounded-t-xl">
+            <CardTitle className="text-white">Player Scorecard</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -93,7 +97,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {performances.map((perf: MatchPerformance & { players: Player }) => (
-                    <tr key={perf.id} className="hover:bg-gray-50">
+                    <tr key={perf.id} className="hover:bg-[#eeedf8]">
                       <td className="px-6 py-3">
                         <p className="font-medium text-sm">{perf.players?.name}</p>
                         <p className="text-xs text-muted-foreground">{PLAYER_ROLE_LABELS[perf.players?.role]}</p>
@@ -105,7 +109,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                       <td className="px-3 py-3 text-center text-sm">{perf.wickets || '—'}</td>
                       <td className="px-3 py-3 text-center text-sm">{perf.catches || '—'}</td>
                       <td className="px-3 py-3 text-center text-sm">{perf.stumpings || '—'}</td>
-                      <td className="px-6 py-3 text-right font-bold text-emerald-700">{perf.base_points.toFixed(1)}</td>
+                      <td className="px-6 py-3 text-right font-bold text-[#262162]">{perf.base_points.toFixed(1)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -125,7 +129,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
           <CardContent className="py-16 text-center">
             <p className="text-muted-foreground">No performance data entered yet.</p>
             {isAdmin && (
-              <Link href={`/admin/matches/${match.id}/stats`} className={cn(buttonVariants(), 'mt-4 inline-flex')}>
+              <Link href={`/admin/matches/${match.id}/stats`} className={cn(buttonVariants(), 'mt-4 inline-flex bg-[#262162] hover:bg-[#1a1748]')}>
                 Enter Player Stats
               </Link>
             )}

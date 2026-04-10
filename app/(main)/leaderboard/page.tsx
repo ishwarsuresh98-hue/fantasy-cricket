@@ -37,7 +37,6 @@ export default async function LeaderboardPage() {
 
   const completedMatchIds = (matches ?? []).map((m: { id: string }) => m.id)
 
-  // Per-team per-match points for breakdown
   const { data: allSelections } = completedMatchIds.length > 0
     ? await supabase
         .from('fantasy_selections')
@@ -55,7 +54,7 @@ export default async function LeaderboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Leaderboard</h1>
+        <h1 className="text-3xl font-bold text-[#262162]">Leaderboard</h1>
         <p className="text-muted-foreground mt-1">{season.name}</p>
       </div>
 
@@ -68,8 +67,8 @@ export default async function LeaderboardPage() {
         </Card>
       ) : (
         <Card>
-          <CardHeader>
-            <CardTitle>Season Rankings</CardTitle>
+          <CardHeader className="border-b bg-[#262162] rounded-t-xl">
+            <CardTitle className="text-white">Season Rankings — {season.name}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -93,12 +92,12 @@ export default async function LeaderboardPage() {
                     return (
                       <tr
                         key={team.id}
-                        className={`transition-colors ${isMe ? 'bg-emerald-50' : 'hover:bg-gray-50'}`}
+                        className={`transition-colors ${isMe ? 'bg-[#eeedf8]' : 'hover:bg-gray-50'}`}
                       >
                         <td className="px-6 py-4">
                           <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
-                            rank === 1 ? 'bg-yellow-100 text-yellow-700' :
-                            rank === 2 ? 'bg-gray-100 text-gray-600' :
+                            rank === 1 ? 'bg-[#fbf927] text-[#262162]' :
+                            rank === 2 ? 'bg-gray-200 text-gray-700' :
                             rank === 3 ? 'bg-orange-100 text-orange-700' :
                             'text-muted-foreground'
                           }`}>
@@ -108,14 +107,16 @@ export default async function LeaderboardPage() {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8">
-                              <AvatarFallback className="text-xs bg-emerald-100 text-emerald-700">
+                              <AvatarFallback className="text-xs bg-[#262162] text-[#fbf927] font-bold">
                                 {(team.profiles as { display_name: string })?.display_name?.slice(0, 2).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div>
                               <p className="font-medium text-sm flex items-center gap-1.5">
                                 {team.team_name}
-                                {isMe && <Badge className="text-xs bg-emerald-100 text-emerald-700 hover:bg-emerald-100">You</Badge>}
+                                {isMe && (
+                                  <Badge className="text-xs bg-[#fbf927] text-[#262162] hover:bg-[#fbf927] font-semibold">You</Badge>
+                                )}
                               </p>
                               <p className="text-xs text-muted-foreground">
                                 {(team.profiles as { display_name: string })?.display_name}
@@ -132,7 +133,7 @@ export default async function LeaderboardPage() {
                           </td>
                         ))}
                         <td className="px-6 py-4 text-right">
-                          <span className="text-lg font-bold text-emerald-700">{team.total_points.toFixed(1)}</span>
+                          <span className="text-lg font-bold text-[#262162]">{team.total_points.toFixed(1)}</span>
                         </td>
                       </tr>
                     )

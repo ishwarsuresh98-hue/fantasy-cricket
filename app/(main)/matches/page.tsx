@@ -34,18 +34,18 @@ export default async function MatchesPage() {
 
   const MatchCard = ({ match }: { match: Match }) => (
     <Link href={`/matches/${match.id}`}>
-      <div className="flex items-center justify-between p-4 rounded-lg border bg-white hover:bg-gray-50 transition-colors cursor-pointer">
+      <div className="flex items-center justify-between p-4 rounded-lg border bg-white hover:bg-[#eeedf8] hover:border-[#262162] transition-colors cursor-pointer group">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">Match {match.match_number}</Badge>
             {match.status === 'completed'
               ? <Badge className="text-xs bg-gray-100 text-gray-600 hover:bg-gray-100">Completed</Badge>
-              : <Badge className="text-xs bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Upcoming</Badge>
+              : <Badge className="text-xs bg-[#fefde8] text-[#262162] border border-[#fbf927] hover:bg-[#fefde8]">Upcoming</Badge>
             }
           </div>
-          <p className="font-semibold text-gray-900">vs {match.opponent}</p>
+          <p className="font-semibold text-gray-900 group-hover:text-[#262162]">vs {match.opponent}</p>
           {match.venue && <p className="text-sm text-muted-foreground">{match.venue}</p>}
-          {match.result && <p className="text-sm font-medium text-emerald-700">{match.result}</p>}
+          {match.result && <p className="text-sm font-medium text-[#b5211e]">{match.result}</p>}
         </div>
         <div className="text-right">
           <p className="text-sm text-muted-foreground">
@@ -61,7 +61,7 @@ export default async function MatchesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Matches</h1>
+        <h1 className="text-3xl font-bold text-[#262162]">Matches</h1>
         <p className="text-muted-foreground mt-1">{season.name}</p>
       </div>
 

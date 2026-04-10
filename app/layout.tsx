@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fantasy Cricket",
-  description: "Fantasy cricket league for your local club",
+  title: "Slough CC Fantasy",
+  description: "Fantasy cricket league for Slough Cricket Club",
 };
 
 export default function RootLayout({

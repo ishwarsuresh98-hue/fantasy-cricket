@@ -34,7 +34,7 @@ export default async function AdminMatchesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Matches</h2>
+          <h2 className="text-2xl font-bold text-[#262162]">Matches</h2>
           <p className="text-muted-foreground">{season.name} • {matches?.length ?? 0} matches</p>
         </div>
         <MatchForm seasonId={season.id} nextMatchNumber={(matches?.length ?? 0) + 1} />
@@ -52,34 +52,34 @@ export default async function AdminMatchesPage() {
           <CardContent className="p-0">
             <div className="divide-y">
               {matches.map((match: Match) => (
-                <div key={match.id} className="flex items-center justify-between px-6 py-4">
+                <div key={match.id} className="flex items-center justify-between px-6 py-4 hover:bg-[#eeedf8] transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="text-center min-w-[3rem]">
-                      <p className="text-xs text-muted-foreground">Match</p>
-                      <p className="font-bold text-lg">{match.match_number}</p>
+                    <div className="text-center min-w-[3rem] bg-[#262162] text-white rounded-lg py-1.5">
+                      <p className="text-xs opacity-70">Match</p>
+                      <p className="font-bold text-lg leading-none">{match.match_number}</p>
                     </div>
                     <div>
-                      <p className="font-semibold">vs {match.opponent}</p>
+                      <p className="font-semibold">{match.opponent}</p>
                       {match.venue && <p className="text-sm text-muted-foreground">{match.venue}</p>}
                       <p className="text-sm text-muted-foreground">
                         {new Date(match.match_date).toLocaleDateString('en-AU', {
                           day: 'numeric', month: 'short', year: 'numeric'
                         })}
                       </p>
-                      {match.result && <p className="text-sm font-medium text-emerald-700 mt-0.5">{match.result}</p>}
+                      {match.result && <p className="text-sm font-medium text-[#b5211e] mt-0.5">{match.result}</p>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge className={
                       match.status === 'completed'
                         ? 'bg-gray-100 text-gray-700 hover:bg-gray-100'
-                        : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100'
+                        : 'bg-[#fefde8] text-[#262162] border border-[#fbf927] hover:bg-[#fefde8]'
                     }>
                       {match.status === 'completed' ? 'Completed' : 'Upcoming'}
                     </Badge>
                     <Link
                       href={`/admin/matches/${match.id}/stats`}
-                      className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+                      className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'border-[#262162] text-[#262162] hover:bg-[#eeedf8]')}
                     >
                       {match.status === 'completed' ? 'Edit Stats' : 'Enter Stats'}
                     </Link>

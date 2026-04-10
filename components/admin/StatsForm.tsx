@@ -169,9 +169,9 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
                         <p className="text-sm font-medium">{player.name}</p>
                         <Badge className={`text-xs mt-0.5 ${
                           player.role === 'batsman' ? 'bg-blue-100 text-blue-700 hover:bg-blue-100' :
-                          player.role === 'bowler' ? 'bg-red-100 text-red-700 hover:bg-red-100' :
-                          player.role === 'all_rounder' ? 'bg-purple-100 text-purple-700 hover:bg-purple-100' :
-                          'bg-orange-100 text-orange-700 hover:bg-orange-100'
+                          player.role === 'bowler' ? 'bg-[#fceaea] text-[#b5211e] hover:bg-[#fceaea]' :
+                          player.role === 'all_rounder' ? 'bg-[#eeedf8] text-[#262162] hover:bg-[#eeedf8]' :
+                          'bg-[#fefde8] text-[#262162] hover:bg-[#fefde8]'
                         }`}>
                           {PLAYER_ROLE_LABELS[player.role]}
                         </Badge>
@@ -207,7 +207,7 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
                           />
                         </td>
                       ))}
-                      <td className="px-4 py-2 text-right font-bold text-emerald-700">{pts}</td>
+                      <td className="px-4 py-2 text-right font-bold text-[#262162]">{pts}</td>
                     </tr>
                   )
                 })}
@@ -221,7 +221,7 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded-md">{error}</div>
       )}
       {savedMessage && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-3 py-2 rounded-md">{savedMessage}</div>
+        <div className="bg-[#eeedf8] border border-[#262162]/20 text-[#262162] text-sm px-3 py-2 rounded-md">{savedMessage}</div>
       )}
 
       <div className="flex items-center justify-between">

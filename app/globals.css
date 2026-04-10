@@ -5,6 +5,16 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Slough Cricket Club brand colors */
+  --color-scc-navy: #262162;
+  --color-scc-navy-dark: #1a1748;
+  --color-scc-navy-light: #eeedf8;
+  --color-scc-navy-muted: #dddcf5;
+  --color-scc-yellow: #fbf927;
+  --color-scc-yellow-light: #fefde8;
+  --color-scc-red: #b5211e;
+  --color-scc-red-light: #fceaea;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
@@ -55,7 +65,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.237 0.118 271);   /* #262162 Slough Navy */
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
