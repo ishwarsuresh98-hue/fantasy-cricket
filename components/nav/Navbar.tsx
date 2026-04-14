@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/types'
@@ -43,8 +44,15 @@ export default function Navbar({ profile }: NavbarProps) {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-2.5 font-bold text-white">
-            <span className="text-2xl">🏏</span>
-            <div className="hidden sm:block">
+            <Image
+              src="/slough-cc-crest.png"
+              alt="Slough Cricket Club"
+              width={40}
+              height={40}
+              className="rounded-full object-contain bg-white p-0.5"
+              priority
+            />
+            <div className="hidden sm:block leading-tight">
               <span className="text-white font-extrabold tracking-tight">SLOUGH CC</span>
               <span className="text-[#fbf927] ml-1.5 font-semibold text-sm">Fantasy</span>
             </div>

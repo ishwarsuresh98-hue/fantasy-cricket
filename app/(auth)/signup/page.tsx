@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import Image from 'next/image'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function SignupPage() {
@@ -51,7 +52,16 @@ export default function SignupPage() {
       <div className="relative w-full max-w-md">
         {/* Club branding */}
         <div className="text-center mb-6">
-          <div className="text-5xl mb-3">🏏</div>
+          <div className="flex justify-center mb-3">
+            <Image
+              src="/slough-cc-crest.png"
+              alt="Slough Cricket Club"
+              width={96}
+              height={96}
+              className="rounded-full bg-white p-1 shadow-lg"
+              priority
+            />
+          </div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight">SLOUGH CC</h1>
           <p className="text-[#fbf927] font-semibold mt-0.5">Fantasy League</p>
         </div>
