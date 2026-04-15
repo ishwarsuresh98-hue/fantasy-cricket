@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import type { Match, Season } from '@/types'
+import { BOOSTERS } from '@/lib/boosters'
+import type { Match, Season, TeamBooster } from '@/types'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -37,6 +38,11 @@ export default async function DashboardPage() {
     supabase.from('fantasy_teams').select('*').eq('season_id', s.id).eq('user_id', user!.id).single(),
     supabase.from('fantasy_teams').select('*').eq('season_id', s.id).order('total_points', { ascending: false }),
   ])
+
+  // Fetch booster usage for my team
+  const { data: boosterUsage } = myTeam
+    ? await supabase.from('team_boosters').select('*').eq('fantasy_team_id', myTeam.id)
+    : { data: [] }
 
   const upcomingMatches = (matches ?? []).filter((m: Match) => m.status === 'upcoming')
   const completedMatches = (matches ?? []).filter((m: Match) => m.status === 'completed')
@@ -90,6 +96,47 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Booster status — only shown if user has a team */}
+      {myTeam && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base text-[#262162]">Boosters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {BOOSTERS.map((booster) => {
+                const used = (boosterUsage ?? []).filter(
+                  (b: TeamBooster) => b.booster_type === booster.type
+                ).length
+                const remaining = Math.max(0, booster.maxUses - used)
+                const exhausted = remaining === 0
+                return (
+                  <Link key={booster.type} href="/team">
+                    <div
+                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                        exhausted
+                          ? 'border-gray-200 bg-gray-50 text-gray-400'
+                          : 'border-[#262162]/20 bg-[#eeedf8] text-[#262162] hover:bg-[#dddcf5]'
+                      }`}
+                    >
+                      <span>{booster.icon}</span>
+                      <span>{booster.name}</span>
+                      <span
+                        className={`ml-1 font-bold ${
+                          exhausted ? 'text-gray-400' : 'text-[#262162]'
+                        }`}
+                      >
+                        {exhausted ? 'Used' : `${remaining}/${booster.maxUses}`}
+                      </span>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Team & Next Match */}
       <div className="grid md:grid-cols-2 gap-6">

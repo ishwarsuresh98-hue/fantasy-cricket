@@ -18,6 +18,7 @@ interface TeamBuilderProps {
   myTeam: FantasyTeam | null
   existingSelections: FantasySelection[]
   userId: string
+  freeHitActive?: boolean
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -27,7 +28,7 @@ const ROLE_COLORS: Record<string, string> = {
   wicket_keeper: 'bg-[#fefde8] text-[#262162]',
 }
 
-export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId }: TeamBuilderProps) {
+export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false }: TeamBuilderProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -67,7 +68,8 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
       if (vcId === player.id) setVcId(null)
     } else {
       if (newSet.size >= maxPlayers) return
-      if (budgetUsed + player.price > budget) return
+      // Skip budget check when Free Hit is active
+      if (!freeHitActive && budgetUsed + player.price > budget) return
       newSet.add(player.id)
     }
     setSelectedIds(newSet)
@@ -140,6 +142,16 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
         </p>
       </div>
 
+      {freeHitActive && (
+        <div className="flex items-center gap-2 bg-[#fefde8] border border-[#fbf927] rounded-lg px-4 py-3">
+          <span className="text-xl">🆓</span>
+          <div>
+            <p className="text-sm font-semibold text-[#262162]">Free Hit Active — No Budget Limit!</p>
+            <p className="text-xs text-muted-foreground">Pick any players this match. Your squad reverts next match.</p>
+          </div>
+        </div>
+      )}
+
       {/* Team name */}
       <Card>
         <CardContent className="pt-6">
@@ -201,7 +213,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
               <div className="divide-y max-h-[480px] overflow-y-auto">
                 {filteredPlayers.map((player) => {
                   const isSelected = selectedIds.has(player.id)
-                  const isAffordable = !isSelected && budgetUsed + player.price <= budget
+                  const isAffordable = freeHitActive || (!isSelected && budgetUsed + player.price <= budget)
                   const isFull = !isSelected && selectedIds.size >= maxPlayers
                   const disabled = (!isSelected && !isAffordable) || isFull
 

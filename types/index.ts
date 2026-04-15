@@ -1,6 +1,23 @@
 export type UserRole = 'admin' | 'member'
 export type PlayerRole = 'batsman' | 'bowler' | 'all_rounder' | 'wicket_keeper'
 export type MatchStatus = 'upcoming' | 'completed'
+export type BoosterType =
+  | 'batting_surge'
+  | 'keeping_surge'
+  | 'bowling_surge'
+  | 'free_hit'
+  | 'triple_captain'
+  | 'mega_transfer'
+  | 'double_power'
+
+export interface TeamBooster {
+  id: string
+  fantasy_team_id: string
+  booster_type: BoosterType
+  match_id: string
+  selected_player_id: string | null
+  created_at: string
+}
 
 export interface Profile {
   id: string
