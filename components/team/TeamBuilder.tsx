@@ -28,6 +28,22 @@ const ROLE_COLORS: Record<string, string> = {
   wicket_keeper: 'bg-[#fefde8] text-[#262162]',
 }
 
+const ROLE_CONSTRAINTS: Record<string, { min: number; max: number; label: string }> = {
+  wicket_keeper: { min: 1, max: 4, label: 'Wicket Keepers' },
+  batsman:       { min: 1, max: 6, label: 'Batsmen' },
+  all_rounder:   { min: 1, max: 4, label: 'All-Rounders' },
+  bowler:        { min: 1, max: 6, label: 'Bowlers' },
+}
+
+const SHORT_LABELS: Record<string, string> = {
+  wicket_keeper: 'WK',
+  batsman: 'BAT',
+  all_rounder: 'AR',
+  bowler: 'BOWL',
+}
+
+const ROLE_ORDER = ['wicket_keeper', 'batsman', 'all_rounder', 'bowler']
+
 export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false }: TeamBuilderProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -42,7 +58,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   const [vcId, setVcId] = useState<string | null>(
     existingSelections.find((s) => s.is_vice_captain)?.player_id ?? null
   )
-  const [roleFilter, setRoleFilter] = useState<string>('all')
+  const [roleFilter, setRoleFilter] = useState<string>('wicket_keeper')
   const [search, setSearch] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -55,7 +71,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   const budgetRemaining = budget - budgetUsed
 
   const filteredPlayers = players.filter((p) => {
-    if (roleFilter !== 'all' && p.role !== roleFilter) return false
+    if (p.role !== roleFilter) return false
     if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false
     return true
   })
@@ -70,6 +86,9 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
       if (newSet.size >= maxPlayers) return
       // Skip budget check when Free Hit is active
       if (!freeHitActive && budgetUsed + player.price > budget) return
+      // Enforce role maximum
+      const roleCount = selectedPlayers.filter((p) => p.role === player.role).length
+      if (roleCount >= ROLE_CONSTRAINTS[player.role].max) return
       newSet.add(player.id)
     }
     setSelectedIds(newSet)
@@ -93,6 +112,11 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
     setError(null)
     if (!teamName.trim()) { setError('Please enter a team name.'); return }
     if (selectedIds.size !== maxPlayers) { setError(`Select exactly ${maxPlayers} players.`); return }
+    // Validate role minimums
+    for (const [role, { min, label }] of Object.entries(ROLE_CONSTRAINTS)) {
+      const count = Array.from(selectedIds).filter((id) => players.find((p) => p.id === id)?.role === role).length
+      if (count < min) { setError(`Select at least ${min} ${label}.`); return }
+    }
     if (!captainId) { setError('Select a captain.'); return }
     if (!vcId) { setError('Select a vice-captain.'); return }
 
@@ -190,18 +214,24 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
             <CardHeader className="pb-3">
               <CardTitle className="text-base">Player Pool</CardTitle>
               <div className="flex gap-2 flex-wrap pt-1">
-                {['all', 'batsman', 'bowler', 'all_rounder', 'wicket_keeper'].map((r) => (
-                  <button
-                    key={r}
-                    onClick={() => setRoleFilter(r)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                      roleFilter === r ? 'bg-[#262162] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    {r === 'all' ? 'All' : PLAYER_ROLE_LABELS[r]}
-                  </button>
-                ))}
+                {ROLE_ORDER.map((r) => {
+                  const roleSelectedCount = selectedPlayers.filter((p) => p.role === r).length
+                  return (
+                    <button
+                      key={r}
+                      onClick={() => setRoleFilter(r)}
+                      className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                        roleFilter === r ? 'bg-[#262162] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {SHORT_LABELS[r]} ({roleSelectedCount})
+                    </button>
+                  )
+                })}
               </div>
+              <p className="text-xs text-muted-foreground pt-1">
+                Pick {ROLE_CONSTRAINTS[roleFilter].min}–{ROLE_CONSTRAINTS[roleFilter].max} {ROLE_CONSTRAINTS[roleFilter].label}
+              </p>
               <Input
                 placeholder="Search players..."
                 value={search}
