@@ -95,6 +95,8 @@ export interface MatchPerformance {
   catches: number
   stumpings: number
   run_outs: number
+  dot_balls: number
+  maidens: number
   base_points: number
   players?: Player
 }

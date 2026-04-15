@@ -11,6 +11,8 @@ export function computeBasePoints(perf: Partial<MatchPerformance>): number {
   const catches = perf.catches ?? 0
   const stumpings = perf.stumpings ?? 0
   const runOuts = perf.run_outs ?? 0
+  const dotBalls = perf.dot_balls ?? 0
+  const maidens = perf.maidens ?? 0
   const didNotBat = perf.did_not_bat ?? false
 
   // Batting
@@ -21,6 +23,16 @@ export function computeBasePoints(perf: Partial<MatchPerformance>): number {
     if (runs >= 100) points += 16           // century bonus
     else if (runs >= 50) points += 8        // half-century bonus
     if (runs === 0 && balls > 0) points -= 2 // duck penalty
+
+    // Strike rate bonus/penalty (minimum 10 balls faced)
+    if (balls >= 10) {
+      const sr = (runs / balls) * 100
+      if (sr >= 150) points += 3
+      else if (sr >= 125) points += 2
+      else if (sr >= 100) points += 1
+      else if (sr >= 75) points += 0
+      else points -= 2                      // SR < 75 penalty
+    }
   }
 
   // Bowling
@@ -28,6 +40,10 @@ export function computeBasePoints(perf: Partial<MatchPerformance>): number {
   if (wickets >= 5) points += 16           // 5-wicket haul bonus
   else if (wickets >= 4) points += 8       // 4-wicket bonus
   else if (wickets >= 3) points += 4       // 3-wicket bonus
+
+  // Dot balls + maidens
+  points += dotBalls                        // 1pt per dot ball
+  points += maidens * 8                     // 8pt bonus per maiden
 
   // Fielding
   points += catches * 8                     // 8pt per catch

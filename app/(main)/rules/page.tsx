@@ -62,6 +62,14 @@ export default function RulesPage() {
                   <tr><td className="py-2">Half-century (50+ runs)</td><td className="text-right font-semibold text-green-700">+8 bonus</td></tr>
                   <tr><td className="py-2">Century (100+ runs)</td><td className="text-right font-semibold text-green-700">+16 bonus</td></tr>
                   <tr><td className="py-2 text-red-600">Duck (0 runs, faced balls)</td><td className="text-right font-semibold text-red-600">−2</td></tr>
+                  <tr className="border-t border-dashed">
+                    <td colSpan={2} className="pt-3 pb-1 text-xs text-muted-foreground font-medium uppercase tracking-wide">Strike Rate (min. 10 balls faced)</td>
+                  </tr>
+                  <tr><td className="py-1 pl-3">SR &lt; 75</td><td className="text-right font-semibold text-red-600">−2</td></tr>
+                  <tr><td className="py-1 pl-3">SR 75 – 100</td><td className="text-right font-semibold text-muted-foreground">0</td></tr>
+                  <tr><td className="py-1 pl-3">SR 100 – 125</td><td className="text-right font-semibold text-green-700">+1</td></tr>
+                  <tr><td className="py-1 pl-3">SR 125 – 150</td><td className="text-right font-semibold text-green-700">+2</td></tr>
+                  <tr><td className="py-2 pl-3">SR &gt; 150</td><td className="text-right font-semibold text-green-700">+3</td></tr>
                 </tbody>
               </table>
             </div>
@@ -85,6 +93,8 @@ export default function RulesPage() {
                   <tr><td className="py-2">3-wicket haul</td><td className="text-right font-semibold text-green-700">+4 bonus</td></tr>
                   <tr><td className="py-2">4-wicket haul</td><td className="text-right font-semibold text-green-700">+8 bonus</td></tr>
                   <tr><td className="py-2">5-wicket haul</td><td className="text-right font-semibold text-green-700">+16 bonus</td></tr>
+                  <tr><td className="py-2">Dot ball</td><td className="text-right font-semibold text-green-700">+1 per dot ball</td></tr>
+                  <tr><td className="py-2">Maiden over</td><td className="text-right font-semibold text-green-700">+8 bonus</td></tr>
                 </tbody>
               </table>
             </div>
@@ -149,7 +159,7 @@ export default function RulesPage() {
           <div className="grid sm:grid-cols-2 gap-3">
             {[
               { icon: '🏏', name: 'Batting Surge', uses: '1×', desc: 'All batsmen & all-rounders in your XI earn 2× points for that match.' },
-              { icon: '🎳', name: 'Bowling Surge', uses: '1×', desc: 'All bowlers & all-rounders in your XI earn 2× points for that match.' },
+              { icon: '⚡', name: 'Bowling Surge', uses: '1×', desc: 'All bowlers & all-rounders in your XI earn 2× points for that match.' },
               { icon: '🧤', name: 'Keeping Surge', uses: '1×', desc: 'Your wicket-keeper earns 2× points for that match.' },
               { icon: '🆓', name: 'Free Hit', uses: '1×', desc: 'No budget restriction this match — pick any players. Your squad automatically reverts after.' },
               { icon: '👑', name: 'Triple Captain', uses: '2×', desc: 'Choose one player to earn 3× points instead of the usual captain 2×.' },

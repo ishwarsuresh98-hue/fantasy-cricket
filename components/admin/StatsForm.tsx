@@ -20,6 +20,8 @@ interface PlayerStats {
   catches: number
   stumpings: number
   runOuts: number
+  dotBalls: number
+  maidens: number
 }
 
 interface StatsFormProps {
@@ -30,7 +32,7 @@ interface StatsFormProps {
 }
 
 function defaultStats(perf?: MatchPerformance): PlayerStats {
-  if (!perf) return { runs: 0, balls: 0, fours: 0, sixes: 0, dnb: false, wickets: 0, catches: 0, stumpings: 0, runOuts: 0 }
+  if (!perf) return { runs: 0, balls: 0, fours: 0, sixes: 0, dnb: false, wickets: 0, catches: 0, stumpings: 0, runOuts: 0, dotBalls: 0, maidens: 0 }
   return {
     runs: perf.runs_scored,
     balls: perf.balls_faced,
@@ -41,6 +43,8 @@ function defaultStats(perf?: MatchPerformance): PlayerStats {
     catches: perf.catches,
     stumpings: perf.stumpings,
     runOuts: perf.run_outs,
+    dotBalls: perf.dot_balls,
+    maidens: perf.maidens,
   }
 }
 
@@ -69,7 +73,8 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
   function previewPoints(s: PlayerStats) {
     return computeBasePoints({
       runs_scored: s.runs, balls_faced: s.balls, fours: s.fours, sixes: s.sixes,
-      did_not_bat: s.dnb, wickets: s.wickets, catches: s.catches, stumpings: s.stumpings, run_outs: s.runOuts,
+      did_not_bat: s.dnb, wickets: s.wickets, catches: s.catches, stumpings: s.stumpings,
+      run_outs: s.runOuts, dot_balls: s.dotBalls, maidens: s.maidens,
     })
   }
 
@@ -92,6 +97,8 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
         catches: s.catches,
         stumpings: s.stumpings,
         run_outs: s.runOuts,
+        dot_balls: s.dotBalls,
+        maidens: s.maidens,
       }
     })
 
@@ -153,6 +160,8 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
                   <th className="text-center text-xs font-medium text-muted-foreground uppercase px-2 py-3">4s</th>
                   <th className="text-center text-xs font-medium text-muted-foreground uppercase px-2 py-3">6s</th>
                   <th className="text-center text-xs font-medium text-muted-foreground uppercase px-2 py-3">Wkts</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground uppercase px-2 py-3">Dots</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground uppercase px-2 py-3">Mdns</th>
                   <th className="text-center text-xs font-medium text-muted-foreground uppercase px-2 py-3">Ct</th>
                   <th className="text-center text-xs font-medium text-muted-foreground uppercase px-2 py-3">St</th>
                   <th className="text-center text-xs font-medium text-muted-foreground uppercase px-2 py-3">RO</th>
@@ -196,7 +205,7 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
                           />
                         </td>
                       ))}
-                      {(['wickets','catches','stumpings','runOuts'] as const).map((field) => (
+                      {(['wickets','dotBalls','maidens','catches','stumpings','runOuts'] as const).map((field) => (
                         <td key={field} className="px-2 py-2">
                           <Input
                             type="number"
