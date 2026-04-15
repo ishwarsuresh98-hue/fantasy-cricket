@@ -17,24 +17,30 @@ export default async function MainLayout({ children }: { children: React.ReactNo
     .eq('id', user.id)
     .single()
 
-  // Profile missing (DB trigger didn't fire on signup) — create it now
+  // Profile missing (DB trigger didn't fire on signup) — create it now.
+  // Requires "Users can insert own profile" RLS policy to exist.
   if (!profile) {
     const displayName =
-      user.user_metadata?.display_name ??
+      (user.user_metadata?.display_name as string | undefined) ??
       user.email?.split('@')[0] ??
       'User'
-    await supabase
+    const { error: insertErr } = await supabase
       .from('profiles')
       .insert({ id: user.id, display_name: displayName })
-    const { data: created } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-    profile = created
+
+    if (!insertErr) {
+      const { data: created } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+      profile = created
+    }
   }
 
+  // If still no profile after attempted creation, sign out and send to login
   if (!profile) {
+    await supabase.auth.signOut()
     redirect('/login')
   }
 
