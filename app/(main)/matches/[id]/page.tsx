@@ -42,7 +42,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
             <span className="text-muted-foreground">/</span>
             <span className="text-sm">Match {match.match_number}</span>
           </div>
-          <h1 className="text-3xl font-bold text-[#262162]">vs {match.opponent}</h1>
+          <h1 className="text-3xl font-bold text-[#262162]">{match.opponent}</h1>
           <div className="flex items-center gap-2 mt-2">
             <Badge variant="outline">Match {match.match_number}</Badge>
             {match.status === 'completed'

@@ -43,7 +43,7 @@ export default async function MatchesPage() {
               : <Badge className="text-xs bg-[#fefde8] text-[#262162] border border-[#fbf927] hover:bg-[#fefde8]">Upcoming</Badge>
             }
           </div>
-          <p className="font-semibold text-gray-900 group-hover:text-[#262162]">vs {match.opponent}</p>
+          <p className="font-semibold text-gray-900 group-hover:text-[#262162]">{match.opponent}</p>
           {match.venue && <p className="text-sm text-muted-foreground">{match.venue}</p>}
           {match.result && <p className="text-sm font-medium text-[#b5211e]">{match.result}</p>}
         </div>

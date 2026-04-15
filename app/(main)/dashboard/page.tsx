@@ -186,7 +186,7 @@ export default async function DashboardPage() {
                     Upcoming
                   </Badge>
                 </div>
-                <p className="text-xl font-semibold">vs {nextMatch.opponent}</p>
+                <p className="text-xl font-semibold">{nextMatch.opponent}</p>
                 {nextMatch.venue && <p className="text-sm text-muted-foreground">{nextMatch.venue}</p>}
                 <p className="text-sm text-muted-foreground">
                   {new Date(nextMatch.match_date).toLocaleDateString('en-AU', {
@@ -219,7 +219,7 @@ export default async function DashboardPage() {
                   className="flex items-center justify-between p-3 rounded-lg border hover:bg-[#eeedf8] transition-colors"
                 >
                   <div>
-                    <span className="font-medium">Match {m.match_number} vs {m.opponent}</span>
+                    <span className="font-medium">Match {m.match_number} — {m.opponent}</span>
                     {m.result && <p className="text-sm text-muted-foreground">{m.result}</p>}
                   </div>
                   <Badge variant="outline">Completed</Badge>

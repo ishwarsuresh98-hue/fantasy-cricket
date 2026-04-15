@@ -42,7 +42,7 @@ export default async function StatsEntryPage({ params }: { params: Promise<{ id:
           <span>Match {match.match_number} Stats</span>
         </div>
         <h2 className="text-2xl font-bold text-gray-900">
-          Match {match.match_number} vs {match.opponent}
+          Match {match.match_number} — {match.opponent}
         </h2>
         <p className="text-muted-foreground">
           {new Date(match.match_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}
