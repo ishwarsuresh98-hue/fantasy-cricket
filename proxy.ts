@@ -29,7 +29,7 @@ export async function proxy(request: NextRequest) {
 
   // Public routes — always accessible; no redirect needed here.
   // (Login/signup pages redirect to /dashboard themselves after success.)
-  const publicPaths = ['/login', '/signup']
+  const publicPaths = ['/login', '/signup', '/auth/callback']
   if (publicPaths.some((p) => pathname.startsWith(p))) {
     return supabaseResponse
   }

@@ -21,6 +21,7 @@ const NAV_LINKS = [
   { href: '/team', label: 'My Team' },
   { href: '/leaderboard', label: 'Leaderboard' },
   { href: '/matches', label: 'Matches' },
+  { href: '/rules', label: 'Rules' },
 ]
 
 interface NavbarProps {
