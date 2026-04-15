@@ -11,11 +11,28 @@ export default async function MainLayout({ children }: { children: React.ReactNo
     redirect('/login')
   }
 
-  const { data: profile } = await supabase
+  let { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
+
+  // Profile missing (DB trigger didn't fire on signup) — create it now
+  if (!profile) {
+    const displayName =
+      user.user_metadata?.display_name ??
+      user.email?.split('@')[0] ??
+      'User'
+    await supabase
+      .from('profiles')
+      .insert({ id: user.id, display_name: displayName })
+    const { data: created } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+    profile = created
+  }
 
   if (!profile) {
     redirect('/login')
