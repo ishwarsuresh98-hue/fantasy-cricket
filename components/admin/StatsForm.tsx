@@ -114,7 +114,10 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
       result: result.trim() || null,
     }).eq('id', matchId)
 
-    setSavedMessage('Stats saved and points calculated!')
+    // Auto-adjust player credits based on performance vs match average
+    await supabase.rpc('adjust_player_credits', { p_match_id: matchId })
+
+    setSavedMessage('Stats saved, points calculated and credits updated!')
     setTimeout(() => setSavedMessage(null), 4000)
     router.refresh()
     setLoading(false)

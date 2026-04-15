@@ -7,7 +7,7 @@ import { buttonVariants } from '@/components/ui/button'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { computeMatchDayDeadline, isDeadlinePassed } from '@/lib/deadline'
-import type { Player, Match, FantasyTeam, FantasySelection, TeamBooster } from '@/types'
+import type { Player, Match, FantasyTeam, FantasySelection, TeamBooster, PlayerCreditHistory } from '@/types'
 
 export default async function TeamPage() {
   const supabase = await createClient()
@@ -113,6 +113,29 @@ export default async function TeamPage() {
     existingSelections = selections ?? []
   }
 
+  // Credit trends — fetch last completed match's credit history
+  const creditTrends: Record<string, 'up' | 'down' | 'neutral'> = {}
+  const { data: lastCompletedMatch } = await supabase
+    .from('matches')
+    .select('id')
+    .eq('season_id', season.id)
+    .eq('status', 'completed')
+    .order('match_date', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (lastCompletedMatch) {
+    const { data: recentHistory } = await supabase
+      .from('player_credit_history')
+      .select('player_id, credit_before, credit_after')
+      .eq('match_id', lastCompletedMatch.id)
+    for (const h of (recentHistory ?? []) as PlayerCreditHistory[]) {
+      creditTrends[h.player_id] =
+        h.credit_after > h.credit_before ? 'up' :
+        h.credit_after < h.credit_before ? 'down' : 'neutral'
+    }
+  }
+
   // Free Hit logic:
   // 1. Is Free Hit active for the next match?
   const freeHitActive = (boosterUsage ?? []).some(
@@ -192,6 +215,7 @@ export default async function TeamPage() {
         userId={user!.id}
         freeHitActive={freeHitActive}
         deadlinePassed={deadlinePassed}
+        creditTrends={creditTrends}
       />
     </div>
   )

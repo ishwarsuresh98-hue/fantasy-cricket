@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Season, Match, Player, FantasyTeam, FantasySelection } from '@/types'
 import { PLAYER_ROLE_LABELS } from '@/lib/scoring'
@@ -20,6 +21,7 @@ interface TeamBuilderProps {
   userId: string
   freeHitActive?: boolean
   deadlinePassed?: boolean
+  creditTrends?: Record<string, 'up' | 'down' | 'neutral'>
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -45,7 +47,7 @@ const SHORT_LABELS: Record<string, string> = {
 
 const ROLE_ORDER = ['wicket_keeper', 'batsman', 'all_rounder', 'bowler']
 
-export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false, deadlinePassed = false }: TeamBuilderProps) {
+export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false, deadlinePassed = false, creditTrends = {} }: TeamBuilderProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -275,7 +277,15 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                           {isSelected && <span className="text-white text-xs">✓</span>}
                         </div>
                         <div>
-                          <p className="text-sm font-medium">{player.name}</p>
+                          <div className="flex items-center gap-1">
+                            <Link
+                              href={`/players/${player.id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-sm font-medium hover:underline hover:text-[#262162]"
+                            >
+                              {player.name}
+                            </Link>
+                          </div>
                           <Badge className={`text-xs ${ROLE_COLORS[player.role]} hover:${ROLE_COLORS[player.role]}`}>
                             {PLAYER_ROLE_LABELS[player.role]}
                           </Badge>
@@ -302,7 +312,13 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                             >VC</button>
                           </>
                         )}
-                        <span className="text-sm font-semibold text-[#262162] w-8 text-right">{player.price}</span>
+                        <div className="flex items-center gap-0.5">
+                          <span className="text-sm font-semibold text-[#262162] w-8 text-right">
+                            {Number(player.price).toFixed(1)}
+                          </span>
+                          {creditTrends[player.id] === 'up'   && <span className="text-green-600 text-xs font-bold">↑</span>}
+                          {creditTrends[player.id] === 'down' && <span className="text-red-500  text-xs font-bold">↓</span>}
+                        </div>
                       </div>
                     </div>
                   )

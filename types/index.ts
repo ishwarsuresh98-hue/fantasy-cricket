@@ -101,6 +101,17 @@ export interface MatchPerformance {
   players?: Player
 }
 
+export interface PlayerCreditHistory {
+  id: string
+  player_id: string
+  match_id: string
+  credit_before: number
+  credit_after: number
+  base_points: number
+  match_avg: number
+  created_at: string
+}
+
 export interface LeaderboardEntry {
   rank: number
   fantasy_team_id: string
