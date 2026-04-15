@@ -30,9 +30,9 @@ const ROLE_COLORS: Record<string, string> = {
 
 const ROLE_CONSTRAINTS: Record<string, { min: number; max: number; label: string }> = {
   wicket_keeper: { min: 1, max: 4, label: 'Wicket Keepers' },
-  batsman:       { min: 1, max: 6, label: 'Batsmen' },
+  batsman:       { min: 3, max: 6, label: 'Batsmen' },
   all_rounder:   { min: 1, max: 4, label: 'All-Rounders' },
-  bowler:        { min: 1, max: 6, label: 'Bowlers' },
+  bowler:        { min: 3, max: 6, label: 'Bowlers' },
 }
 
 const SHORT_LABELS: Record<string, string> = {
