@@ -67,8 +67,23 @@ export interface FantasyTeam {
   season_id: string
   team_name: string
   total_points: number
+  transfers_used: number
+  transfer_limit: number
   created_at: string
   profiles?: Profile
+}
+
+export interface TransferLog {
+  id: string
+  fantasy_team_id: string
+  match_id: string | null
+  players_in: string[]
+  players_out: string[]
+  transfers_used: number
+  is_mega_transfer: boolean
+  admin_adjustment: boolean
+  admin_note: string | null
+  created_at: string
 }
 
 export interface FantasySelection {

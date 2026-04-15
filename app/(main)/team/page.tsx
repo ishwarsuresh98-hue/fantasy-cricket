@@ -6,8 +6,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { computeMatchDayDeadline, isDeadlinePassed } from '@/lib/deadline'
-import type { Player, Match, FantasyTeam, FantasySelection, TeamBooster, PlayerCreditHistory } from '@/types'
+import { computeMatchDayDeadline, isDeadlinePassed, getMatchDayDeadline } from '@/lib/deadline'
+import type { Player, Match, FantasyTeam, FantasySelection, TeamBooster, PlayerCreditHistory, TransferLog } from '@/types'
 
 export default async function TeamPage() {
   const supabase = await createClient()
@@ -38,13 +38,14 @@ export default async function TeamPage() {
     .limit(1)
     .single()
 
-  // Fetch all upcoming matches to compute the match-day deadline
-  const { data: upcomingMatches } = await supabase
+  // Fetch ALL matches for deadline computation and transfer log processing
+  const { data: allMatches } = await supabase
     .from('matches')
-    .select('match_date')
+    .select('*')
     .eq('season_id', season.id)
-    .eq('status', 'upcoming')
     .order('match_date')
+
+  const upcomingMatches = (allMatches ?? []).filter((m: Match) => m.status === 'upcoming')
 
   const deadline = computeMatchDayDeadline(upcomingMatches ?? [])
   const deadlinePassed = isDeadlinePassed(deadline)
@@ -70,6 +71,51 @@ export default async function TeamPage() {
         .select('*')
         .eq('fantasy_team_id', myTeam.id)
     : { data: [] }
+
+  // Transfer system: fetch logs and compute confirmed transfers
+  const { data: allTransferLogs } = myTeam
+    ? await supabase
+        .from('transfer_logs')
+        .select('*')
+        .eq('fantasy_team_id', myTeam.id)
+        .order('created_at')
+    : { data: [] }
+
+  // Compute confirmed transfers = sum of transfers_used from logs where that match's deadline has passed
+  // Admin adjustments always count immediately
+  let confirmedTransfers = 0
+  const now = Date.now()
+  for (const log of (allTransferLogs ?? []) as TransferLog[]) {
+    if (log.admin_adjustment) {
+      confirmedTransfers += log.transfers_used
+      continue
+    }
+    if (!log.match_id) continue
+    const logMatch = (allMatches ?? []).find((m: Match) => m.id === log.match_id)
+    if (!logMatch) continue
+    const matchDeadline = getMatchDayDeadline(logMatch, allMatches ?? [])
+    if (matchDeadline && now > matchDeadline.getTime()) {
+      confirmedTransfers += log.transfers_used
+    }
+  }
+
+  const transferLimit = (myTeam as FantasyTeam & { transfer_limit?: number })?.transfer_limit ?? 300
+
+  // Base squad = most recently completed match's selections for this team
+  const completedMatches = (allMatches ?? [])
+    .filter((m: Match) => m.status === 'completed')
+    .sort((a: Match, b: Match) => new Date(b.match_date).getTime() - new Date(a.match_date).getTime())
+  const prevMatch = completedMatches[0] as Match | undefined
+
+  let baseSquadIds: string[] = []
+  if (myTeam && prevMatch) {
+    const { data: prevSelections } = await supabase
+      .from('fantasy_selections')
+      .select('player_id')
+      .eq('fantasy_team_id', myTeam.id)
+      .eq('match_id', prevMatch.id)
+    baseSquadIds = (prevSelections ?? []).map((s: { player_id: string }) => s.player_id)
+  }
 
   if (!nextMatch) {
     return (
@@ -113,22 +159,13 @@ export default async function TeamPage() {
     existingSelections = selections ?? []
   }
 
-  // Credit trends — fetch last completed match's credit history
+  // Credit trends — use prevMatch (already computed above)
   const creditTrends: Record<string, 'up' | 'down' | 'neutral'> = {}
-  const { data: lastCompletedMatch } = await supabase
-    .from('matches')
-    .select('id')
-    .eq('season_id', season.id)
-    .eq('status', 'completed')
-    .order('match_date', { ascending: false })
-    .limit(1)
-    .single()
-
-  if (lastCompletedMatch) {
+  if (prevMatch) {
     const { data: recentHistory } = await supabase
       .from('player_credit_history')
       .select('player_id, credit_before, credit_after')
-      .eq('match_id', lastCompletedMatch.id)
+      .eq('match_id', prevMatch.id)
     for (const h of (recentHistory ?? []) as PlayerCreditHistory[]) {
       creditTrends[h.player_id] =
         h.credit_after > h.credit_before ? 'up' :
@@ -145,45 +182,33 @@ export default async function TeamPage() {
   // 2. Squad restoration: if no selections for next match exist,
   //    check if the last completed match had a free_hit booster for this team,
   //    and if so load the snapshot as the pre-populated squad.
-  if (existingSelections.length === 0 && myTeam) {
-    const { data: lastCompletedMatch } = await supabase
-      .from('matches')
-      .select('id')
-      .eq('season_id', season.id)
-      .eq('status', 'completed')
-      .order('match_date', { ascending: false })
-      .limit(1)
-      .single()
+  if (existingSelections.length === 0 && myTeam && prevMatch) {
+    const hadFreeHit = (boosterUsage ?? []).some(
+      (b: TeamBooster) =>
+        b.match_id === prevMatch.id && b.booster_type === 'free_hit'
+    )
+    if (hadFreeHit) {
+      const { data: snapshot } = await supabase
+        .from('free_hit_snapshots')
+        .select('snapshot')
+        .eq('fantasy_team_id', myTeam.id)
+        .eq('match_id', prevMatch.id)
+        .single()
 
-    if (lastCompletedMatch) {
-      const hadFreeHit = (boosterUsage ?? []).some(
-        (b: TeamBooster) =>
-          b.match_id === lastCompletedMatch.id && b.booster_type === 'free_hit'
-      )
-      if (hadFreeHit) {
-        const { data: snapshot } = await supabase
-          .from('free_hit_snapshots')
-          .select('snapshot')
-          .eq('fantasy_team_id', myTeam.id)
-          .eq('match_id', lastCompletedMatch.id)
-          .single()
-
-        if (snapshot?.snapshot && Array.isArray(snapshot.snapshot)) {
-          // Reconstruct FantasySelection-like objects from snapshot so TeamBuilder pre-selects them
-          existingSelections = (snapshot.snapshot as Array<{
-            player_id: string
-            is_captain: boolean
-            is_vice_captain: boolean
-          }>).map((s, idx) => ({
-            id: `snapshot-${idx}`,
-            fantasy_team_id: myTeam.id,
-            match_id: nextMatch.id,
-            player_id: s.player_id,
-            is_captain: s.is_captain,
-            is_vice_captain: s.is_vice_captain,
-            points_earned: 0,
-          }))
-        }
+      if (snapshot?.snapshot && Array.isArray(snapshot.snapshot)) {
+        existingSelections = (snapshot.snapshot as Array<{
+          player_id: string
+          is_captain: boolean
+          is_vice_captain: boolean
+        }>).map((s, idx) => ({
+          id: `snapshot-${idx}`,
+          fantasy_team_id: myTeam.id,
+          match_id: nextMatch.id,
+          player_id: s.player_id,
+          is_captain: s.is_captain,
+          is_vice_captain: s.is_vice_captain,
+          points_earned: 0,
+        }))
       }
     }
   }
@@ -216,6 +241,12 @@ export default async function TeamPage() {
         freeHitActive={freeHitActive}
         deadlinePassed={deadlinePassed}
         creditTrends={creditTrends}
+        baseSquadIds={baseSquadIds}
+        confirmedTransfers={confirmedTransfers}
+        transferLimit={transferLimit}
+        megaTransferActive={(boosterUsage ?? []).some(
+          (b: TeamBooster) => b.match_id === nextMatch.id && b.booster_type === 'mega_transfer'
+        )}
       />
     </div>
   )

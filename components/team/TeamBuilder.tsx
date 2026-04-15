@@ -22,6 +22,10 @@ interface TeamBuilderProps {
   freeHitActive?: boolean
   deadlinePassed?: boolean
   creditTrends?: Record<string, 'up' | 'down' | 'neutral'>
+  baseSquadIds?: string[]
+  confirmedTransfers?: number
+  transferLimit?: number
+  megaTransferActive?: boolean
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -47,7 +51,7 @@ const SHORT_LABELS: Record<string, string> = {
 
 const ROLE_ORDER = ['wicket_keeper', 'batsman', 'all_rounder', 'bowler']
 
-export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false, deadlinePassed = false, creditTrends = {} }: TeamBuilderProps) {
+export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false, deadlinePassed = false, creditTrends = {}, baseSquadIds = [], confirmedTransfers = 0, transferLimit = 300, megaTransferActive = false }: TeamBuilderProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -70,6 +74,12 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   const budget = season.team_budget
 
   const selectedPlayers = players.filter((p) => selectedIds.has(p.id))
+
+  // Transfer tracking
+  const baseSet = new Set(baseSquadIds)
+  const pendingChanges = Array.from(selectedIds).filter((id) => !baseSet.has(id)).length
+  const transfersRemaining = transferLimit - confirmedTransfers
+  const wouldExceedLimit = !megaTransferActive && pendingChanges > transfersRemaining && baseSquadIds.length > 0
   const budgetUsed = selectedPlayers.reduce((sum, p) => sum + p.price, 0)
   const budgetRemaining = budget - budgetUsed
 
@@ -156,6 +166,31 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
     const { error: selErr } = await supabase.from('fantasy_selections').insert(insertData)
     if (selErr) { setError(selErr.message); return }
 
+    // Compute transfer diff vs base squad and upsert transfer log
+    const baseSet = new Set(baseSquadIds)
+    const currentSet = selectedIds
+    const playersIn = Array.from(currentSet).filter((id) => !baseSet.has(id))
+    const playersOut = Array.from(baseSet).filter((id) => !currentSet.has(id))
+    const pendingCount = playersIn.length
+
+    // Only log if there's a meaningful diff (or even 0 — so we can track "confirmed no changes")
+    if (myTeam || teamId) {
+      const { error: logErr } = await supabase
+        .from('transfer_logs')
+        .upsert(
+          {
+            fantasy_team_id: teamId,
+            match_id: nextMatch.id,
+            players_in: playersIn,
+            players_out: playersOut,
+            transfers_used: pendingCount,
+            is_mega_transfer: megaTransferActive,
+          },
+          { onConflict: 'fantasy_team_id,match_id' }
+        )
+      if (logErr) console.warn('Transfer log upsert failed:', logErr.message)
+    }
+
     setSuccess(true)
     startTransition(() => { router.refresh() })
     setTimeout(() => setSuccess(false), 3000)
@@ -187,6 +222,43 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
           <div>
             <p className="text-sm font-semibold text-[#262162]">Free Hit Active — No Budget Limit!</p>
             <p className="text-xs text-muted-foreground">Pick any players this match. Your squad reverts next match.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Transfer status banner */}
+      {!deadlinePassed && myTeam && (
+        <div className={`flex items-start justify-between gap-3 rounded-lg px-4 py-3 border ${
+          wouldExceedLimit
+            ? 'bg-red-50 border-red-200'
+            : transfersRemaining <= 10
+            ? 'bg-orange-50 border-orange-200'
+            : transfersRemaining <= 50
+            ? 'bg-yellow-50 border-yellow-100'
+            : 'bg-[#eeedf8] border-[#262162]/20'
+        }`}>
+          <div>
+            <p className={`text-sm font-semibold ${wouldExceedLimit ? 'text-red-700' : 'text-[#262162]'}`}>
+              🔄 Changes are free until deadline — transfers only count once deadline passes
+            </p>
+            <p className={`text-xs mt-0.5 ${wouldExceedLimit ? 'text-red-600' : 'text-muted-foreground'}`}>
+              {megaTransferActive
+                ? 'Mega Transfer active — unlimited free transfers this match'
+                : wouldExceedLimit
+                ? `Warning: ${pendingChanges} pending change${pendingChanges !== 1 ? 's' : ''} would exceed your ${transfersRemaining} remaining transfer${transfersRemaining !== 1 ? 's' : ''}`
+                : baseSquadIds.length === 0
+                ? 'First match — no transfers counted'
+                : pendingChanges > 0
+                ? `${pendingChanges} pending change${pendingChanges !== 1 ? 's' : ''} (will use ${pendingChanges} transfer${pendingChanges !== 1 ? 's' : ''} at deadline)`
+                : 'No changes from previous squad'
+              }
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className={`text-lg font-bold ${transfersRemaining <= 10 ? 'text-[#b5211e]' : 'text-[#262162]'}`}>
+              {transfersRemaining}
+            </p>
+            <p className="text-xs text-muted-foreground whitespace-nowrap">/ {transferLimit} left</p>
           </div>
         </div>
       )}

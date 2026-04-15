@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils'
 const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/team', label: 'My Team' },
+  { href: '/transfers', label: 'Transfers' },
   { href: '/leaderboard', label: 'Leaderboard' },
   { href: '/matches', label: 'Matches' },
   { href: '/rules', label: 'Rules' },

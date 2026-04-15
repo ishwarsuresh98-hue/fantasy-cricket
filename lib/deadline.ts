@@ -33,3 +33,20 @@ export function isDeadlinePassed(deadline: Date | null): boolean {
   if (!deadline) return false
   return Date.now() > deadline.getTime()
 }
+
+/**
+ * For a specific match, compute the deadline of its matchday using all matches
+ * in the season (same UTC day = same matchday, deadline = 30 min before earliest).
+ */
+export function getMatchDayDeadline(
+  match: Pick<Match, 'match_date'>,
+  allMatches: Pick<Match, 'match_date'>[]
+): Date | null {
+  const matchDayStr = new Date(match.match_date).toISOString().slice(0, 10)
+  const sameDayMatches = allMatches.filter(
+    (m) => new Date(m.match_date).toISOString().slice(0, 10) === matchDayStr
+  )
+  if (!sameDayMatches.length) return null
+  const earliestMs = Math.min(...sameDayMatches.map((m) => new Date(m.match_date).getTime()))
+  return new Date(earliestMs - 30 * 60 * 1000)
+}
