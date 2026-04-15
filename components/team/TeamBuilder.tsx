@@ -19,6 +19,7 @@ interface TeamBuilderProps {
   existingSelections: FantasySelection[]
   userId: string
   freeHitActive?: boolean
+  deadlinePassed?: boolean
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -44,7 +45,7 @@ const SHORT_LABELS: Record<string, string> = {
 
 const ROLE_ORDER = ['wicket_keeper', 'batsman', 'all_rounder', 'bowler']
 
-export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false }: TeamBuilderProps) {
+export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false, deadlinePassed = false }: TeamBuilderProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -77,6 +78,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   })
 
   function togglePlayer(player: Player) {
+    if (deadlinePassed) return
     const newSet = new Set(selectedIds)
     if (newSet.has(player.id)) {
       newSet.delete(player.id)
@@ -110,6 +112,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
 
   async function handleSave() {
     setError(null)
+    if (deadlinePassed) { setError('The deadline has passed. Team selection is locked.'); return }
     if (!teamName.trim()) { setError('Please enter a team name.'); return }
     if (selectedIds.size !== maxPlayers) { setError(`Select exactly ${maxPlayers} players.`); return }
     // Validate role minimums
@@ -166,7 +169,17 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
         </p>
       </div>
 
-      {freeHitActive && (
+      {deadlinePassed && (
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+          <span className="text-xl">🔒</span>
+          <div>
+            <p className="text-sm font-bold text-red-700">Deadline passed for this gameweek</p>
+            <p className="text-xs text-red-600">Team selection is locked. Your saved squad will play.</p>
+          </div>
+        </div>
+      )}
+
+      {freeHitActive && !deadlinePassed && (
         <div className="flex items-center gap-2 bg-[#fefde8] border border-[#fbf927] rounded-lg px-4 py-3">
           <span className="text-xl">🆓</span>
           <div>
@@ -347,10 +360,10 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
 
           <Button
             onClick={handleSave}
-            disabled={isPending}
+            disabled={isPending || deadlinePassed}
             className="w-full"
           >
-            {isPending ? 'Saving...' : myTeam ? 'Update Team' : 'Save Team'}
+            {deadlinePassed ? '🔒 Deadline Passed' : isPending ? 'Saving...' : myTeam ? 'Update Team' : 'Save Team'}
           </Button>
         </div>
       </div>

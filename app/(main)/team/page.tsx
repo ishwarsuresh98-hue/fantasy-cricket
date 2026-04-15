@@ -1,10 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import TeamBuilder from '@/components/team/TeamBuilder'
 import BoosterPanel from '@/components/boosters/BoosterPanel'
+import DeadlineCountdown from '@/components/DeadlineCountdown'
 import { Card, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { computeMatchDayDeadline, isDeadlinePassed } from '@/lib/deadline'
 import type { Player, Match, FantasyTeam, FantasySelection, TeamBooster } from '@/types'
 
 export default async function TeamPage() {
@@ -35,6 +37,17 @@ export default async function TeamPage() {
     .order('match_date')
     .limit(1)
     .single()
+
+  // Fetch all upcoming matches to compute the match-day deadline
+  const { data: upcomingMatches } = await supabase
+    .from('matches')
+    .select('match_date')
+    .eq('season_id', season.id)
+    .eq('status', 'upcoming')
+    .order('match_date')
+
+  const deadline = computeMatchDayDeadline(upcomingMatches ?? [])
+  const deadlinePassed = isDeadlinePassed(deadline)
 
   const { data: players } = await supabase
     .from('players')
@@ -154,6 +167,11 @@ export default async function TeamPage() {
 
   return (
     <div className="space-y-6">
+      {/* Deadline countdown / locked banner */}
+      {deadline && (
+        <DeadlineCountdown deadline={deadline.toISOString()} />
+      )}
+
       {myTeam && (
         <BoosterPanel
           fantasyTeamId={myTeam.id}
@@ -162,6 +180,7 @@ export default async function TeamPage() {
           boosterUsage={(boosterUsage ?? []) as TeamBooster[]}
           currentSelections={existingSelections}
           players={(players ?? []) as Player[]}
+          deadlinePassed={deadlinePassed}
         />
       )}
       <TeamBuilder
@@ -172,6 +191,7 @@ export default async function TeamPage() {
         existingSelections={existingSelections}
         userId={user!.id}
         freeHitActive={freeHitActive}
+        deadlinePassed={deadlinePassed}
       />
     </div>
   )

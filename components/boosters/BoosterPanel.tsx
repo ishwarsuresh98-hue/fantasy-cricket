@@ -25,6 +25,7 @@ interface BoosterPanelProps {
   boosterUsage: TeamBooster[]          // all boosters used by this team this season
   currentSelections: FantasySelection[] // selections for nextMatch
   players: Player[]
+  deadlinePassed?: boolean
 }
 
 export default function BoosterPanel({
@@ -34,6 +35,7 @@ export default function BoosterPanel({
   boosterUsage,
   currentSelections,
   players,
+  deadlinePassed = false,
 }: BoosterPanelProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -112,7 +114,8 @@ export default function BoosterPanel({
           const canActivate =
             matchStatus === 'upcoming' &&
             !activeBooster &&
-            !isExhausted
+            !isExhausted &&
+            !deadlinePassed
 
           return (
             <div
