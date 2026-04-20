@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { computeMatchDayDeadline, isDeadlinePassed, getMatchDayDeadline } from '@/lib/deadline'
+import { computeMatchDayLockWindow, getMatchDayDeadline } from '@/lib/deadline'
 import type { Player, Match, FantasyTeam, FantasySelection, TeamBooster, PlayerCreditHistory, TransferLog } from '@/types'
 
 export default async function TeamPage() {
@@ -47,8 +47,13 @@ export default async function TeamPage() {
 
   const upcomingMatches = (allMatches ?? []).filter((m: Match) => m.status === 'upcoming')
 
-  const deadline = computeMatchDayDeadline(upcomingMatches ?? [])
-  const deadlinePassed = isDeadlinePassed(deadline)
+  // Lock window: locked between lockStart (30 min before earliest match) and lockEnd (30 min after latest match)
+  const lockWindow = computeMatchDayLockWindow(upcomingMatches)
+  const nowMs = Date.now()
+  const deadlinePassed = lockWindow ? nowMs >= lockWindow.lockStart.getTime() : false
+  const isLocked       = lockWindow ? nowMs >= lockWindow.lockStart.getTime() && nowMs < lockWindow.lockEnd.getTime() : false
+  const lockUntil      = lockWindow?.lockEnd.toISOString() ?? null
+  const deadline       = lockWindow?.lockStart ?? null
 
   const { data: players } = await supabase
     .from('players')
@@ -215,9 +220,12 @@ export default async function TeamPage() {
 
   return (
     <div className="space-y-6">
-      {/* Deadline countdown / locked banner */}
+      {/* Deadline countdown / in-progress lock banner */}
       {deadline && (
-        <DeadlineCountdown deadline={deadline.toISOString()} />
+        <DeadlineCountdown
+          deadline={deadline.toISOString()}
+          lockUntil={lockUntil ?? undefined}
+        />
       )}
 
       {myTeam && (
@@ -228,7 +236,7 @@ export default async function TeamPage() {
           boosterUsage={(boosterUsage ?? []) as TeamBooster[]}
           currentSelections={existingSelections}
           players={(players ?? []) as Player[]}
-          deadlinePassed={deadlinePassed}
+          deadlinePassed={isLocked}
         />
       )}
       <TeamBuilder
@@ -239,7 +247,9 @@ export default async function TeamPage() {
         existingSelections={existingSelections}
         userId={user!.id}
         freeHitActive={freeHitActive}
+        isLocked={isLocked}
         deadlinePassed={deadlinePassed}
+        lockUntil={lockUntil ?? undefined}
         creditTrends={creditTrends}
         baseSquadIds={baseSquadIds}
         confirmedTransfers={confirmedTransfers}

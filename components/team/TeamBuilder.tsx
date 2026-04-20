@@ -20,7 +20,12 @@ interface TeamBuilderProps {
   existingSelections: FantasySelection[]
   userId: string
   freeHitActive?: boolean
+  /** lockStart has crossed — used for transfer-log gating only */
   deadlinePassed?: boolean
+  /** currently inside the [lockStart, lockEnd] window — blocks editing */
+  isLocked?: boolean
+  /** ISO string of lockEnd — when the team unlocks */
+  lockUntil?: string
   creditTrends?: Record<string, 'up' | 'down' | 'neutral'>
   baseSquadIds?: string[]
   confirmedTransfers?: number
@@ -51,7 +56,7 @@ const SHORT_LABELS: Record<string, string> = {
 
 const ROLE_ORDER = ['wicket_keeper', 'batsman', 'all_rounder', 'bowler']
 
-export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false, deadlinePassed = false, creditTrends = {}, baseSquadIds = [], confirmedTransfers = 0, transferLimit = 300, megaTransferActive = false }: TeamBuilderProps) {
+export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false, deadlinePassed = false, isLocked = false, lockUntil, creditTrends = {}, baseSquadIds = [], confirmedTransfers = 0, transferLimit = 300, megaTransferActive = false }: TeamBuilderProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -79,7 +84,8 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   const baseSet = new Set(baseSquadIds)
   const pendingChanges = Array.from(selectedIds).filter((id) => !baseSet.has(id)).length
   const transfersRemaining = transferLimit - confirmedTransfers
-  const wouldExceedLimit = !megaTransferActive && pendingChanges > transfersRemaining && baseSquadIds.length > 0
+  // Warning only applies pre-deadline (after deadline those pending changes are already confirmed/irrelevant)
+  const wouldExceedLimit = !deadlinePassed && !megaTransferActive && pendingChanges > transfersRemaining && baseSquadIds.length > 0
   const budgetUsed = selectedPlayers.reduce((sum, p) => sum + p.price, 0)
   const budgetRemaining = budget - budgetUsed
 
@@ -90,7 +96,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   })
 
   function togglePlayer(player: Player) {
-    if (deadlinePassed) return
+    if (isLocked) return
     const newSet = new Set(selectedIds)
     if (newSet.has(player.id)) {
       newSet.delete(player.id)
@@ -124,7 +130,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
 
   async function handleSave() {
     setError(null)
-    if (deadlinePassed) { setError('The deadline has passed. Team selection is locked.'); return }
+    if (isLocked) { setError('Match is in progress. Team selection is locked until the match starts.'); return }
     if (!teamName.trim()) { setError('Please enter a team name.'); return }
     if (selectedIds.size !== maxPlayers) { setError(`Select exactly ${maxPlayers} players.`); return }
     // Validate role minimums
@@ -166,15 +172,17 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
     const { error: selErr } = await supabase.from('fantasy_selections').insert(insertData)
     if (selErr) { setError(selErr.message); return }
 
-    // Compute transfer diff vs base squad and upsert transfer log
-    const baseSet = new Set(baseSquadIds)
-    const currentSet = selectedIds
-    const playersIn = Array.from(currentSet).filter((id) => !baseSet.has(id))
-    const playersOut = Array.from(baseSet).filter((id) => !currentSet.has(id))
-    const pendingCount = playersIn.length
+    // Compute transfer diff vs base squad and upsert transfer log.
+    // Only write the log if lockStart hasn't passed yet — after lockStart, this gameweek's
+    // transfer count is already confirmed and we don't overwrite it. After lockEnd the user is
+    // freely prepping for the next gameweek (no new log entry for the old match needed).
+    if (!deadlinePassed && (myTeam || teamId)) {
+      const baseSet = new Set(baseSquadIds)
+      const currentSet = selectedIds
+      const playersIn  = Array.from(currentSet).filter((id) => !baseSet.has(id))
+      const playersOut = Array.from(baseSet).filter((id) => !currentSet.has(id))
+      const pendingCount = playersIn.length
 
-    // Only log if there's a meaningful diff (or even 0 — so we can track "confirmed no changes")
-    if (myTeam || teamId) {
       const { error: logErr } = await supabase
         .from('transfer_logs')
         .upsert(
@@ -206,17 +214,19 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
         </p>
       </div>
 
-      {deadlinePassed && (
-        <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-          <span className="text-xl">🔒</span>
+      {isLocked && (
+        <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-lg px-4 py-3">
+          <span className="text-xl">🏏</span>
           <div>
-            <p className="text-sm font-bold text-red-700">Deadline passed for this gameweek</p>
-            <p className="text-xs text-red-600">Team selection is locked. Your saved squad will play.</p>
+            <p className="text-sm font-bold text-orange-800">
+              Match in progress — team locked until {lockUntil ? new Date(lockUntil).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit', hour12: true }) : 'matches finish'}
+            </p>
+            <p className="text-xs text-orange-700">Your saved squad is playing. You can make changes once the lock lifts.</p>
           </div>
         </div>
       )}
 
-      {freeHitActive && !deadlinePassed && (
+      {freeHitActive && !isLocked && (
         <div className="flex items-center gap-2 bg-[#fefde8] border border-[#fbf927] rounded-lg px-4 py-3">
           <span className="text-xl">🆓</span>
           <div>
@@ -226,8 +236,8 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
         </div>
       )}
 
-      {/* Transfer status banner */}
-      {!deadlinePassed && myTeam && (
+      {/* Transfer status banner — shown before deadline and after unlock, hidden during lock */}
+      {!isLocked && myTeam && (
         <div className={`flex items-start justify-between gap-3 rounded-lg px-4 py-3 border ${
           wouldExceedLimit
             ? 'bg-red-50 border-red-200'
@@ -239,10 +249,15 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
         }`}>
           <div>
             <p className={`text-sm font-semibold ${wouldExceedLimit ? 'text-red-700' : 'text-[#262162]'}`}>
-              🔄 Changes are free until deadline — transfers only count once deadline passes
+              {deadlinePassed
+                ? '✅ Next gameweek — changes are free'
+                : '🔄 Changes are free until deadline — transfers only count once deadline passes'
+              }
             </p>
             <p className={`text-xs mt-0.5 ${wouldExceedLimit ? 'text-red-600' : 'text-muted-foreground'}`}>
-              {megaTransferActive
+              {deadlinePassed
+                ? 'This gameweek\'s transfers are confirmed. Edit freely for the next matchday.'
+                : megaTransferActive
                 ? 'Mega Transfer active — unlimited free transfers this match'
                 : wouldExceedLimit
                 ? `Warning: ${pendingChanges} pending change${pendingChanges !== 1 ? 's' : ''} would exceed your ${transfersRemaining} remaining transfer${transfersRemaining !== 1 ? 's' : ''}`
@@ -448,10 +463,10 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
 
           <Button
             onClick={handleSave}
-            disabled={isPending || deadlinePassed}
+            disabled={isPending || isLocked}
             className="w-full"
           >
-            {deadlinePassed ? '🔒 Deadline Passed' : isPending ? 'Saving...' : myTeam ? 'Update Team' : 'Save Team'}
+            {isLocked ? '🏏 Match In Progress' : isPending ? 'Saving...' : myTeam ? 'Update Team' : 'Save Team'}
           </Button>
         </div>
       </div>

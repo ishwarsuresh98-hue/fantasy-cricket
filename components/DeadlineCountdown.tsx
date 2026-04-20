@@ -3,42 +3,77 @@
 import { useState, useEffect } from 'react'
 
 interface Props {
-  /** ISO string of the deadline */
+  /** ISO string — 30 min before the earliest match (lockStart) */
   deadline: string
-  /** Extra classes on the outer wrapper */
+  /** ISO string — 30 min after the latest match starts (lockEnd). When passed the lock lifts. */
+  lockUntil?: string
   className?: string
 }
 
-function getTimeLeft(deadline: string) {
-  const diff = new Date(deadline).getTime() - Date.now()
-  if (diff <= 0) return { passed: true, hours: 0, minutes: 0, seconds: 0 }
-  const hours   = Math.floor(diff / (1000 * 60 * 60))
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-  const seconds = Math.floor((diff % (1000 * 60)) / 1000)
-  return { passed: false, hours, minutes, seconds }
+function getRemainingMs(isoTarget: string) {
+  return new Date(isoTarget).getTime() - Date.now()
 }
 
-export default function DeadlineCountdown({ deadline, className = '' }: Props) {
-  const [tl, setTl] = useState(() => getTimeLeft(deadline))
+function formatCountdown(ms: number) {
+  if (ms <= 0) return null
+  const hours   = Math.floor(ms / (1000 * 60 * 60))
+  const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60))
+  const seconds = Math.floor((ms % (1000 * 60)) / 1000)
+  return { hours, minutes, seconds }
+}
 
+function formatTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit', hour12: true })
+}
+
+export default function DeadlineCountdown({ deadline, lockUntil, className = '' }: Props) {
+  const [, setTick] = useState(0)
   useEffect(() => {
-    const id = setInterval(() => setTl(getTimeLeft(deadline)), 1000)
+    const id = setInterval(() => setTick((t) => t + 1), 1000)
     return () => clearInterval(id)
-  }, [deadline])
+  }, [])
 
-  if (tl.passed) {
+  const toDeadline = getRemainingMs(deadline)
+  const toLockEnd  = lockUntil ? getRemainingMs(lockUntil) : null
+
+  // ── State 3: lock window fully passed ──────────────────────────────────────
+  if (toDeadline <= 0 && (toLockEnd === null || toLockEnd <= 0)) {
+    // Silent — user is freely editing for the next gameweek
+    return null
+  }
+
+  // ── State 2: match in progress (locked) ────────────────────────────────────
+  if (toDeadline <= 0 && toLockEnd !== null && toLockEnd > 0) {
+    const cd = formatCountdown(toLockEnd)
     return (
-      <div className={`flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 ${className}`}>
-        <span className="text-lg">🔒</span>
-        <div>
-          <p className="text-sm font-bold text-red-700">Deadline passed for this gameweek</p>
-          <p className="text-xs text-red-600">Team selection and boosters are locked.</p>
+      <div className={`flex items-center gap-3 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 ${className}`}>
+        <span className="text-lg">🏏</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold text-orange-800">
+            Match in progress — team locked until {lockUntil ? formatTime(lockUntil) : ''}
+          </p>
+          {cd && (
+            <p className="text-xs text-orange-700 tabular-nums mt-0.5">
+              Unlocks in{' '}
+              {cd.hours > 0 && `${cd.hours}h `}
+              {String(cd.minutes).padStart(2, '0')}m{' '}
+              {String(cd.seconds).padStart(2, '0')}s
+              {' '}— changes free again after unlock
+            </p>
+          )}
         </div>
+        <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full shrink-0">
+          In Progress
+        </span>
       </div>
     )
   }
 
-  const urgent = tl.hours === 0 && tl.minutes < 30
+  // ── State 1: counting down to deadline ─────────────────────────────────────
+  const cd = formatCountdown(toDeadline)
+  if (!cd) return null
+
+  const urgent = cd.hours === 0 && cd.minutes < 30
 
   return (
     <div
@@ -54,9 +89,9 @@ export default function DeadlineCountdown({ deadline, className = '' }: Props) {
           Deadline to lock in your team
         </p>
         <p className={`text-lg font-bold tabular-nums ${urgent ? 'text-orange-700' : 'text-[#262162]'}`}>
-          {tl.hours > 0 && `${tl.hours}h `}
-          {String(tl.minutes).padStart(2, '0')}m{' '}
-          {String(tl.seconds).padStart(2, '0')}s
+          {cd.hours > 0 && `${cd.hours}h `}
+          {String(cd.minutes).padStart(2, '0')}m{' '}
+          {String(cd.seconds).padStart(2, '0')}s
         </p>
       </div>
       {urgent && (
