@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { BOOSTERS } from '@/lib/boosters'
-import { computeMatchDayDeadline } from '@/lib/deadline'
+import { computeMatchDayLockWindow } from '@/lib/deadline'
 import DeadlineCountdown from '@/components/DeadlineCountdown'
 import type { Match, Season, TeamBooster } from '@/types'
 
@@ -50,7 +50,9 @@ export default async function DashboardPage() {
   const completedMatches = (matches ?? []).filter((m: Match) => m.status === 'completed')
   const nextMatch = upcomingMatches[0] as Match | undefined
 
-  const deadline = computeMatchDayDeadline(upcomingMatches)
+  const lockWindow = computeMatchDayLockWindow(upcomingMatches)
+  const deadline   = lockWindow?.lockStart ?? null
+  const lockUntil  = lockWindow?.lockEnd.toISOString() ?? null
 
   const myRank = allTeams?.findIndex((t) => t.user_id === user!.id) ?? -1
   const rank = myRank >= 0 ? myRank + 1 : null
@@ -101,9 +103,12 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Deadline countdown */}
+      {/* Gameweek countdown */}
       {deadline && (
-        <DeadlineCountdown deadline={deadline.toISOString()} />
+        <DeadlineCountdown
+          deadline={deadline.toISOString()}
+          lockUntil={lockUntil ?? undefined}
+        />
       )}
 
       {/* Booster status — only shown if user has a team */}

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 
 interface Props {
-  /** ISO string — 30 min before the earliest match (lockStart) */
+  /** ISO string — 1 hour before the earliest match (lockStart) */
   deadline: string
   /** ISO string — 30 min after the latest match starts (lockEnd). When passed the lock lifts. */
   lockUntil?: string
@@ -14,12 +14,16 @@ function getRemainingMs(isoTarget: string) {
   return new Date(isoTarget).getTime() - Date.now()
 }
 
-function formatCountdown(ms: number) {
+function formatCountdown(ms: number): string | null {
   if (ms <= 0) return null
   const hours   = Math.floor(ms / (1000 * 60 * 60))
   const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60))
   const seconds = Math.floor((ms % (1000 * 60)) / 1000)
-  return { hours, minutes, seconds }
+  const parts: string[] = []
+  if (hours > 0)   parts.push(`${hours}h`)
+  parts.push(`${String(minutes).padStart(2, '0')}m`)
+  parts.push(`${String(seconds).padStart(2, '0')}s`)
+  return parts.join(' ')
 }
 
 function formatTime(iso: string) {
@@ -36,9 +40,8 @@ export default function DeadlineCountdown({ deadline, lockUntil, className = '' 
   const toDeadline = getRemainingMs(deadline)
   const toLockEnd  = lockUntil ? getRemainingMs(lockUntil) : null
 
-  // ── State 3: lock window fully passed ──────────────────────────────────────
+  // ── State 3: lock window fully passed — nothing to show ────────────────────
   if (toDeadline <= 0 && (toLockEnd === null || toLockEnd <= 0)) {
-    // Silent — user is freely editing for the next gameweek
     return null
   }
 
@@ -54,11 +57,7 @@ export default function DeadlineCountdown({ deadline, lockUntil, className = '' 
           </p>
           {cd && (
             <p className="text-xs text-orange-700 tabular-nums mt-0.5">
-              Unlocks in{' '}
-              {cd.hours > 0 && `${cd.hours}h `}
-              {String(cd.minutes).padStart(2, '0')}m{' '}
-              {String(cd.seconds).padStart(2, '0')}s
-              {' '}— changes free again after unlock
+              Unlocks in {cd} — changes free again after unlock
             </p>
           )}
         </div>
@@ -73,7 +72,7 @@ export default function DeadlineCountdown({ deadline, lockUntil, className = '' 
   const cd = formatCountdown(toDeadline)
   if (!cd) return null
 
-  const urgent = cd.hours === 0 && cd.minutes < 30
+  const urgent = toDeadline < 30 * 60 * 1000  // under 30 minutes
 
   return (
     <div
@@ -85,17 +84,15 @@ export default function DeadlineCountdown({ deadline, lockUntil, className = '' 
     >
       <span className="text-lg">{urgent ? '⚠️' : '⏰'}</span>
       <div className="flex-1">
-        <p className={`text-xs font-medium ${urgent ? 'text-orange-700' : 'text-[#262162]'}`}>
-          Deadline to lock in your team
+        <p className={`text-xs font-medium uppercase tracking-wide ${urgent ? 'text-orange-700' : 'text-[#262162]/70'}`}>
+          Gameweek locks in
         </p>
-        <p className={`text-lg font-bold tabular-nums ${urgent ? 'text-orange-700' : 'text-[#262162]'}`}>
-          {cd.hours > 0 && `${cd.hours}h `}
-          {String(cd.minutes).padStart(2, '0')}m{' '}
-          {String(cd.seconds).padStart(2, '0')}s
+        <p className={`text-xl font-bold tabular-nums tracking-tight ${urgent ? 'text-orange-700' : 'text-[#262162]'}`}>
+          {cd}
         </p>
       </div>
       {urgent && (
-        <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full">
+        <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full shrink-0">
           Closing soon
         </span>
       )}

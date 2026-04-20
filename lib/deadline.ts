@@ -25,8 +25,8 @@ export function computeMatchDayDeadline(upcomingMatches: Pick<Match, 'match_date
   // Earliest kick-off on that day
   const earliestMs = Math.min(...sameDayMatches.map((m) => new Date(m.match_date).getTime()))
 
-  // Deadline = 30 minutes before the earliest match
-  return new Date(earliestMs - 30 * 60 * 1000)
+  // Deadline = 1 hour before the earliest match
+  return new Date(earliestMs - 60 * 60 * 1000)
 }
 
 export function isDeadlinePassed(deadline: Date | null): boolean {
@@ -62,8 +62,8 @@ export function computeMatchDayLockWindow(
   const latestMs   = Math.max(...timestamps)
 
   return {
-    lockStart: new Date(earliestMs - 30 * 60 * 1000),
-    lockEnd:   new Date(latestMs   + 30 * 60 * 1000),
+    lockStart: new Date(earliestMs - 60 * 60 * 1000),  // 1 hour before earliest match
+    lockEnd:   new Date(latestMs   + 30 * 60 * 1000),  // 30 min after latest match starts
   }
 }
 
@@ -82,7 +82,7 @@ export function getMatchDayLockWindow(
   if (!sameDayMatches.length) return null
   const timestamps = sameDayMatches.map((m) => new Date(m.match_date).getTime())
   return {
-    lockStart: new Date(Math.min(...timestamps) - 30 * 60 * 1000),
+    lockStart: new Date(Math.min(...timestamps) - 60 * 60 * 1000),
     lockEnd:   new Date(Math.max(...timestamps) + 30 * 60 * 1000),
   }
 }

@@ -132,11 +132,17 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
     setError(null)
     if (isLocked) { setError('Match is in progress. Team selection is locked until the match starts.'); return }
     if (!teamName.trim()) { setError('Please enter a team name.'); return }
-    if (selectedIds.size !== maxPlayers) { setError(`Select exactly ${maxPlayers} players.`); return }
-    // Validate role minimums
-    for (const [role, { min, label }] of Object.entries(ROLE_CONSTRAINTS)) {
+    if (selectedIds.size !== maxPlayers) { setError(`Select exactly ${maxPlayers} players (currently ${selectedIds.size}).`); return }
+    // Validate all role constraints at once and report every violation
+    const roleViolations: string[] = []
+    for (const [role, { min, max, label }] of Object.entries(ROLE_CONSTRAINTS)) {
       const count = Array.from(selectedIds).filter((id) => players.find((p) => p.id === id)?.role === role).length
-      if (count < min) { setError(`Select at least ${min} ${label}.`); return }
+      if (count < min) roleViolations.push(`${label}: need at least ${min} (you have ${count})`)
+      if (count > max) roleViolations.push(`${label}: maximum is ${max} (you have ${count})`)
+    }
+    if (roleViolations.length > 0) {
+      setError('Squad requirements not met:\n' + roleViolations.map((v) => `• ${v}`).join('\n'))
+      return
     }
     if (!captainId) { setError('Select a captain.'); return }
     if (!vcId) { setError('Select a vice-captain.'); return }
@@ -250,13 +256,13 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
           <div>
             <p className={`text-sm font-semibold ${wouldExceedLimit ? 'text-red-700' : 'text-[#262162]'}`}>
               {deadlinePassed
-                ? '✅ Next gameweek — changes are free'
+                ? '📋 Next gameweek open — changes will use transfers when deadline passes'
                 : '🔄 Changes are free until deadline — transfers only count once deadline passes'
               }
             </p>
             <p className={`text-xs mt-0.5 ${wouldExceedLimit ? 'text-red-600' : 'text-muted-foreground'}`}>
               {deadlinePassed
-                ? 'This gameweek\'s transfers are confirmed. Edit freely for the next matchday.'
+                ? 'This gameweek\'s transfers are confirmed. Every swap from now counts as 1 transfer at the next deadline.'
                 : megaTransferActive
                 ? 'Mega Transfer active — unlimited free transfers this match'
                 : wouldExceedLimit
@@ -318,15 +324,25 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
               <div className="flex gap-2 flex-wrap pt-1">
                 {ROLE_ORDER.map((r) => {
                   const roleSelectedCount = selectedPlayers.filter((p) => p.role === r).length
+                  const { min, max } = ROLE_CONSTRAINTS[r]
+                  const belowMin = roleSelectedCount < min
+                  const aboveMax = roleSelectedCount > max
+                  const isActive = roleFilter === r
                   return (
                     <button
                       key={r}
                       onClick={() => setRoleFilter(r)}
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                        roleFilter === r ? 'bg-[#262162] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        isActive
+                          ? belowMin || aboveMax
+                            ? 'bg-red-600 text-white'
+                            : 'bg-[#262162] text-white'
+                          : belowMin || aboveMax
+                          ? 'bg-red-50 text-red-600 ring-1 ring-red-300'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
-                      {SHORT_LABELS[r]} ({roleSelectedCount})
+                      {SHORT_LABELS[r]} {roleSelectedCount}/{min}–{max}
                     </button>
                   )
                 })}
@@ -451,7 +467,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
           </Card>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded-md">
+            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded-md whitespace-pre-line">
               {error}
             </div>
           )}
