@@ -12,7 +12,7 @@ export default function RulesPage() {
         </p>
       </div>
 
-      {/* How to play */}
+      {/* How to Play */}
       <Card>
         <CardHeader>
           <CardTitle className="text-[#262162] flex items-center gap-2">
@@ -21,20 +21,145 @@ export default function RulesPage() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-gray-700 leading-relaxed">
           <p>
-            Each player picks a squad of <strong>11 players</strong> from the available pool before each match.
-            Your squad earns points based on how those players actually perform on the day.
+            Each gameweek is a <strong>single calendar day</strong>. When Slough CC have multiple matches on the same day,
+            all confirmed players across every XI form a <strong>combined player pool</strong> for that gameweek.
+            Pick your best 11 before the deadline, and earn points from every player's actual performance.
           </p>
           <ul className="list-disc list-inside space-y-1.5 pl-2">
             <li>Pick <strong>1–4 Wicket-Keepers</strong>, <strong>3–6 Batsmen</strong>, <strong>1–4 All-Rounders</strong>, and <strong>3–6 Bowlers</strong> — exactly 11 in total.</li>
-            <li>Stay within the <strong>budget cap</strong> (each player has a price).</li>
+            <li>Stay within the <strong>100 credit budget</strong> (each player has a credit value between 6.0–11.0).</li>
             <li>Designate one player as <strong>Captain</strong> (2× points) and one as <strong>Vice-Captain</strong> (1.5× points).</li>
             <li>Your total score is the sum of points earned by all 11 players, with captain/VC multipliers applied.</li>
-            <li>You can change your squad freely before each match's deadline.</li>
           </ul>
         </CardContent>
       </Card>
 
-      {/* Points system */}
+      {/* Gameweek & Deadlines */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-[#262162] flex items-center gap-2">
+            📅 Gameweeks & Deadlines
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm text-gray-700 leading-relaxed">
+          <div className="grid sm:grid-cols-3 gap-3">
+            <div className="p-3 rounded-lg border bg-[#eeedf8] border-[#262162]/20 text-center">
+              <p className="text-2xl font-bold text-[#262162]">1 day</p>
+              <p className="text-xs text-muted-foreground mt-1">= 1 gameweek</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-[#fefde8] border-[#fbf927]/60 text-center">
+              <p className="text-2xl font-bold text-[#262162]">−30 min</p>
+              <p className="text-xs text-muted-foreground mt-1">before earliest match</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-blue-50 border-blue-200 text-center">
+              <p className="text-2xl font-bold text-[#262162]">All XIs</p>
+              <p className="text-xs text-muted-foreground mt-1">form one combined pool</p>
+            </div>
+          </div>
+          <ul className="list-disc list-inside space-y-1.5 pl-2">
+            <li>A <strong>gameweek</strong> is one calendar day — all matches played on that day count together.</li>
+            <li>The <strong>deadline</strong> is 30 minutes before the earliest match on that day. Once it passes, your team is locked in.</li>
+            <li>Admin confirms the <strong>playing XI</strong> for each match 1–2 days in advance — only confirmed players appear in the player pool.</li>
+            <li>Players from <strong>all matches on that day</strong> are pooled together, so you can mix players from the 1st XI, 2nd XI, and beyond in the same squad.</li>
+          </ul>
+        </CardContent>
+      </Card>
+
+      {/* Transfers */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-[#262162] flex items-center gap-2">
+            🔄 Transfers
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm text-gray-700 leading-relaxed">
+          <div className="grid sm:grid-cols-3 gap-3">
+            <div className="p-3 rounded-lg border bg-[#eeedf8] border-[#262162]/20 text-center">
+              <p className="text-2xl font-bold text-[#262162]">300</p>
+              <p className="text-xs text-muted-foreground mt-1">transfers per season</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-green-50 border-green-200 text-center">
+              <p className="text-2xl font-bold text-green-700">Free</p>
+              <p className="text-xs text-muted-foreground mt-1">before deadline</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-red-50 border-red-200 text-center">
+              <p className="text-2xl font-bold text-[#b5211e]">1</p>
+              <p className="text-xs text-muted-foreground mt-1">transfer per player swap</p>
+            </div>
+          </div>
+          <ul className="list-disc list-inside space-y-1.5 pl-2">
+            <li>Each team gets <strong>300 transfers</strong> for the entire season — not per gameweek.</li>
+            <li>Every player swap counts as <strong>1 transfer</strong>. Bringing in 3 new players = 3 transfers.</li>
+            <li>Transfers are <strong>only deducted when the matchday deadline passes</strong>. Until then, you can freely change your team as many times as you like without using any transfers — it's just previewing.</li>
+            <li>Once the deadline passes, the number of players different from your previous matchday squad is deducted from your transfer balance.</li>
+            <li>When all 300 transfers are used, your team is <strong>locked for the rest of the season</strong> — no further changes.</li>
+            <li>The <strong>Mega Transfer</strong> booster gives unlimited swaps for one matchday without touching your transfer quota.</li>
+          </ul>
+        </CardContent>
+      </Card>
+
+      {/* Player Credits */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-[#262162] flex items-center gap-2">
+            💰 Player Credits
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm text-gray-700 leading-relaxed">
+          <div className="grid sm:grid-cols-3 gap-3">
+            <div className="p-3 rounded-lg border bg-[#eeedf8] border-[#262162]/20 text-center">
+              <p className="text-2xl font-bold text-[#262162]">6.0 – 11.0</p>
+              <p className="text-xs text-muted-foreground mt-1">credit range</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-green-50 border-green-200 text-center">
+              <p className="text-2xl font-bold text-green-700">+0.5</p>
+              <p className="text-xs text-muted-foreground mt-1">above matchday average</p>
+            </div>
+            <div className="p-3 rounded-lg border bg-red-50 border-red-200 text-center">
+              <p className="text-2xl font-bold text-[#b5211e]">−0.5</p>
+              <p className="text-xs text-muted-foreground mt-1">below matchday average</p>
+            </div>
+          </div>
+          <ul className="list-disc list-inside space-y-1.5 pl-2">
+            <li>All players start with a credit value between <strong>6.0 and 11.0</strong>.</li>
+            <li>After each match, credits are automatically adjusted: <strong>+0.5</strong> if a player scored above the matchday average; <strong>−0.5</strong> if below.</li>
+            <li>Credits cannot go below <strong>6.0</strong> or above <strong>11.0</strong>.</li>
+            <li>Credit arrows on the team page (<span className="text-green-600 font-bold">↑</span> / <span className="text-red-500 font-bold">↓</span>) show which direction a player's price moved after the last match.</li>
+          </ul>
+        </CardContent>
+      </Card>
+
+      {/* Squad Selection Rules */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-[#262162] flex items-center gap-2">
+            📋 Squad Selection Rules
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm text-gray-700">
+          <div className="grid sm:grid-cols-2 gap-3">
+            {[
+              { role: 'Wicket-Keepers', range: '1 – 4', color: 'bg-[#fefde8] text-[#262162] border-yellow-200' },
+              { role: 'Batsmen', range: '3 – 6', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+              { role: 'All-Rounders', range: '1 – 4', color: 'bg-[#eeedf8] text-[#262162] border-[#262162]/20' },
+              { role: 'Bowlers', range: '3 – 6', color: 'bg-[#fceaea] text-[#b5211e] border-red-200' },
+            ].map(({ role, range, color }) => (
+              <div key={role} className={`flex items-center justify-between px-4 py-3 rounded-lg border ${color}`}>
+                <span className="font-medium">{role}</span>
+                <Badge className={`${color.split(' ').slice(0, 2).join(' ')} hover:opacity-100 text-xs font-bold border-0`}>{range}</Badge>
+              </div>
+            ))}
+          </div>
+          <ul className="list-disc list-inside space-y-1.5 pl-2 text-gray-600">
+            <li>Total squad size is exactly <strong>11 players</strong>.</li>
+            <li>Stay within the <strong>100 credit budget</strong>.</li>
+            <li>You may pick players from <strong>any match on that gameweek day</strong> — mix players from the 1st XI and 2nd XI freely.</li>
+            <li><strong>Free Hit</strong> removes the budget cap for one match — pick any players regardless of cost.</li>
+          </ul>
+        </CardContent>
+      </Card>
+
+      {/* Points System */}
       <Card>
         <CardHeader>
           <CardTitle className="text-[#262162] flex items-center gap-2">
@@ -44,7 +169,7 @@ export default function RulesPage() {
         <CardContent className="space-y-6">
           {/* Batting */}
           <div>
-            <h3 className="font-semibold text-[#262162] mb-3 flex items-center gap-2">
+            <h3 className="font-semibold text-[#262162] mb-3">
               <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-bold">BATTING</span>
             </h3>
             <div className="overflow-x-auto">
@@ -136,8 +261,14 @@ export default function RulesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  <tr><td className="py-2">Captain <Badge className="ml-1 bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs">C</Badge></td><td className="text-right font-semibold">2× points</td></tr>
-                  <tr><td className="py-2">Vice-Captain <Badge className="ml-1 bg-blue-100 text-blue-700 hover:bg-blue-100 text-xs">VC</Badge></td><td className="text-right font-semibold">1.5× points</td></tr>
+                  <tr>
+                    <td className="py-2">Captain <Badge className="ml-1 bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs">C</Badge></td>
+                    <td className="text-right font-semibold">2× points</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2">Vice-Captain <Badge className="ml-1 bg-blue-100 text-blue-700 hover:bg-blue-100 text-xs">VC</Badge></td>
+                    <td className="text-right font-semibold">1.5× points</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -152,63 +283,59 @@ export default function RulesPage() {
             ⚡ Boosters
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
-          <p className="text-sm text-muted-foreground mb-4">
-            Each team gets a set of boosters to use across the season. Once activated for a match, a booster cannot be changed. Most boosters can only be used a limited number of times.
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Each team gets 7 boosters to use across the season. Only one booster may be activated per match. Once activated it cannot be changed.
           </p>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {[
-              { icon: '🏏', name: 'Batting Surge', uses: '1×', desc: 'All batsmen & all-rounders in your XI earn 2× points for that match.' },
-              { icon: '⚡', name: 'Bowling Surge', uses: '1×', desc: 'All bowlers & all-rounders in your XI earn 2× points for that match.' },
-              { icon: '🧤', name: 'Keeping Surge', uses: '1×', desc: 'Your wicket-keeper earns 2× points for that match.' },
-              { icon: '🆓', name: 'Free Hit', uses: '1×', desc: 'No budget restriction this match — pick any players. Your squad automatically reverts after.' },
-              { icon: '👑', name: 'Triple Captain', uses: '2×', desc: 'Choose one player to earn 3× points instead of the usual captain 2×.' },
-              { icon: '🔄', name: 'Mega Transfer', uses: '2×', desc: 'Make unlimited transfers within budget for one match with no point deductions.' },
-              { icon: '⚡', name: 'Double Power', uses: '2×', desc: 'Every player in your XI earns 2× points for that match.' },
-            ].map(({ icon, name, uses, desc }) => (
-              <div key={name} className="flex gap-3 p-3 rounded-lg border bg-gray-50">
-                <span className="text-2xl shrink-0">{icon}</span>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold text-[#262162]">{name}</p>
-                    <Badge className="bg-[#262162] text-white hover:bg-[#262162] text-xs px-1.5">{uses} per season</Badge>
+
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Once per season</p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {[
+                { icon: '🏏', name: 'Batting Surge', uses: '1×', desc: 'All batsmen & all-rounders in your XI earn 2× points for that match.' },
+                { icon: '⚡', name: 'Bowling Surge', uses: '1×', desc: 'All bowlers & all-rounders in your XI earn 2× points for that match.' },
+                { icon: '🧤', name: 'Keeping Surge', uses: '1×', desc: 'Your wicket-keeper earns 2× points for that match.' },
+                { icon: '🆓', name: 'Free Hit', uses: '1×', desc: 'No budget restriction this match — pick any players. Your squad automatically reverts after.' },
+              ].map(({ icon, name, uses, desc }) => (
+                <div key={name} className="flex gap-3 p-3 rounded-lg border bg-gray-50">
+                  <span className="text-2xl shrink-0">{icon}</span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-semibold text-[#262162]">{name}</p>
+                      <Badge className="bg-[#262162] text-white hover:bg-[#262162] text-xs px-1.5">{uses} per season</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Twice per season</p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {[
+                { icon: '👑', name: 'Triple Captain', uses: '2×', desc: 'Choose one player to earn 3× points — overrides the usual captain 2×.' },
+                { icon: '🔄', name: 'Mega Transfer', uses: '2×', desc: 'Make unlimited transfers for one matchday without using your season transfer quota.' },
+                { icon: '💥', name: 'Double Power', uses: '2×', desc: 'Every player in your XI earns 2× points for that match.' },
+              ].map(({ icon, name, uses, desc }) => (
+                <div key={name} className="flex gap-3 p-3 rounded-lg border bg-[#fefde8] border-[#fbf927]/60">
+                  <span className="text-2xl shrink-0">{icon}</span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-semibold text-[#262162]">{name}</p>
+                      <Badge className="bg-[#fbf927] text-[#262162] hover:bg-[#fbf927] text-xs px-1.5 font-bold">{uses} per season</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Squad rules */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-[#262162] flex items-center gap-2">
-            📋 Squad Selection Rules
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-gray-700 space-y-2">
-          <div className="grid sm:grid-cols-2 gap-3">
-            {[
-              { role: 'Wicket-Keepers', range: '1 – 4', color: 'bg-[#fefde8] text-[#262162]' },
-              { role: 'Batsmen', range: '3 – 6', color: 'bg-blue-100 text-blue-700' },
-              { role: 'All-Rounders', range: '1 – 4', color: 'bg-[#eeedf8] text-[#262162]' },
-              { role: 'Bowlers', range: '3 – 6', color: 'bg-[#fceaea] text-[#b5211e]' },
-            ].map(({ role, range, color }) => (
-              <div key={role} className={`flex items-center justify-between px-4 py-3 rounded-lg border ${color.includes('blue') ? 'border-blue-200' : 'border-gray-200'} bg-white`}>
-                <span className="font-medium">{role}</span>
-                <Badge className={`${color} hover:${color} text-xs font-bold`}>{range}</Badge>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground pt-2">
-            Total squad size is exactly <strong>11 players</strong>. You must stay within the budget shown on the team page.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* General rules */}
+      {/* General Rules */}
       <Card>
         <CardHeader>
           <CardTitle className="text-[#262162] flex items-center gap-2">
@@ -217,12 +344,13 @@ export default function RulesPage() {
         </CardHeader>
         <CardContent className="text-sm text-gray-700 space-y-2 leading-relaxed">
           <ul className="list-disc list-inside space-y-2 pl-2">
-            <li>Squads must be submitted <strong>before the match starts</strong>. Late submissions will not count.</li>
+            <li>Squads must be submitted <strong>before the matchday deadline</strong> (30 minutes before the earliest match on that day). Late submissions will not count.</li>
+            <li>You can change your team freely before the deadline — transfers are only counted when the deadline passes.</li>
             <li>Points are calculated automatically once match stats are entered by an admin.</li>
-            <li>The overall leaderboard ranks teams by <strong>total cumulative points</strong> across all matches played.</li>
+            <li>The overall leaderboard ranks teams by <strong>total cumulative points</strong> across all gameweeks.</li>
             <li>If a player in your XI did not bat (<em>Did Not Bat</em>), they score 0 batting points — no duck penalty applies.</li>
-            <li>Booster effects are applied automatically during scoring — no manual action needed after activation.</li>
-            <li>Only one booster may be activated per match per team.</li>
+            <li>Booster effects are applied automatically during scoring — no manual action is needed after activation.</li>
+            <li>Only <strong>one booster</strong> may be activated per matchday per team.</li>
             <li>In the event of a tie on points, teams are ranked by the higher captain score.</li>
           </ul>
         </CardContent>
