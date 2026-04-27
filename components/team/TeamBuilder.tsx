@@ -31,6 +31,7 @@ interface TeamBuilderProps {
   confirmedTransfers?: number
   transferLimit?: number
   megaTransferActive?: boolean
+  selectionPercentages?: Record<string, number>
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -56,7 +57,7 @@ const SHORT_LABELS: Record<string, string> = {
 
 const ROLE_ORDER = ['wicket_keeper', 'batsman', 'all_rounder', 'bowler']
 
-export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false, deadlinePassed = false, isLocked = false, lockUntil, creditTrends = {}, baseSquadIds = [], confirmedTransfers = 0, transferLimit = 300, megaTransferActive = false }: TeamBuilderProps) {
+export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false, deadlinePassed = false, isLocked = false, lockUntil, creditTrends = {}, baseSquadIds = [], confirmedTransfers = 0, transferLimit = 300, megaTransferActive = false, selectionPercentages = {} }: TeamBuilderProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -72,6 +73,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   )
   const [roleFilter, setRoleFilter] = useState<string>('wicket_keeper')
   const [search, setSearch] = useState('')
+  const [sortBy, setSortBy] = useState<'price' | 'ownership'>('price')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
@@ -89,11 +91,18 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   const budgetUsed = selectedPlayers.reduce((sum, p) => sum + p.price, 0)
   const budgetRemaining = budget - budgetUsed
 
-  const filteredPlayers = players.filter((p) => {
-    if (p.role !== roleFilter) return false
-    if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false
-    return true
-  })
+  const filteredPlayers = players
+    .filter((p) => {
+      if (p.role !== roleFilter) return false
+      if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false
+      return true
+    })
+    .sort((a, b) => {
+      if (sortBy === 'ownership') {
+        return (selectionPercentages[b.id] ?? 0) - (selectionPercentages[a.id] ?? 0)
+      }
+      return b.price - a.price
+    })
 
   function togglePlayer(player: Player) {
     if (isLocked) return
@@ -350,6 +359,20 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
               <p className="text-xs text-muted-foreground pt-1">
                 Pick {ROLE_CONSTRAINTS[roleFilter].min}–{ROLE_CONSTRAINTS[roleFilter].max} {ROLE_CONSTRAINTS[roleFilter].label}
               </p>
+              <div className="flex gap-1 pt-1">
+                <span className="text-xs text-muted-foreground self-center">Sort:</span>
+                {(['price', 'ownership'] as const).map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => setSortBy(opt)}
+                    className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
+                      sortBy === opt ? 'bg-[#262162] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    }`}
+                  >
+                    {opt === 'price' ? 'Price' : 'Ownership %'}
+                  </button>
+                ))}
+              </div>
               <Input
                 placeholder="Search players..."
                 value={search}
@@ -392,6 +415,11 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                           <Badge className={`text-xs ${ROLE_COLORS[player.role]} hover:${ROLE_COLORS[player.role]}`}>
                             {PLAYER_ROLE_LABELS[player.role]}
                           </Badge>
+                          {selectionPercentages[player.id] != null && (
+                            <p className="text-xs text-muted-foreground">
+                              {selectionPercentages[player.id]}% selected
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">

@@ -121,6 +121,13 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
     setTimeout(() => setSavedMessage(null), 4000)
     router.refresh()
     setLoading(false)
+
+    // Fire-and-forget notification generation (don't block UI)
+    fetch('/api/notifications/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ matchId }),
+    }).catch(() => {/* ignore */})
   }
 
   const totalPoints = players.reduce((sum, p) => sum + previewPoints(stats[p.id]), 0)

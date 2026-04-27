@@ -15,6 +15,7 @@ export default function SignupPage() {
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [whatsapp, setWhatsapp] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [checkEmail, setCheckEmail] = useState(false)
@@ -38,6 +39,9 @@ export default function SignupPage() {
       setLoading(false)
     } else if (data.session) {
       // Email confirmation is disabled — user is logged in immediately
+      if (whatsapp.trim()) {
+        await supabase.from('profiles').update({ whatsapp_number: whatsapp.trim() }).eq('id', data.user!.id)
+      }
       router.push('/dashboard')
       router.refresh()
     } else {
@@ -130,6 +134,17 @@ export default function SignupPage() {
                       minLength={6}
                       required
                     />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="whatsapp">WhatsApp Number <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                    <Input
+                      id="whatsapp"
+                      type="tel"
+                      placeholder="+44 7700 900000"
+                      value={whatsapp}
+                      onChange={(e) => setWhatsapp(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">We&apos;ll send you deadline reminders and score updates via WhatsApp.</p>
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-3">

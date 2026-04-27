@@ -164,6 +164,31 @@ export default async function TeamPage() {
     existingSelections = selections ?? []
   }
 
+  // Selection percentages — how many teams have each player for this match
+  const selectionPercentages: Record<string, number> = {}
+  if (nextMatch) {
+    const [{ data: selCounts }, { data: allTeams }] = await Promise.all([
+      supabase
+        .from('fantasy_selections')
+        .select('player_id')
+        .eq('match_id', nextMatch.id),
+      supabase
+        .from('fantasy_teams')
+        .select('id')
+        .eq('season_id', season.id),
+    ])
+    const totalTeams = (allTeams ?? []).length
+    if (totalTeams > 0) {
+      const countMap: Record<string, number> = {}
+      for (const s of selCounts ?? []) {
+        countMap[s.player_id] = (countMap[s.player_id] ?? 0) + 1
+      }
+      for (const [pid, count] of Object.entries(countMap)) {
+        selectionPercentages[pid] = Math.round((count / totalTeams) * 100)
+      }
+    }
+  }
+
   // Credit trends — use prevMatch (already computed above)
   const creditTrends: Record<string, 'up' | 'down' | 'neutral'> = {}
   if (prevMatch) {
@@ -257,6 +282,7 @@ export default async function TeamPage() {
         megaTransferActive={(boosterUsage ?? []).some(
           (b: TeamBooster) => b.match_id === nextMatch.id && b.booster_type === 'mega_transfer'
         )}
+        selectionPercentages={selectionPercentages}
       />
     </div>
   )

@@ -25,6 +25,7 @@ export interface Profile {
   role: UserRole
   avatar_url: string | null
   created_at: string
+  whatsapp_number?: string | null
 }
 
 export interface Season {
@@ -134,4 +135,15 @@ export interface LeaderboardEntry {
   user_id: string
   display_name: string
   total_points: number
+}
+
+export interface Notification {
+  id: string
+  user_id: string
+  type: 'rank_change' | 'points_update'
+  title: string
+  body: string
+  is_read: boolean
+  metadata: Record<string, unknown>
+  created_at: string
 }

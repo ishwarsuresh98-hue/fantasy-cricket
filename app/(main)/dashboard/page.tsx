@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { BOOSTERS } from '@/lib/boosters'
 import { computeMatchDayLockWindow } from '@/lib/deadline'
 import DeadlineCountdown from '@/components/DeadlineCountdown'
-import type { Match, Season, TeamBooster } from '@/types'
+import type { Match, Season, TeamBooster, FantasyTeam } from '@/types'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -49,6 +49,21 @@ export default async function DashboardPage() {
   const upcomingMatches = (matches ?? []).filter((m: Match) => m.status === 'upcoming')
   const completedMatches = (matches ?? []).filter((m: Match) => m.status === 'completed')
   const nextMatch = upcomingMatches[0] as Match | undefined
+
+  // Matchday breakdown — only if there are completed matches
+  let matchdayBreakdown: Record<string, Record<string, number>> = {} // teamId -> matchId -> points
+  if (completedMatches.length > 0 && allTeams && allTeams.length > 0) {
+    const completedIds = completedMatches.map((m: Match) => m.id)
+    const { data: breakdownSels } = await supabase
+      .from('fantasy_selections')
+      .select('fantasy_team_id, match_id, points_earned')
+      .in('match_id', completedIds)
+    for (const sel of breakdownSels ?? []) {
+      if (!matchdayBreakdown[sel.fantasy_team_id]) matchdayBreakdown[sel.fantasy_team_id] = {}
+      matchdayBreakdown[sel.fantasy_team_id][sel.match_id] =
+        (matchdayBreakdown[sel.fantasy_team_id][sel.match_id] ?? 0) + sel.points_earned
+    }
+  }
 
   const lockWindow = computeMatchDayLockWindow(upcomingMatches)
   const deadline   = lockWindow?.lockStart ?? null
@@ -230,6 +245,53 @@ export default async function DashboardPage() {
                   <Badge variant="outline">Completed</Badge>
                 </Link>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Matchday points breakdown */}
+      {completedMatches.length > 0 && allTeams && allTeams.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg text-[#262162]">Matchday Points Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide min-w-[140px]">Team</th>
+                    {completedMatches.map((m: Match) => (
+                      <th key={m.id} className="text-center px-3 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+                        M{m.match_number}
+                      </th>
+                    ))}
+                    <th className="text-right px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {(allTeams as FantasyTeam[]).map((team) => {
+                    const isMe = team.user_id === user!.id
+                    return (
+                      <tr key={team.id} className={isMe ? 'bg-[#eeedf8]' : 'hover:bg-gray-50'}>
+                        <td className="px-4 py-3 font-medium">
+                          {team.team_name}
+                          {isMe && <Badge className="ml-2 bg-[#fbf927] text-[#262162] hover:bg-[#fbf927] text-xs">You</Badge>}
+                        </td>
+                        {completedMatches.map((m: Match) => (
+                          <td key={m.id} className="px-3 py-3 text-center">
+                            {matchdayBreakdown[team.id]?.[m.id] != null
+                              ? <span className="font-medium">{matchdayBreakdown[team.id][m.id].toFixed(1)}</span>
+                              : <span className="text-muted-foreground text-xs">—</span>}
+                          </td>
+                        ))}
+                        <td className="px-4 py-3 text-right font-bold text-[#262162]">{team.total_points.toFixed(1)}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
           </CardContent>
         </Card>

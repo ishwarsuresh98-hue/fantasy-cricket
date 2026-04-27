@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
+import NotificationBell from '@/components/nav/NotificationBell'
 
 const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -88,6 +89,9 @@ export default function Navbar({ profile }: NavbarProps) {
               </Link>
             )}
           </div>
+
+          {/* Notification bell */}
+          <NotificationBell />
 
           {/* User menu */}
           <DropdownMenu>
