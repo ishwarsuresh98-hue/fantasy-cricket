@@ -77,7 +77,7 @@ export const BOOSTERS: BoosterDef[] = [
   {
     type: 'underdog',
     name: 'Underdog',
-    icon: '🐶',
+    icon: '🎲',
     description: 'If your team scores below the matchday average your points are doubled. Score above average and points are normal.',
     maxUses: 2,
     requiresPlayerPick: false,
