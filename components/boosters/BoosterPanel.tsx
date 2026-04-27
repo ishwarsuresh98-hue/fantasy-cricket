@@ -26,6 +26,7 @@ interface BoosterPanelProps {
   currentSelections: FantasySelection[] // selections for nextMatch
   players: Player[]
   deadlinePassed?: boolean
+  currentTeamPoints?: number           // season total at page load — used by Score Freeze
 }
 
 export default function BoosterPanel({
@@ -36,6 +37,7 @@ export default function BoosterPanel({
   currentSelections,
   players,
   deadlinePassed = false,
+  currentTeamPoints = 0,
 }: BoosterPanelProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -50,7 +52,11 @@ export default function BoosterPanel({
     return Math.max(0, maxUses - used)
   }
 
-  async function activateBooster(type: string, selectedPlayerId?: string) {
+  async function activateBooster(
+    type: string,
+    selectedPlayerId?: string,
+    metadata?: Record<string, unknown>
+  ) {
     setError(null)
     const supabase = createClient()
     const { error: err } = await supabase.from('team_boosters').insert({
@@ -58,6 +64,7 @@ export default function BoosterPanel({
       match_id: matchId,
       booster_type: type,
       selected_player_id: selectedPlayerId ?? null,
+      booster_metadata: metadata ?? {},
     })
     if (err) {
       setError(err.message)
@@ -106,7 +113,7 @@ export default function BoosterPanel({
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 xl:grid-cols-9 gap-3">
         {BOOSTERS.map((booster) => {
           const remaining = usesLeft(booster.type, booster.maxUses)
           const isActiveThisMatch = activeBooster?.booster_type === booster.type
@@ -166,6 +173,19 @@ export default function BoosterPanel({
                     <FreeHitDialog
                       isPending={isPending}
                       onActivate={activateFreeHit}
+                    />
+                  ) : booster.type === 'score_freeze' ? (
+                    <ScoreFreezeDialog
+                      isPending={isPending}
+                      currentTeamPoints={currentTeamPoints}
+                      onActivate={async () => {
+                        const ok = await activateBooster(
+                          'score_freeze',
+                          undefined,
+                          { frozen_score: currentTeamPoints }
+                        )
+                        if (ok) startTransition(() => router.refresh())
+                      }}
                     />
                   ) : (
                     <SimpleBoosterDialog
@@ -292,6 +312,71 @@ function FreeHitDialog({
             className="bg-[#262162] hover:bg-[#1a1748]"
           >
             {loading ? 'Activating…' : 'Activate Free Hit'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ── Score Freeze dialog ────────────────────────────────────
+function ScoreFreezeDialog({
+  isPending,
+  currentTeamPoints,
+  onActivate,
+}: {
+  isPending: boolean
+  currentTeamPoints: number
+  onActivate: () => Promise<void>
+}) {
+  const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  async function handleActivate() {
+    setLoading(true)
+    await onActivate()
+    setLoading(false)
+    setOpen(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger
+        render={
+          <button
+            disabled={isPending}
+            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#262162] text-white hover:bg-[#1a1748] transition-colors disabled:opacity-50"
+          />
+        }
+      >
+        Activate
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>🧊 Activate Score Freeze?</DialogTitle>
+          <DialogDescription>
+            Your current season total of{' '}
+            <span className="font-bold text-[#262162]">{currentTeamPoints.toFixed(1)} pts</span>{' '}
+            becomes your floor for this matchday.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-2 text-sm text-gray-700">
+          <div className="bg-blue-50 border border-blue-200 rounded-md px-3 py-2 space-y-1">
+            <p>🧊 <strong>If you score less</strong> than your usual matchday average, your season total is protected — the shortfall is topped up automatically.</p>
+            <p>📈 <strong>If you score more</strong> than the frozen floor, you get the higher actual score.</p>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Frozen score locked at: <strong>{currentTeamPoints.toFixed(1)} pts</strong>. You cannot change your booster after activating.
+          </p>
+        </div>
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+          <Button
+            onClick={handleActivate}
+            disabled={loading}
+            className="bg-[#262162] hover:bg-[#1a1748]"
+          >
+            {loading ? 'Activating…' : 'Freeze Score'}
           </Button>
         </DialogFooter>
       </DialogContent>

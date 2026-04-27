@@ -9,6 +9,8 @@ export type BoosterType =
   | 'triple_captain'
   | 'mega_transfer'
   | 'double_power'
+  | 'score_freeze'
+  | 'underdog'
 
 export interface TeamBooster {
   id: string
@@ -16,6 +18,7 @@ export interface TeamBooster {
   booster_type: BoosterType
   match_id: string
   selected_player_id: string | null
+  booster_metadata: Record<string, unknown>
   created_at: string
 }
 

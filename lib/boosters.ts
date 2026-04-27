@@ -66,6 +66,22 @@ export const BOOSTERS: BoosterDef[] = [
     maxUses: 2,
     requiresPlayerPick: false,
   },
+  {
+    type: 'score_freeze',
+    name: 'Score Freeze',
+    icon: '🧊',
+    description: 'Lock in your current season total as a floor. Score less this matchday — keep the frozen score. Score more — take the higher score.',
+    maxUses: 2,
+    requiresPlayerPick: false,
+  },
+  {
+    type: 'underdog',
+    name: 'Underdog',
+    icon: '🐶',
+    description: 'If your team scores below the matchday average your points are doubled. Score above average and points are normal.',
+    maxUses: 2,
+    requiresPlayerPick: false,
+  },
 ]
 
 export const BOOSTER_MAP: Record<BoosterType, BoosterDef> = Object.fromEntries(

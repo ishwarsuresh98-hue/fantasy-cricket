@@ -262,6 +262,7 @@ export default async function TeamPage() {
           currentSelections={existingSelections}
           players={(players ?? []) as Player[]}
           deadlinePassed={isLocked}
+          currentTeamPoints={(myTeam as FantasyTeam)?.total_points ?? 0}
         />
       )}
       <TeamBuilder

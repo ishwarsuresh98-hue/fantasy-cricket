@@ -285,7 +285,7 @@ export default function RulesPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Each team gets 7 boosters to use across the season. Only one booster may be activated per match. Once activated it cannot be changed.
+            Each team gets 9 boosters to use across the season. Only one booster may be activated per match. Once activated it cannot be changed.
           </p>
 
           <div className="space-y-2">
@@ -318,6 +318,8 @@ export default function RulesPage() {
                 { icon: '👑', name: 'Triple Captain', uses: '2×', desc: 'Choose one player to earn 3× points — overrides the usual captain 2×.' },
                 { icon: '🔄', name: 'Mega Transfer', uses: '2×', desc: 'Make unlimited transfers for one matchday without using your season transfer quota.' },
                 { icon: '💥', name: 'Double Power', uses: '2×', desc: 'Every player in your XI earns 2× points for that match.' },
+                { icon: '🧊', name: 'Score Freeze', uses: '2×', desc: 'Lock in your current season total as a guaranteed floor. If your team scores less than that floor this matchday, the shortfall is topped up automatically. If you score more, you get the higher score.' },
+                { icon: '🐶', name: 'Underdog', uses: '2×', desc: 'If your team scores below the matchday average your points are doubled. If you score above average, points are normal. Rewards risk-taking and keeps lower-ranked managers competitive.' },
               ].map(({ icon, name, uses, desc }) => (
                 <div key={name} className="flex gap-3 p-3 rounded-lg border bg-[#fefde8] border-[#fbf927]/60">
                   <span className="text-2xl shrink-0">{icon}</span>
