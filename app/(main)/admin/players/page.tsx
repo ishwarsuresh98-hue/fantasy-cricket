@@ -1,19 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
-import { PLAYER_ROLE_LABELS } from '@/lib/scoring'
+import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { Player } from '@/types'
 import PlayerForm from '@/components/admin/PlayerForm'
+import PlayerGrid from '@/components/admin/PlayerGrid'
 import Link from 'next/link'
-
-const ROLE_COLORS: Record<string, string> = {
-  batsman: 'bg-blue-100 text-blue-700',
-  bowler: 'bg-red-100 text-red-700',
-  all_rounder: 'bg-purple-100 text-purple-700',
-  wicket_keeper: 'bg-orange-100 text-orange-700',
-}
 
 export default async function AdminPlayersPage() {
   const supabase = await createClient()
@@ -36,21 +28,17 @@ export default async function AdminPlayersPage() {
     .from('players')
     .select('*')
     .eq('season_id', season.id)
-    .order('role')
     .order('name')
 
-  const grouped = (players ?? []).reduce((acc: Record<string, Player[]>, p: Player) => {
-    if (!acc[p.role]) acc[p.role] = []
-    acc[p.role].push(p)
-    return acc
-  }, {})
+  const allPlayers = (players ?? []) as Player[]
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Players</h2>
-          <p className="text-muted-foreground">{season.name} • {players?.length ?? 0} players</p>
+          <p className="text-muted-foreground">{season.name} • {allPlayers.length} players</p>
         </div>
         <div className="flex items-center gap-2">
           <Link
@@ -63,7 +51,7 @@ export default async function AdminPlayersPage() {
         </div>
       </div>
 
-      {(!players || players.length === 0) ? (
+      {allPlayers.length === 0 ? (
         <Card>
           <CardContent className="py-16 text-center">
             <div className="text-4xl mb-3">👤</div>
@@ -71,38 +59,7 @@ export default async function AdminPlayersPage() {
           </CardContent>
         </Card>
       ) : (
-        Object.entries(PLAYER_ROLE_LABELS).map(([role, label]) => {
-          const rolePlayers = grouped[role] ?? []
-          if (rolePlayers.length === 0) return null
-          return (
-            <Card key={role}>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Badge className={`${ROLE_COLORS[role]} hover:${ROLE_COLORS[role]}`}>{label}</Badge>
-                  <span className="text-muted-foreground font-normal">({rolePlayers.length})</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y">
-                  {rolePlayers.map((player: Player) => (
-                    <div key={player.id} className="flex items-center justify-between px-6 py-3">
-                      <div className="flex items-center gap-3">
-                        <div>
-                          <p className="font-medium">{player.name}</p>
-                          <p className="text-xs text-muted-foreground">Price: {player.price} credits</p>
-                        </div>
-                        {!player.is_active && (
-                          <Badge variant="outline" className="text-xs text-muted-foreground">Inactive</Badge>
-                        )}
-                      </div>
-                      <PlayerForm seasonId={season.id} player={player} />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })
+        <PlayerGrid players={allPlayers} seasonId={season.id} />
       )}
     </div>
   )
