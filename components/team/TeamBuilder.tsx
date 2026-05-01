@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useMemo, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -81,7 +81,9 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  const playingSet = new Set(playingXI)
+  // Memoised so the Set reference is stable across re-renders that don't
+  // change playingXI, which in turn lets filteredPlayers memo stay stable too.
+  const playingSet = useMemo(() => new Set(playingXI), [playingXI])
   const hasPlayingXI = playingXI.length > 0
 
   const maxPlayers = season.players_per_team
@@ -98,26 +100,31 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   const budgetUsed = selectedPlayers.reduce((sum, p) => sum + p.price, 0)
   const budgetRemaining = budget - budgetUsed
 
-  const filteredPlayers = players
-    .filter((p) => {
-      if (p.role !== roleFilter) return false
-      if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false
-      if (showOnlyPlaying && hasPlayingXI && !playingSet.has(p.id)) return false
-      return true
-    })
-    .sort((a, b) => {
-      // Primary sort: confirmed playing players always first
-      if (hasPlayingXI) {
-        const aRank = playingSet.has(a.id) ? 0 : 1
-        const bRank = playingSet.has(b.id) ? 0 : 1
-        if (aRank !== bRank) return aRank - bRank
-      }
-      // Secondary sort: user's chosen option
-      if (sortBy === 'ownership') {
-        return (selectionPercentages[b.id] ?? 0) - (selectionPercentages[a.id] ?? 0)
-      }
-      return b.price - a.price
-    })
+  const filteredPlayers = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    return [...players]           // shallow-copy so sort never mutates the prop
+      .filter((p) => {
+        if (p.role !== roleFilter) return false
+        if (q && !p.name.toLowerCase().includes(q)) return false
+        if (showOnlyPlaying && hasPlayingXI && !playingSet.has(p.id)) return false
+        return true
+      })
+      .sort((a, b) => {
+        // ── Tier 1: playing status — always the primary key ─────────────────
+        // Assign 0 (playing) or 1 (not playing / no XI announced).
+        // When hasPlayingXI is false both get 0 and this tier is a no-op,
+        // falling straight through to Tier 2 — no conditional guard needed.
+        const aPlaying = hasPlayingXI && playingSet.has(a.id) ? 0 : 1
+        const bPlaying = hasPlayingXI && playingSet.has(b.id) ? 0 : 1
+        if (aPlaying !== bPlaying) return aPlaying - bPlaying
+
+        // ── Tier 2: user-chosen sort ─────────────────────────────────────────
+        if (sortBy === 'ownership') {
+          return (selectionPercentages[b.id] ?? 0) - (selectionPercentages[a.id] ?? 0)
+        }
+        return b.price - a.price
+      })
+  }, [players, roleFilter, search, showOnlyPlaying, hasPlayingXI, playingSet, sortBy, selectionPercentages])
 
   function togglePlayer(player: Player) {
     if (isLocked) return
