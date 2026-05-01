@@ -164,14 +164,31 @@ export default async function TeamPage() {
     existingSelections = selections ?? []
   }
 
-  // Playing XI for next match
+  // Playing XI — fetch for ALL matches on the same matchday, not just nextMatch.
+  // A matchday can have multiple games; we want the union of confirmed players,
+  // and we need to know whether every game on that day has its XI set.
   let playingXI: string[] = []
+  let allXIConfirmed = false
   if (nextMatch) {
-    const { data: xiRows } = await supabase
+    const nextDayStr = new Date(nextMatch.match_date).toISOString().slice(0, 10)
+    const matchdayMatches = upcomingMatches.filter(
+      (m: Match) => new Date(m.match_date).toISOString().slice(0, 10) === nextDayStr
+    )
+    const matchdayIds = matchdayMatches.map((m: Match) => m.id)
+
+    const { data: allXIRows } = await supabase
       .from('match_playing_xi')
-      .select('player_id')
-      .eq('match_id', nextMatch.id)
-    playingXI = (xiRows ?? []).map((r: { player_id: string }) => r.player_id)
+      .select('match_id, player_id')
+      .in('match_id', matchdayIds)
+
+    // Union of every confirmed player across all matchday games
+    playingXI = [...new Set((allXIRows ?? []).map((r: { player_id: string }) => r.player_id))]
+
+    // allXIConfirmed = every matchday match has ≥ 1 player in its XI
+    const matchesWithXI = new Set((allXIRows ?? []).map((r: { match_id: string }) => r.match_id))
+    allXIConfirmed = matchdayMatches.length > 0 && matchdayMatches.every(
+      (m: Match) => matchesWithXI.has(m.id)
+    )
   }
 
   // Selection percentages — how many teams have each player for this match
@@ -295,6 +312,7 @@ export default async function TeamPage() {
         )}
         selectionPercentages={selectionPercentages}
         playingXI={playingXI}
+        allXIConfirmed={allXIConfirmed}
       />
     </div>
   )

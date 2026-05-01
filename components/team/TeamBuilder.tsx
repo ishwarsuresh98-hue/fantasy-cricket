@@ -33,6 +33,8 @@ interface TeamBuilderProps {
   megaTransferActive?: boolean
   selectionPercentages?: Record<string, number>
   playingXI?: string[]
+  /** True when every match on this matchday has its playing XI set by admin */
+  allXIConfirmed?: boolean
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -58,7 +60,7 @@ const SHORT_LABELS: Record<string, string> = {
 
 const ROLE_ORDER = ['wicket_keeper', 'batsman', 'all_rounder', 'bowler']
 
-export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false, deadlinePassed = false, isLocked = false, lockUntil, creditTrends = {}, baseSquadIds = [], confirmedTransfers = 0, transferLimit = 300, megaTransferActive = false, selectionPercentages = {}, playingXI = [] }: TeamBuilderProps) {
+export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false, deadlinePassed = false, isLocked = false, lockUntil, creditTrends = {}, baseSquadIds = [], confirmedTransfers = 0, transferLimit = 300, megaTransferActive = false, selectionPercentages = {}, playingXI = [], allXIConfirmed = false }: TeamBuilderProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -104,6 +106,13 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
       return true
     })
     .sort((a, b) => {
+      // Primary sort: confirmed playing players always first
+      if (hasPlayingXI) {
+        const aRank = playingSet.has(a.id) ? 0 : 1
+        const bRank = playingSet.has(b.id) ? 0 : 1
+        if (aRank !== bRank) return aRank - bRank
+      }
+      // Secondary sort: user's chosen option
       if (sortBy === 'ownership') {
         return (selectionPercentages[b.id] ?? 0) - (selectionPercentages[a.id] ?? 0)
       }
@@ -435,6 +444,10 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                               playingSet.has(player.id) ? (
                                 <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700 border border-green-300">
                                   🟢 Playing
+                                </span>
+                              ) : allXIConfirmed ? (
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-600 border border-red-200">
+                                  Not Playing
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-400 border border-gray-200">
