@@ -1,9 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { buttonVariants } from '@/components/ui/button'
 import { PLAYER_ROLE_LABELS } from '@/lib/scoring'
+import { cn } from '@/lib/utils'
 import type { Player } from '@/types'
 import PlayerForm from '@/components/admin/PlayerForm'
+import Link from 'next/link'
 
 const ROLE_COLORS: Record<string, string> = {
   batsman: 'bg-blue-100 text-blue-700',
@@ -49,7 +52,15 @@ export default async function AdminPlayersPage() {
           <h2 className="text-2xl font-bold text-gray-900">Players</h2>
           <p className="text-muted-foreground">{season.name} • {players?.length ?? 0} players</p>
         </div>
-        <PlayerForm seasonId={season.id} />
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/players/import"
+            className={cn(buttonVariants({ variant: 'outline' }), 'border-[#262162] text-[#262162] hover:bg-[#eeedf8]')}
+          >
+            Import Players
+          </Link>
+          <PlayerForm seasonId={season.id} />
+        </div>
       </div>
 
       {(!players || players.length === 0) ? (
