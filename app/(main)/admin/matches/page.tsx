@@ -57,7 +57,15 @@ export default async function AdminMatchesPage() {
           <h2 className="text-2xl font-bold text-[#262162]">Matches</h2>
           <p className="text-muted-foreground">{season.name} • {matches?.length ?? 0} matches</p>
         </div>
-        <MatchForm seasonId={season.id} nextMatchNumber={(matches?.length ?? 0) + 1} />
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/matches/import"
+            className={cn(buttonVariants({ variant: 'outline' }), 'border-[#262162] text-[#262162] hover:bg-[#eeedf8]')}
+          >
+            Import Matches
+          </Link>
+          <MatchForm seasonId={season.id} nextMatchNumber={(matches?.length ?? 0) + 1} />
+        </div>
       </div>
 
       {(!matches || matches.length === 0) ? (
