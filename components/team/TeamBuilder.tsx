@@ -32,6 +32,7 @@ interface TeamBuilderProps {
   transferLimit?: number
   megaTransferActive?: boolean
   selectionPercentages?: Record<string, number>
+  playingXI?: string[]
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -57,7 +58,7 @@ const SHORT_LABELS: Record<string, string> = {
 
 const ROLE_ORDER = ['wicket_keeper', 'batsman', 'all_rounder', 'bowler']
 
-export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false, deadlinePassed = false, isLocked = false, lockUntil, creditTrends = {}, baseSquadIds = [], confirmedTransfers = 0, transferLimit = 300, megaTransferActive = false, selectionPercentages = {} }: TeamBuilderProps) {
+export default function TeamBuilder({ season, nextMatch, players, myTeam, existingSelections, userId, freeHitActive = false, deadlinePassed = false, isLocked = false, lockUntil, creditTrends = {}, baseSquadIds = [], confirmedTransfers = 0, transferLimit = 300, megaTransferActive = false, selectionPercentages = {}, playingXI = [] }: TeamBuilderProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -74,8 +75,12 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   const [roleFilter, setRoleFilter] = useState<string>('wicket_keeper')
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<'price' | 'ownership'>('price')
+  const [showOnlyPlaying, setShowOnlyPlaying] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  const playingSet = new Set(playingXI)
+  const hasPlayingXI = playingXI.length > 0
 
   const maxPlayers = season.players_per_team
   const budget = season.team_budget
@@ -95,6 +100,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
     .filter((p) => {
       if (p.role !== roleFilter) return false
       if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false
+      if (showOnlyPlaying && hasPlayingXI && !playingSet.has(p.id)) return false
       return true
     })
     .sort((a, b) => {
@@ -359,19 +365,33 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
               <p className="text-xs text-muted-foreground pt-1">
                 Pick {ROLE_CONSTRAINTS[roleFilter].min}–{ROLE_CONSTRAINTS[roleFilter].max} {ROLE_CONSTRAINTS[roleFilter].label}
               </p>
-              <div className="flex gap-1 pt-1">
-                <span className="text-xs text-muted-foreground self-center">Sort:</span>
-                {(['price', 'ownership'] as const).map((opt) => (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
+                <div className="flex gap-1 items-center">
+                  <span className="text-xs text-muted-foreground">Sort:</span>
+                  {(['price', 'ownership'] as const).map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => setSortBy(opt)}
+                      className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
+                        sortBy === opt ? 'bg-[#262162] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      }`}
+                    >
+                      {opt === 'price' ? 'Price' : 'Ownership %'}
+                    </button>
+                  ))}
+                </div>
+                {hasPlayingXI && (
                   <button
-                    key={opt}
-                    onClick={() => setSortBy(opt)}
-                    className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
-                      sortBy === opt ? 'bg-[#262162] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    onClick={() => setShowOnlyPlaying((v) => !v)}
+                    className={`flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium border transition-colors ${
+                      showOnlyPlaying
+                        ? 'bg-green-600 text-white border-green-600'
+                        : 'bg-white border-green-400 text-green-700 hover:bg-green-50'
                     }`}
                   >
-                    {opt === 'price' ? 'Price' : 'Ownership %'}
+                    🟢 {showOnlyPlaying ? 'All Players' : 'Playing Only'}
                   </button>
-                ))}
+                )}
               </div>
               <Input
                 placeholder="Search players..."
@@ -403,7 +423,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                           {isSelected && <span className="text-white text-xs">✓</span>}
                         </div>
                         <div>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             <Link
                               href={`/players/${player.id}`}
                               onClick={(e) => e.stopPropagation()}
@@ -411,6 +431,17 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                             >
                               {player.name}
                             </Link>
+                            {hasPlayingXI && (
+                              playingSet.has(player.id) ? (
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700 border border-green-300">
+                                  🟢 Playing
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-400 border border-gray-200">
+                                  Unconfirmed
+                                </span>
+                              )
+                            )}
                           </div>
                           <Badge className={`text-xs ${ROLE_COLORS[player.role]} hover:${ROLE_COLORS[player.role]}`}>
                             {PLAYER_ROLE_LABELS[player.role]}

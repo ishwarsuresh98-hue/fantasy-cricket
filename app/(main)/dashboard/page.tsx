@@ -6,7 +6,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { BOOSTERS } from '@/lib/boosters'
 import { computeMatchDayLockWindow } from '@/lib/deadline'
-import DeadlineCountdown from '@/components/DeadlineCountdown'
+import HeroCountdown from '@/components/HeroCountdown'
 import type { Match, Season, TeamBooster, FantasyTeam } from '@/types'
 
 export default async function DashboardPage() {
@@ -82,6 +82,12 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* Hero countdown */}
+      <HeroCountdown
+        deadline={deadline?.toISOString() ?? null}
+        lockUntil={lockUntil}
+      />
+
       {/* Stats grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="border-l-4 border-l-[#262162]">
@@ -117,14 +123,6 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Gameweek countdown */}
-      {deadline && (
-        <DeadlineCountdown
-          deadline={deadline.toISOString()}
-          lockUntil={lockUntil ?? undefined}
-        />
-      )}
 
       {/* Booster status — only shown if user has a team */}
       {myTeam && (

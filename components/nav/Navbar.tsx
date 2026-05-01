@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import NotificationBell from '@/components/nav/NotificationBell'
+import NavCountdown from '@/components/nav/NavCountdown'
 
 const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -89,6 +90,9 @@ export default function Navbar({ profile }: NavbarProps) {
               </Link>
             )}
           </div>
+
+          {/* Gameweek countdown */}
+          <NavCountdown />
 
           {/* Notification bell */}
           <NotificationBell />

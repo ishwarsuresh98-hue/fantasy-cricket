@@ -164,6 +164,16 @@ export default async function TeamPage() {
     existingSelections = selections ?? []
   }
 
+  // Playing XI for next match
+  let playingXI: string[] = []
+  if (nextMatch) {
+    const { data: xiRows } = await supabase
+      .from('match_playing_xi')
+      .select('player_id')
+      .eq('match_id', nextMatch.id)
+    playingXI = (xiRows ?? []).map((r: { player_id: string }) => r.player_id)
+  }
+
   // Selection percentages — how many teams have each player for this match
   const selectionPercentages: Record<string, number> = {}
   if (nextMatch) {
@@ -284,6 +294,7 @@ export default async function TeamPage() {
           (b: TeamBooster) => b.match_id === nextMatch.id && b.booster_type === 'mega_transfer'
         )}
         selectionPercentages={selectionPercentages}
+        playingXI={playingXI}
       />
     </div>
   )

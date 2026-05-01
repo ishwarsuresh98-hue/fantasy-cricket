@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import StatsForm from '@/components/admin/StatsForm'
+import PlayingXIForm from '@/components/admin/PlayingXIForm'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Player, MatchPerformance } from '@/types'
 
 export default async function StatsEntryPage({ params }: { params: Promise<{ id: string }> }) {
@@ -28,6 +30,13 @@ export default async function StatsEntryPage({ params }: { params: Promise<{ id:
     .select('*')
     .eq('match_id', id)
 
+  const { data: playingXIRows } = await supabase
+    .from('match_playing_xi')
+    .select('player_id')
+    .eq('match_id', id)
+
+  const existingXI = (playingXIRows ?? []).map((r: { player_id: string }) => r.player_id)
+
   const perfByPlayer: Record<string, MatchPerformance> = {}
   for (const p of existingPerfs ?? []) {
     perfByPlayer[p.player_id] = p
@@ -52,12 +61,34 @@ export default async function StatsEntryPage({ params }: { params: Promise<{ id:
       {(!players || players.length === 0) ? (
         <p className="text-muted-foreground">No players found for this season.</p>
       ) : (
-        <StatsForm
-          matchId={id}
-          players={players as Player[]}
-          existingPerfs={perfByPlayer}
-          matchStatus={match.status}
-        />
+        <div className="space-y-6">
+          {/* Playing XI */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base text-[#262162] flex items-center gap-2">
+                🟢 Playing XI
+                <span className="text-xs font-normal text-muted-foreground">
+                  — Confirm who is playing so members can see before they pick their team
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PlayingXIForm
+                matchId={id}
+                players={players as Player[]}
+                existingXI={existingXI}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Stats entry */}
+          <StatsForm
+            matchId={id}
+            players={players as Player[]}
+            existingPerfs={perfByPlayer}
+            matchStatus={match.status}
+          />
+        </div>
       )}
     </div>
   )

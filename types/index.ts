@@ -140,6 +140,13 @@ export interface LeaderboardEntry {
   total_points: number
 }
 
+export interface MatchPlayingXI {
+  id: string
+  match_id: string
+  player_id: string
+  created_at: string
+}
+
 export interface Notification {
   id: string
   user_id: string
