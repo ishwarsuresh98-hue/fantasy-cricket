@@ -16,44 +16,126 @@ function deriveOpponent(home: string, away: string): string {
   const isAway = /slough/i.test(away)
   if (isHome) return away.trim()
   if (isAway) return home.trim()
-  // Neither team name contains "Slough" — show full fixture so admin can verify
   return `${home.trim()} vs ${away.trim()}`
 }
 
-/** Combine a Date object (date part) with a time string or Date (time part). */
+/**
+ * Convert an Excel serial date number to a local-time Date.
+ *
+ * Excel's epoch is Jan 1 1900 = serial 1, but Excel incorrectly treats
+ * 1900 as a leap year (serial 60 = phantom Feb 29 1900).  The standard
+ * workaround is to treat serial 0 as Dec 30 1899, which naturally skips
+ * the phantom day for all real dates (serial ≥ 61).
+ *
+ * We build the date in local time (not UTC) so that when we later call
+ * setHours() the day doesn't roll over in non-UTC timezones.
+ */
+function excelSerialToLocalDate(serial: number): Date {
+  // Days from Dec 30 1899 to Unix epoch (Jan 1 1970) = 25569
+  const utcMs = (serial - 25569) * 86_400_000
+  const utc = new Date(utcMs)
+  // Re-express as a local-midnight date so the calendar values are stable
+  return new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate())
+}
+
+/**
+ * Parse a date string, preferring dd/mm/yyyy over mm/dd/yyyy.
+ *
+ * Handles:
+ *   dd/mm/yyyy  dd-mm-yyyy  dd.mm.yyyy   (British / Australian style)
+ *   yyyy-mm-dd  yyyy/mm/dd               (ISO)
+ *   Natural-language fallback via Date constructor for strings like
+ *   "1 Jun 2025", "June 1 2025", etc.
+ */
+function parseDateString(raw: string): Date | null {
+  const s = raw.trim()
+  if (!s) return null
+
+  // dd/mm/yyyy  dd-mm-yyyy  dd.mm.yyyy
+  const dmyMatch = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/)
+  if (dmyMatch) {
+    const day = parseInt(dmyMatch[1], 10)
+    const mon = parseInt(dmyMatch[2], 10)
+    const yr  = parseInt(dmyMatch[3], 10)
+    // Validate ranges before constructing
+    if (mon >= 1 && mon <= 12 && day >= 1 && day <= 31) {
+      const d = new Date(yr, mon - 1, day)
+      if (!isNaN(d.getTime())) return d
+    }
+  }
+
+  // yyyy-mm-dd  yyyy/mm/dd
+  const isoMatch = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/)
+  if (isoMatch) {
+    const yr  = parseInt(isoMatch[1], 10)
+    const mon = parseInt(isoMatch[2], 10)
+    const day = parseInt(isoMatch[3], 10)
+    if (mon >= 1 && mon <= 12 && day >= 1 && day <= 31) {
+      const d = new Date(yr, mon - 1, day)
+      if (!isNaN(d.getTime())) return d
+    }
+  }
+
+  // Natural-language fallback ("1 Jun 2025", "June 1, 2025", etc.)
+  const fallback = new Date(s)
+  if (!isNaN(fallback.getTime())) return fallback
+
+  return null
+}
+
+/**
+ * Parse a time value into { hours, minutes }.
+ * Accepts: "14:00", "2:00 PM", "2:00pm", or an Excel fractional day number.
+ */
+function parseTime(val: unknown): { h: number; m: number } | null {
+  if (val instanceof Date && !isNaN(val.getTime())) {
+    return { h: val.getUTCHours(), m: val.getUTCMinutes() }
+  }
+  if (typeof val === 'number' && val >= 0 && val < 1) {
+    // Excel stores time-only values as a fraction of a day
+    const totalMin = Math.round(val * 1440)
+    return { h: Math.floor(totalMin / 60), m: totalMin % 60 }
+  }
+  if (typeof val === 'string') {
+    const tm = val.trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm)?$/i)
+    if (tm) {
+      let h = parseInt(tm[1], 10)
+      const m = parseInt(tm[2], 10)
+      const period = tm[3]?.toLowerCase()
+      if (period === 'pm' && h < 12) h += 12
+      if (period === 'am' && h === 12) h = 0
+      return { h, m }
+    }
+  }
+  return null
+}
+
+/**
+ * Produce a local-time Date from whatever SheetJS gives us for the date and
+ * time cells, then apply the time component on top.
+ *
+ * SheetJS with cellDates:true returns Date objects, but those are UTC-midnight
+ * dates; applying .setHours() on them can silently shift the calendar day in
+ * non-UTC environments.  We always re-anchor to a local-midnight Date first.
+ */
 function combineDateTime(dateVal: unknown, timeVal: unknown): Date | null {
   let base: Date | null = null
 
   if (dateVal instanceof Date && !isNaN(dateVal.getTime())) {
-    base = new Date(dateVal)
-  } else if (typeof dateVal === 'string' && dateVal.trim()) {
-    const parsed = new Date(dateVal.trim())
-    if (!isNaN(parsed.getTime())) base = parsed
+    // SheetJS UTC-midnight → local calendar date
+    base = new Date(dateVal.getUTCFullYear(), dateVal.getUTCMonth(), dateVal.getUTCDate())
   } else if (typeof dateVal === 'number') {
-    // Excel serial — already converted by SheetJS with cellDates:true, but handle the fallback
-    base = new Date((dateVal - 25569) * 86400 * 1000)
+    // Raw Excel serial (cellDates:true didn't fire — cell was text-formatted)
+    base = excelSerialToLocalDate(dateVal)
+  } else if (typeof dateVal === 'string') {
+    base = parseDateString(dateVal)
   }
 
-  if (!base) return null
+  if (!base || isNaN(base.getTime())) return null
 
-  // Apply time component
-  if (timeVal instanceof Date && !isNaN(timeVal.getTime())) {
-    base.setHours(timeVal.getHours(), timeVal.getMinutes(), 0, 0)
-  } else if (typeof timeVal === 'string' && timeVal.trim()) {
-    const m = timeVal.trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?$/i)
-    if (m) {
-      let h = parseInt(m[1])
-      const min = parseInt(m[2])
-      const period = m[4]?.toLowerCase()
-      if (period === 'pm' && h < 12) h += 12
-      if (period === 'am' && h === 12) h = 0
-      base.setHours(h, min, 0, 0)
-    }
-  } else if (typeof timeVal === 'number') {
-    // Excel time fraction (e.g. 0.625 = 15:00)
-    const totalMinutes = Math.round(timeVal * 24 * 60)
-    base.setHours(Math.floor(totalMinutes / 60), totalMinutes % 60, 0, 0)
-  }
+  // Overlay time if present
+  const t = parseTime(timeVal)
+  if (t) base.setHours(t.h, t.m, 0, 0)
 
   return base
 }
