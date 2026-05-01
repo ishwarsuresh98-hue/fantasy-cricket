@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils'
 import type { Match } from '@/types'
 import MatchForm from '@/components/admin/MatchForm'
 
+const MAX_XI = 11
+
 export default async function AdminMatchesPage() {
   const supabase = await createClient()
 
@@ -29,6 +31,24 @@ export default async function AdminMatchesPage() {
     .select('*')
     .eq('season_id', season.id)
     .order('match_number')
+
+  // Fetch Playing XI counts for all upcoming matches in one query
+  const upcomingIds = (matches ?? [])
+    .filter((m: Match) => m.status === 'upcoming')
+    .map((m: Match) => m.id)
+
+  const { data: xiRows } = upcomingIds.length > 0
+    ? await supabase
+        .from('match_playing_xi')
+        .select('match_id')
+        .in('match_id', upcomingIds)
+    : { data: [] }
+
+  // Count confirmed players per match
+  const xiCounts: Record<string, number> = {}
+  for (const row of xiRows ?? []) {
+    xiCounts[row.match_id] = (xiCounts[row.match_id] ?? 0) + 1
+  }
 
   return (
     <div className="space-y-6">
@@ -69,7 +89,7 @@ export default async function AdminMatchesPage() {
                       {match.result && <p className="text-sm font-medium text-[#b5211e] mt-0.5">{match.result}</p>}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
                     <Badge className={
                       match.status === 'completed'
                         ? 'bg-gray-100 text-gray-700 hover:bg-gray-100'
@@ -77,6 +97,35 @@ export default async function AdminMatchesPage() {
                     }>
                       {match.status === 'completed' ? 'Completed' : 'Upcoming'}
                     </Badge>
+
+                    {/* Playing XI button — only for upcoming matches */}
+                    {match.status === 'upcoming' && (() => {
+                      const xiCount = xiCounts[match.id] ?? 0
+                      const xiComplete = xiCount === MAX_XI
+                      return (
+                        <Link
+                          href={`/admin/matches/${match.id}/playing-xi`}
+                          className={cn(
+                            buttonVariants({ variant: 'outline', size: 'sm' }),
+                            'gap-1.5',
+                            xiComplete
+                              ? 'border-green-500 text-green-700 hover:bg-green-50'
+                              : xiCount > 0
+                              ? 'border-amber-400 text-amber-700 hover:bg-amber-50'
+                              : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                          )}
+                        >
+                          {xiComplete ? (
+                            <>✓ Playing XI</>
+                          ) : xiCount > 0 ? (
+                            <>🟡 XI ({xiCount}/{MAX_XI})</>
+                          ) : (
+                            <>🟢 Set Playing XI</>
+                          )}
+                        </Link>
+                      )
+                    })()}
+
                     <Link
                       href={`/admin/matches/${match.id}/stats`}
                       className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'border-[#262162] text-[#262162] hover:bg-[#eeedf8]')}
