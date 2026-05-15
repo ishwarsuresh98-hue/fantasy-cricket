@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/nav/Navbar'
+import OnboardingTour from '@/components/OnboardingTour'
 import type { Profile } from '@/types'
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
@@ -44,12 +45,15 @@ export default async function MainLayout({ children }: { children: React.ReactNo
     redirect('/login')
   }
 
+  const showOnboarding = !(profile as Profile).onboarding_complete
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar profile={profile as Profile} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
+      {showOnboarding && <OnboardingTour userId={user.id} />}
     </div>
   )
 }
