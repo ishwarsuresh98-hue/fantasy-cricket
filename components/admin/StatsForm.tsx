@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import type { ScrapeResult, ScrapedBatter, ScrapedBowler, ScrapedFielder } from '@/app/api/playcricket/scrape/route'
 
 interface PlayerStats {
   runs: number
@@ -50,6 +51,282 @@ function defaultStats(perf?: MatchPerformance): PlayerStats {
 
 const NUM = (v: string) => Math.max(0, parseInt(v) || 0)
 
+// ── Play-Cricket name matching ─────────────────────────────────────────────────
+
+/** Fuzzy-match a Play-Cricket name (e.g. "A Patel") to a player in our roster. */
+function matchPlayer(scrapedName: string, players: Player[]): Player | null {
+  const s = scrapedName.toLowerCase().trim()
+  // 1. Exact (case-insensitive)
+  const exact = players.find(p => p.name.toLowerCase() === s)
+  if (exact) return exact
+
+  const sParts = s.split(/\s+/)
+  const sLast  = sParts[sParts.length - 1]
+  const sFirst = sParts[0]
+
+  // 2. All words present (handles abbreviated first names "A Patel" → "Asad Patel")
+  const byWords = players.find(p => {
+    const pWords = p.name.toLowerCase().split(/\s+/)
+    // Every word in scraped name must start-match a word in player name
+    return sParts.every(sw => pWords.some(pw => pw.startsWith(sw)))
+  })
+  if (byWords) return byWords
+
+  // 3. Same last name + same first-initial
+  const byLast = players.filter(p => {
+    const pParts = p.name.toLowerCase().split(/\s+/)
+    return pParts[pParts.length - 1] === sLast
+  })
+  if (byLast.length === 1) return byLast[0]
+  if (byLast.length > 1 && sFirst) {
+    const byInitial = byLast.find(p => p.name.toLowerCase().startsWith(sFirst))
+    if (byInitial) return byInitial
+  }
+
+  return null
+}
+
+// ── Play-Cricket import panel ─────────────────────────────────────────────────
+
+interface MatchRow {
+  player: Player
+  partial: Partial<PlayerStats>
+  sources: string[]     // human-readable list of what was imported
+}
+interface UnmatchedRow {
+  scrapedName: string
+  role: 'batting' | 'bowling' | 'fielding'
+  detail: string
+}
+
+interface ImportPanelProps {
+  players: Player[]
+  onApply: (rows: MatchRow[]) => void
+}
+
+function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
+  const [open,     setOpen]     = useState(false)
+  const [url,      setUrl]      = useState('')
+  const [fetching, setFetching] = useState(false)
+  const [result,   setResult]   = useState<ScrapeResult | null>(null)
+  const [fetchErr, setFetchErr] = useState<string | null>(null)
+  const [applied,  setApplied]  = useState(false)
+
+  async function handleFetch() {
+    if (!url.trim()) return
+    setFetching(true)
+    setFetchErr(null)
+    setResult(null)
+    setApplied(false)
+    try {
+      const res = await fetch('/api/playcricket/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim() }),
+      })
+      const data = await res.json()
+      if (data.error) { setFetchErr(data.error); setFetching(false); return }
+      setResult(data as ScrapeResult)
+    } catch {
+      setFetchErr('Network error — could not reach the scrape API.')
+    }
+    setFetching(false)
+  }
+
+  // Build match rows from scraped result
+  const { matchRows, unmatched } = (() => {
+    if (!result) return { matchRows: [], unmatched: [] }
+
+    const matchRows: MatchRow[] = []
+    const unmatched: UnmatchedRow[] = []
+    const playerMap = new Map<string, Partial<PlayerStats>>()
+    const sourcesMap = new Map<string, string[]>()
+
+    const get = (id: string) => {
+      if (!playerMap.has(id)) { playerMap.set(id, {}); sourcesMap.set(id, []) }
+      return playerMap.get(id)!
+    }
+
+    // Batting
+    for (const b of result.batting as ScrapedBatter[]) {
+      const p = matchPlayer(b.name, players)
+      if (!p) { unmatched.push({ scrapedName: b.name, role: 'batting', detail: b.dnb ? 'DNB' : `${b.runs}(${b.balls})` }); continue }
+      const s = get(p.id)
+      s.runs = b.dnb ? 0 : b.runs
+      s.balls = b.dnb ? 0 : b.balls
+      s.fours = b.dnb ? 0 : b.fours
+      s.sixes = b.dnb ? 0 : b.sixes
+      s.dnb = b.dnb
+      sourcesMap.get(p.id)!.push(b.dnb ? 'DNB' : `${b.runs}(${b.balls}), ${b.fours}×4, ${b.sixes}×6`)
+    }
+
+    // Bowling
+    for (const b of result.bowling as ScrapedBowler[]) {
+      const p = matchPlayer(b.name, players)
+      if (!p) { unmatched.push({ scrapedName: b.name, role: 'bowling', detail: `${b.wickets}/${b.overs}ov` }); continue }
+      const s = get(p.id)
+      s.wickets = b.wickets
+      s.maidens = b.maidens
+      sourcesMap.get(p.id)!.push(`${b.wickets}wkts, ${b.maidens}mdns (${b.overs}ov)`)
+    }
+
+    // Fielding
+    for (const f of result.fielding as ScrapedFielder[]) {
+      const p = matchPlayer(f.name, players)
+      if (!p) { unmatched.push({ scrapedName: f.name, role: 'fielding', detail: `${f.catches}ct ${f.stumpings}st` }); continue }
+      const s = get(p.id)
+      s.catches   = (s.catches   ?? 0) + f.catches
+      s.stumpings = (s.stumpings ?? 0) + f.stumpings
+      if (f.catches + f.stumpings > 0) sourcesMap.get(p.id)!.push(`${f.catches}ct, ${f.stumpings}st`)
+    }
+
+    for (const [id, partial] of playerMap.entries()) {
+      const player = players.find(p => p.id === id)!
+      matchRows.push({ player, partial, sources: sourcesMap.get(id) ?? [] })
+    }
+    return { matchRows, unmatched }
+  })()
+
+  function handleApply() {
+    onApply(matchRows)
+    setApplied(true)
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#262162]/30 text-sm font-medium text-[#262162] bg-[#eeedf8] hover:bg-[#dddcf5] transition-colors"
+      >
+        <span>🏏</span> Import from Play-Cricket
+      </button>
+    )
+  }
+
+  return (
+    <Card className="border-[#262162]/20 bg-[#eeedf8]/40">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base text-[#262162]">🏏 Import from Play-Cricket</CardTitle>
+          <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-gray-700 text-lg leading-none">✕</button>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Paste the scorecard URL (e.g. <code className="bg-white px-1 rounded text-[11px]">https://slough.play-cricket.com/game/12345/scorecard</code>).
+          Stats are fetched server-side, then matched to your player list for review before applying.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+
+        {/* URL input */}
+        <div className="flex gap-2">
+          <Input
+            value={url}
+            onChange={e => setUrl(e.target.value)}
+            placeholder="https://slough.play-cricket.com/game/…/scorecard"
+            className="flex-1 bg-white text-sm"
+            onKeyDown={e => e.key === 'Enter' && handleFetch()}
+          />
+          <Button
+            onClick={handleFetch}
+            disabled={fetching || !url.trim()}
+            className="bg-[#262162] hover:bg-[#1a1748] shrink-0"
+            size="sm"
+          >
+            {fetching ? 'Fetching…' : 'Fetch Scorecard'}
+          </Button>
+        </div>
+
+        {fetchErr && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2">
+            {fetchErr}
+          </div>
+        )}
+
+        {/* Warnings */}
+        {result?.warnings && result.warnings.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 space-y-0.5">
+            {result.warnings.map((w, i) => (
+              <p key={i} className="text-xs text-amber-800">⚠ {w}</p>
+            ))}
+          </div>
+        )}
+
+        {/* Preview */}
+        {result && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-[#262162]">
+                {result.sloughTeamLabel}
+                <span className="text-muted-foreground font-normal ml-2 text-xs">— {matchRows.length} players matched</span>
+              </p>
+              {unmatched.length > 0 && (
+                <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 text-xs">
+                  {unmatched.length} unmatched
+                </Badge>
+              )}
+            </div>
+
+            {/* Matched players */}
+            {matchRows.length > 0 && (
+              <div className="rounded-lg border bg-white overflow-hidden">
+                <table className="w-full text-xs">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="text-left px-3 py-2 font-medium text-muted-foreground">Player</th>
+                      <th className="text-left px-3 py-2 font-medium text-muted-foreground">Stats to import</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {matchRows.map(({ player, sources }) => (
+                      <tr key={player.id} className="hover:bg-gray-50">
+                        <td className="px-3 py-2 font-medium">{player.name}</td>
+                        <td className="px-3 py-2 text-muted-foreground">{sources.join(' · ') || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Unmatched names */}
+            {unmatched.length > 0 && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                <p className="text-xs font-semibold text-amber-800 mb-1">
+                  Not matched to your player list — enter manually:
+                </p>
+                <div className="space-y-0.5">
+                  {unmatched.map((u, i) => (
+                    <p key={i} className="text-xs text-amber-700">
+                      <span className="font-medium">{u.scrapedName}</span>
+                      <span className="ml-2 text-amber-600">({u.role}: {u.detail})</span>
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={handleApply}
+                disabled={matchRows.length === 0 || applied}
+                className={`${applied ? 'bg-green-600' : 'bg-[#262162] hover:bg-[#1a1748]'}`}
+                size="sm"
+              >
+                {applied ? '✓ Applied to form' : `Apply ${matchRows.length} players to form`}
+              </Button>
+              {applied && (
+                <p className="text-xs text-green-700">
+                  Stats pre-filled — review below, then save as normal.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 export default function StatsForm({ matchId, players, existingPerfs, matchStatus }: StatsFormProps) {
   const router = useRouter()
   const [stats, setStats] = useState<Record<string, PlayerStats>>(
@@ -59,6 +336,18 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [savedMessage, setSavedMessage] = useState<string | null>(null)
+
+  function handleImport(rows: MatchRow[]) {
+    setStats(prev => {
+      const next = { ...prev }
+      for (const { player, partial } of rows) {
+        if (next[player.id]) {
+          next[player.id] = { ...next[player.id], ...partial }
+        }
+      }
+      return next
+    })
+  }
 
   function update(playerId: string, field: keyof PlayerStats, value: string | boolean) {
     setStats((prev) => ({
@@ -134,6 +423,12 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
 
   return (
     <div className="space-y-6">
+      {/* Play-Cricket import */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">Enter stats manually or import from Play-Cricket.</p>
+        <PlayCricketImportPanel players={players} onApply={handleImport} />
+      </div>
+
       {/* Match result */}
       <Card>
         <CardHeader className="pb-3">
