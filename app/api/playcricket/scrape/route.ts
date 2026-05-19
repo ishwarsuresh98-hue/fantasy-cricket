@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { parse as parseHtml } from 'node-html-parser'
 
 // ── Types returned to the client ──────────────────────────────────────────────
 
@@ -9,7 +8,7 @@ export interface ScrapedBatter {
   balls: number
   fours: number
   sixes: number
-  dismissal: string   // raw text e.g. "c Smith b Jones"
+  dismissal: string   // reconstructed e.g. "c Smith b Jones"
   dnb: boolean        // did not bat
 }
 
@@ -21,7 +20,7 @@ export interface ScrapedBowler {
 }
 
 export interface ScrapedFielder {
-  name: string        // as appears in dismissal text
+  name: string        // as extracted from bat rows
   catches: number
   stumpings: number
 }
@@ -35,226 +34,234 @@ export interface ScrapeResult {
   warnings: string[]
 }
 
-// ── Utilities ─────────────────────────────────────────────────────────────────
+// ── Play-Cricket API v2 response types ────────────────────────────────────────
 
-function cellText(el: { text: string }): string {
-  return el.text.replace(/\s+/g, ' ').trim()
+interface PCBatRow {
+  batsman_name: string
+  how_out: string          // "caught" | "bowled" | "lbw" | "stumped" | "run out" | "not out" | "did not bat" | ...
+  fielder_name?: string
+  bowler_name?: string
+  runs: string | number
+  balls: string | number
+  fours: string | number
+  sixes: string | number
+  position?: number | string
 }
 
-/** True when a string plausibly looks like a player name (not "Extras", "Total", etc.) */
-function looksLikePlayer(name: string): boolean {
-  if (!name || name.length < 2) return false
-  const low = name.toLowerCase()
-  if (/^(extras?|total|fall of|wides?|no.?balls?|byes?|leg byes?)/.test(low)) return false
-  if (/^\d/.test(name)) return false        // starts with a digit
-  return true
+interface PCBowlRow {
+  bowler_name: string
+  overs: string | number
+  maidens: string | number
+  wickets: string | number
+  runs_conceded?: string | number
+  no_balls?: string | number
+  wides?: string | number
 }
 
-// ── Play-Cricket HTML structure ────────────────────────────────────────────────
-//
-// A typical scorecard page has two main sections in order:
-//   1) First innings — a batting table then a bowling table
-//   2) Second innings — a batting table then a bowling table
-//
-// We identify which section belongs to "Slough" by looking for "Slough" in the
-// nearest preceding heading.  If we can't detect it, we take the first section.
-//
-// Table header patterns:
-//   Batting: first th contains "Batsman" / "Batter" / "Player"
-//            and a th contains "R" or "Runs"
-//   Bowling: first th contains "Bowler" / "Bowling" / "Player"
-//            and a th contains "W" or "Wkts"
+interface PCInnings {
+  team_batting_id?: string
+  team_batting_name?: string
+  team_bowling_id?: string
+  team_bowling_name?: string
+  innings_number?: number | string
+  runs?: string | number
+  wickets?: string | number
+  overs?: string | number
+  bat?: PCBatRow[]
+  bowl?: PCBowlRow[]
+}
 
-function parseScorecard(html: string): ScrapeResult {
-  const root = parseHtml(html)
+interface PCMatchDetail {
+  id?: number | string
+  title?: string
+  description?: string          // often "Home v Away"
+  home_team_name?: string
+  away_team_name?: string
+  home_club_name?: string
+  away_club_name?: string
+  innings?: PCInnings[]
+}
+
+interface PCApiResponse {
+  match_details?: PCMatchDetail[]
+  error?: string
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/** Extract the numeric match ID from any Play-Cricket results URL. */
+function extractMatchId(url: string): string | null {
+  // Handles: /results/12345, /results/12345/scorecard, /game/12345, /match/12345, etc.
+  const m = url.match(/\/(?:results|game|match)\/(\d+)/i)
+  return m ? m[1] : null
+}
+
+/** Reconstruct a human-readable dismissal string from Play-Cricket API fields. */
+function buildDismissal(howOut: string, fielderName?: string, bowlerName?: string): string {
+  const h = (howOut ?? '').toLowerCase().trim()
+
+  if (!h || h === 'not out')                     return 'not out'
+  if (h === 'did not bat' || h === 'dnb')        return 'did not bat'
+  if (h === 'absent' || h === 'absent hurt')     return 'absent'
+  if (h === 'retired' || h === 'retired hurt')   return 'retired hurt'
+  if (h === 'hit wicket')                        return bowlerName ? `hit wicket b ${bowlerName}` : 'hit wicket'
+  if (h === 'obstructing the field')             return 'obstructing the field'
+
+  if (h === 'bowled' || h === 'b')
+    return bowlerName ? `b ${bowlerName}` : 'bowled'
+
+  if (h === 'lbw' || h === 'leg before wicket')
+    return bowlerName ? `lbw b ${bowlerName}` : 'lbw'
+
+  if (h === 'caught' || h === 'c' || h === 'caught and bowled' || h === 'c and b' || h === 'c & b') {
+    // "caught and bowled" — fielder is the same as the bowler
+    if (h === 'caught and bowled' || h === 'c and b' || h === 'c & b') {
+      return bowlerName ? `c and b ${bowlerName}` : 'caught and bowled'
+    }
+    if (fielderName && bowlerName) return `c ${fielderName} b ${bowlerName}`
+    if (bowlerName)               return `c and b ${bowlerName}`
+    return 'caught'
+  }
+
+  if (h === 'stumped' || h === 'st') {
+    if (fielderName && bowlerName) return `st ${fielderName} b ${bowlerName}`
+    if (bowlerName)               return `st b ${bowlerName}`
+    return 'stumped'
+  }
+
+  if (h === 'run out' || h === 'run-out') {
+    return fielderName ? `run out (${fielderName})` : 'run out'
+  }
+
+  // Fallback: return the raw value as-is
+  return howOut
+}
+
+/** Convert API value (string or number) to integer, defaulting to 0. */
+function toInt(v: string | number | undefined): number {
+  return parseInt(String(v ?? 0), 10) || 0
+}
+
+// ── JSON parser ───────────────────────────────────────────────────────────────
+
+function parseApiResponse(data: PCApiResponse): ScrapeResult {
   const warnings: string[] = []
 
-  // ── Match title ─────────────────────────────────────────────────────────────
+  const detail = data.match_details?.[0]
+  if (!detail) {
+    warnings.push('No match details found in API response.')
+    return { matchTitle: 'Unknown', sloughTeamLabel: 'Slough CC', batting: [], bowling: [], fielding: [], warnings }
+  }
+
   const matchTitle =
-    root.querySelector('h1')?.text?.trim() ??
-    root.querySelector('title')?.text?.trim() ??
-    'Play-Cricket Scorecard'
+    detail.description ||
+    detail.title ||
+    [detail.home_team_name, detail.away_team_name].filter(Boolean).join(' v ') ||
+    'Play-Cricket Match'
 
-  // ── Find all tables + their nearest preceding heading ───────────────────────
-  interface TableBlock {
-    heading: string
-    table: ReturnType<typeof root.querySelector>
-    isBatting: boolean
-    isBowling: boolean
+  const innings: PCInnings[] = detail.innings ?? []
+
+  if (innings.length === 0) {
+    warnings.push('Scorecard has no innings data yet. The match may not have been scored.')
+    return { matchTitle, sloughTeamLabel: 'Slough CC', batting: [], bowling: [], fielding: [], warnings }
   }
 
-  const blocks: TableBlock[] = []
+  // ── Identify Slough's batting innings ─────────────────────────────────────
+  // Slough bat in the innings where team_batting_name contains "slough".
+  const sloughBatInnings = innings.find(i => /slough/i.test(i.team_batting_name ?? ''))
+  // Slough bowl in the innings where team_bowling_name contains "slough".
+  const sloughBowlInnings = innings.find(i => /slough/i.test(i.team_bowling_name ?? ''))
 
-  const allTables = root.querySelectorAll('table')
-  for (const table of allTables) {
-    // Walk up/backward siblings to find the nearest h2/h3/h4
-    let heading = ''
-    let el = table.previousElementSibling
-    let steps = 0
-    while (el && steps < 8) {
-      const tag = el.tagName?.toLowerCase() ?? ''
-      if (/^h[1-6]$/.test(tag)) { heading = el.text.trim(); break }
-      el = el.previousElementSibling
-      steps++
-    }
-    // Also check the parent's preceding sibling headings
-    if (!heading) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let parent: any = table.parentNode
-      let depth = 0
-      while (parent && depth < 4) {
-        let sib = parent.previousElementSibling
-        let ss = 0
-        while (sib && ss < 5) {
-          const tag = sib.tagName?.toLowerCase() ?? ''
-          if (/^h[1-6]$/.test(tag)) { heading = sib.text.trim(); break }
-          sib = sib.previousElementSibling
-          ss++
-        }
-        if (heading) break
-        parent = parent.parentNode
-        depth++
-      }
-    }
-
-    // Classify the table by its headers
-    const ths = table.querySelectorAll('th').map(th => th.text.trim().toLowerCase())
-    const firstTh = ths[0] ?? ''
-
-    const looksLikeBatting =
-      (firstTh.includes('bat') || firstTh.includes('player') || firstTh.includes('name')) &&
-      ths.some(h => h === 'r' || h === 'runs' || h.startsWith('run'))
-
-    const looksLikeBowling =
-      (firstTh.includes('bowl') || firstTh.includes('player') || firstTh.includes('name')) &&
-      ths.some(h => h === 'w' || h === 'wkts' || h.startsWith('wicket'))
-
-    if (looksLikeBatting || looksLikeBowling) {
-      blocks.push({ heading, table, isBatting: looksLikeBatting, isBowling: looksLikeBowling })
-    }
+  if (!sloughBatInnings && !sloughBowlInnings) {
+    warnings.push(
+      "Could not detect Slough CC in this scorecard. The team name in Play-Cricket may differ — verify the data below."
+    )
   }
 
-  // ── Find which blocks belong to Slough CC ───────────────────────────────────
-  // Strategy: prefer blocks whose heading contains "slough".
-  // If nothing matches, fall back to the first batting block and its paired bowling block.
-  const sloughBlocks = blocks.filter(b => /slough/i.test(b.heading))
-  const usedBlocks = sloughBlocks.length > 0 ? sloughBlocks : blocks
+  const sloughTeamLabel =
+    sloughBatInnings?.team_batting_name ??
+    sloughBowlInnings?.team_bowling_name ??
+    'Slough CC'
 
-  if (blocks.length === 0) {
-    warnings.push('No scorecard tables detected on this page. Make sure the URL points to the scorecard tab.')
-  } else if (sloughBlocks.length === 0) {
-    warnings.push("Could not detect which innings belongs to Slough CC — using the first section. Verify the data is correct.")
-  }
-
-  const sloughTeamLabel = sloughBlocks[0]?.heading || blocks[0]?.heading || 'Slough CC'
-
-  // ── Parse batting ────────────────────────────────────────────────────────────
+  // ── Parse batting ─────────────────────────────────────────────────────────
   const batting: ScrapedBatter[] = []
-  const battingBlock = usedBlocks.find(b => b.isBatting)
 
-  if (battingBlock) {
-    const ths = battingBlock.table!.querySelectorAll('th').map(th => th.text.trim().toLowerCase())
+  if (sloughBatInnings?.bat && sloughBatInnings.bat.length > 0) {
+    for (const row of sloughBatInnings.bat) {
+      const name = (row.batsman_name ?? '').trim()
+      if (!name) continue
 
-    // Column index detection
-    const col = (candidates: string[]) =>
-      ths.findIndex(h => candidates.some(c => h === c || h.includes(c)))
-
-    const iName      = col(['batsman', 'batter', 'player', 'name'])
-    const iDismissal = col(['dismissed', 'dismissal', 'how out', 'wicket', 'method'])
-    const iRuns      = col(['r', 'runs'])
-    const iBalls     = col(['b', 'balls', 'ball'])
-    const iFours     = col(['4s', '4', 'fours'])
-    const iSixes     = col(['6s', '6', 'sixes'])
-
-    const rows = battingBlock.table!.querySelectorAll('tbody tr')
-    for (const row of rows) {
-      const tds = row.querySelectorAll('td')
-      if (tds.length < 3) continue
-
-      const name      = cellText(tds[iName >= 0 ? iName : 0])
-      if (!looksLikePlayer(name)) continue
-
-      const dismissal = iDismissal >= 0 ? cellText(tds[iDismissal]) : ''
-      const dnb       = /did not bat|dnb|absent/i.test(dismissal)
+      const dismissalRaw = (row.how_out ?? '').trim()
+      const dismissal = buildDismissal(dismissalRaw, row.fielder_name?.trim(), row.bowler_name?.trim())
+      const dnb = /^did not bat$|^dnb$|^absent/i.test(dismissalRaw)
 
       batting.push({
         name,
         dismissal,
         dnb,
-        runs:  parseInt(cellText(tds[iRuns  >= 0 ? iRuns  : 2])) || 0,
-        balls: parseInt(cellText(tds[iBalls >= 0 ? iBalls : 3])) || 0,
-        fours: parseInt(cellText(tds[iFours >= 0 ? iFours : 4])) || 0,
-        sixes: parseInt(cellText(tds[iSixes >= 0 ? iSixes : 5])) || 0,
+        runs:  toInt(row.runs),
+        balls: toInt(row.balls),
+        fours: toInt(row.fours),
+        sixes: toInt(row.sixes),
       })
     }
 
     if (batting.length === 0) {
-      warnings.push('Found a batting table but could not extract any player rows.')
+      warnings.push('Batting innings found but contained no player rows.')
     }
+  } else if (sloughBatInnings) {
+    warnings.push('Slough CC batting innings found but bat[] array is empty — match may not be fully scored.')
   } else {
-    warnings.push('No batting table found for Slough CC.')
+    warnings.push('No batting innings found for Slough CC.')
   }
 
-  // ── Parse bowling ────────────────────────────────────────────────────────────
+  // ── Parse bowling ─────────────────────────────────────────────────────────
   const bowling: ScrapedBowler[] = []
-  const bowlingBlock = usedBlocks.find(b => b.isBowling && !b.isBatting)
-    ?? usedBlocks.find(b => b.isBowling)
 
-  if (bowlingBlock) {
-    const ths = bowlingBlock.table!.querySelectorAll('th').map(th => th.text.trim().toLowerCase())
-    const col = (candidates: string[]) =>
-      ths.findIndex(h => candidates.some(c => h === c || h.includes(c)))
-
-    const iName    = col(['bowler', 'player', 'name'])
-    const iOvers   = col(['o', 'ov', 'overs', 'over'])
-    const iMaidens = col(['m', 'maiden', 'mdns'])
-    const iWickets = col(['w', 'wkts', 'wicket'])
-
-    const rows = bowlingBlock.table!.querySelectorAll('tbody tr')
-    for (const row of rows) {
-      const tds = row.querySelectorAll('td')
-      if (tds.length < 3) continue
-
-      const name = cellText(tds[iName >= 0 ? iName : 0])
-      if (!looksLikePlayer(name)) continue
+  if (sloughBowlInnings?.bowl && sloughBowlInnings.bowl.length > 0) {
+    for (const row of sloughBowlInnings.bowl) {
+      const name = (row.bowler_name ?? '').trim()
+      if (!name) continue
 
       bowling.push({
         name,
-        overs:   cellText(tds[iOvers   >= 0 ? iOvers   : 1]),
-        maidens: parseInt(cellText(tds[iMaidens >= 0 ? iMaidens : 2])) || 0,
-        wickets: parseInt(cellText(tds[iWickets >= 0 ? iWickets : 4])) || 0,
+        overs:   String(row.overs ?? '0'),
+        maidens: toInt(row.maidens),
+        wickets: toInt(row.wickets),
       })
     }
 
     if (bowling.length === 0) {
-      warnings.push('Found a bowling table but could not extract any player rows.')
+      warnings.push('Bowling innings found but contained no player rows.')
     }
+  } else if (sloughBowlInnings) {
+    warnings.push('Slough CC bowling innings found but bowl[] array is empty — match may not be fully scored.')
   } else {
-    warnings.push('No bowling table found for Slough CC.')
+    warnings.push('No bowling innings found for Slough CC.')
   }
 
-  // ── Extract fielding from dismissal text ─────────────────────────────────────
-  // Patterns:
-  //   "c FielderName b BowlerName"   → catch for FielderName
-  //   "c and b BowlerName"           → caught & bowled (no separate fielder)
-  //   "st FielderName b BowlerName"  → stumping for FielderName
+  // ── Derive fielding from bat rows (catches & stumpings by Slough fielders) ─
+  // The opponents' batting innings is where Slough players field.
+  // We find it as the innings where team_bowling_name contains "slough".
   const fielderMap: Record<string, ScrapedFielder> = {}
-  const getFielder = (raw: string) => {
-    const k = raw.toLowerCase()
-    if (!fielderMap[k]) fielderMap[k] = { name: raw, catches: 0, stumpings: 0 }
+  const getFielder = (name: string) => {
+    const k = name.toLowerCase()
+    if (!fielderMap[k]) fielderMap[k] = { name, catches: 0, stumpings: 0 }
     return fielderMap[k]
   }
 
-  for (const row of batting) {
-    const d = row.dismissal
+  if (sloughBowlInnings?.bat) {
+    for (const row of sloughBowlInnings.bat) {
+      const h = (row.how_out ?? '').toLowerCase().trim()
+      const fielder = row.fielder_name?.trim()
+      if (!fielder) continue
 
-    // Catch: "c Fielder b Bowler" — excludes "c and b" / "c & b"
-    const catchM = d.match(/^c\s+(?!and\b|&\b)(.+?)\s+b\s+.+/i)
-    if (catchM) getFielder(catchM[1].trim()).catches++
-
-    // Stumping: "st Fielder b Bowler"
-    const stumpM = d.match(/^st\s+(.+?)\s+b\s+.+/i)
-    if (stumpM) getFielder(stumpM[1].trim()).stumpings++
+      if (h === 'caught' || h === 'c') {
+        getFielder(fielder).catches++
+      } else if (h === 'stumped' || h === 'st') {
+        getFielder(fielder).stumpings++
+      }
+    }
   }
 
   const fielding = Object.values(fielderMap).filter(f => f.catches + f.stumpings > 0)
@@ -263,42 +270,6 @@ function parseScorecard(html: string): ScrapeResult {
 }
 
 // ── Route handler ─────────────────────────────────────────────────────────────
-
-/**
- * Normalise any Play-Cricket match URL to the /scorecard tab.
- *
- * Examples:
- *   …/results/12345              → …/results/12345/scorecard
- *   …/results/12345/summary      → …/results/12345/scorecard
- *   …/results/12345/ball-by-ball → …/results/12345/scorecard
- *   …/results/12345/statistics   → …/results/12345/scorecard
- *   …/results/12345/scorecard    → unchanged
- */
-function normaliseToScorecard(raw: string): string {
-  let u: URL
-  try {
-    u = new URL(raw)
-  } catch {
-    return raw // not a valid URL — let the fetch fail naturally
-  }
-
-  const KNOWN_TABS = ['summary', 'ball-by-ball', 'statistics', 'teams', 'overview', 'scorecard']
-
-  const parts = u.pathname.replace(/\/$/, '').split('/')
-  const last = parts[parts.length - 1]
-
-  if (KNOWN_TABS.includes(last)) {
-    // Replace existing tab with /scorecard
-    parts[parts.length - 1] = 'scorecard'
-  } else if (/^\d+$/.test(last)) {
-    // Bare numeric match ID — append /scorecard
-    parts.push('scorecard')
-  }
-  // Otherwise leave the path untouched
-
-  u.pathname = parts.join('/')
-  return u.toString()
-}
 
 export async function POST(request: Request) {
   const { url } = (await request.json()) as { url?: string }
@@ -310,39 +281,75 @@ export async function POST(request: Request) {
     )
   }
 
-  const scorecardUrl = normaliseToScorecard(url)
-
-  let html: string
-  try {
-    const res = await fetch(scorecardUrl, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        Accept: 'text/html,application/xhtml+xml',
-        'Accept-Language': 'en-GB,en;q=0.9',
-      },
-      // 15-second timeout
-      signal: AbortSignal.timeout(15_000),
-    })
-
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: `Play-Cricket returned HTTP ${res.status}. Check the URL and try again.` },
-        { status: 400 }
-      )
-    }
-
-    html = await res.text()
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Unknown error'
+  // ── Extract match ID from the pasted URL ───────────────────────────────────
+  const matchId = extractMatchId(url)
+  if (!matchId) {
     return NextResponse.json(
-      { error: `Failed to fetch scorecard: ${msg}` },
+      { error: 'Could not find a match ID in that URL. Expected a URL like play-cricket.com/results/1234567.' },
+      { status: 400 }
+    )
+  }
+
+  // ── Build the API v2 URL ───────────────────────────────────────────────────
+  const apiToken = process.env.PLAY_CRICKET_API_TOKEN
+  if (!apiToken) {
+    return NextResponse.json(
+      { error: 'PLAY_CRICKET_API_TOKEN is not configured on the server. Add it to .env.local.' },
       { status: 500 }
     )
   }
 
+  const apiUrl = `https://play-cricket.com/api/v2/match_detail?match_id=${matchId}&sections=scorecard&api_token=${encodeURIComponent(apiToken)}`
+
+  // ── Fetch from Play-Cricket API ────────────────────────────────────────────
+  let data: PCApiResponse
   try {
-    const result = parseScorecard(html)
+    const res = await fetch(apiUrl, {
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': 'FantasyCricket/1.0',
+      },
+      signal: AbortSignal.timeout(15_000),
+    })
+
+    if (res.status === 401) {
+      return NextResponse.json(
+        { error: 'Play-Cricket API rejected the token (401). Check that PLAY_CRICKET_API_TOKEN is correct.' },
+        { status: 400 }
+      )
+    }
+    if (res.status === 404) {
+      return NextResponse.json(
+        { error: `Match ID ${matchId} not found on Play-Cricket (404). Verify the URL.` },
+        { status: 400 }
+      )
+    }
+    if (!res.ok) {
+      return NextResponse.json(
+        { error: `Play-Cricket API returned HTTP ${res.status}.` },
+        { status: 400 }
+      )
+    }
+
+    data = (await res.json()) as PCApiResponse
+
+    if (data.error) {
+      return NextResponse.json(
+        { error: `Play-Cricket API error: ${data.error}` },
+        { status: 400 }
+      )
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Unknown error'
+    return NextResponse.json(
+      { error: `Failed to reach Play-Cricket API: ${msg}` },
+      { status: 500 }
+    )
+  }
+
+  // ── Parse and return ───────────────────────────────────────────────────────
+  try {
+    const result = parseApiResponse(data)
     return NextResponse.json(result)
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Parse error'

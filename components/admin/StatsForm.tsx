@@ -105,17 +105,38 @@ interface ImportPanelProps {
 }
 
 function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
-  const [open,     setOpen]     = useState(false)
-  const [url,      setUrl]      = useState('')
-  const [fetching, setFetching] = useState(false)
-  const [result,   setResult]   = useState<ScrapeResult | null>(null)
-  const [fetchErr, setFetchErr] = useState<string | null>(null)
-  const [applied,  setApplied]  = useState(false)
+  const [open,      setOpen]      = useState(false)
+  const [tab,       setTab]       = useState<'url' | 'pdf'>('url')
 
-  async function handleFetch() {
+  // URL tab state
+  const [url,       setUrl]       = useState('')
+  const [urlBusy,   setUrlBusy]   = useState(false)
+  const [urlErr,    setUrlErr]    = useState<string | null>(null)
+
+  // PDF tab state
+  const [pdfFile,   setPdfFile]   = useState<File | null>(null)
+  const [pdfBusy,   setPdfBusy]   = useState(false)
+  const [pdfErr,    setPdfErr]    = useState<string | null>(null)
+  const [dragOver,  setDragOver]  = useState(false)
+
+  // Shared
+  const [result,    setResult]    = useState<ScrapeResult | null>(null)
+  const [applied,   setApplied]   = useState(false)
+
+  // ── Reset result whenever the user switches tabs ────────────────────────────
+  function switchTab(t: 'url' | 'pdf') {
+    setTab(t)
+    setResult(null)
+    setApplied(false)
+    setUrlErr(null)
+    setPdfErr(null)
+  }
+
+  // ── URL fetch ──────────────────────────────────────────────────────────────
+  async function handleFetchUrl() {
     if (!url.trim()) return
-    setFetching(true)
-    setFetchErr(null)
+    setUrlBusy(true)
+    setUrlErr(null)
     setResult(null)
     setApplied(false)
     try {
@@ -125,21 +146,56 @@ function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
         body: JSON.stringify({ url: url.trim() }),
       })
       const data = await res.json()
-      if (data.error) { setFetchErr(data.error); setFetching(false); return }
+      if (data.error) { setUrlErr(data.error); return }
       setResult(data as ScrapeResult)
     } catch {
-      setFetchErr('Network error — could not reach the scrape API.')
+      setUrlErr('Network error — could not reach the server.')
+    } finally {
+      setUrlBusy(false)
     }
-    setFetching(false)
   }
 
-  // Build match rows from scraped result
+  // ── PDF upload ─────────────────────────────────────────────────────────────
+  async function handleUploadPdf(file: File) {
+    setPdfFile(file)
+    setPdfBusy(true)
+    setPdfErr(null)
+    setResult(null)
+    setApplied(false)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      const res = await fetch('/api/playcricket/pdf', { method: 'POST', body: form })
+      const data = await res.json()
+      if (data.error) { setPdfErr(data.error); return }
+      setResult(data as ScrapeResult)
+    } catch {
+      setPdfErr('Network error — could not reach the server.')
+    } finally {
+      setPdfBusy(false)
+    }
+  }
+
+  function onFileInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) handleUploadPdf(file)
+    e.target.value = ''   // reset so same file can be re-selected
+  }
+
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setDragOver(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) handleUploadPdf(file)
+  }
+
+  // ── Build preview rows from scraped result (shared between both tabs) ───────
   const { matchRows, unmatched } = (() => {
-    if (!result) return { matchRows: [], unmatched: [] }
+    if (!result) return { matchRows: [] as MatchRow[], unmatched: [] as UnmatchedRow[] }
 
     const matchRows: MatchRow[] = []
     const unmatched: UnmatchedRow[] = []
-    const playerMap = new Map<string, Partial<PlayerStats>>()
+    const playerMap  = new Map<string, Partial<PlayerStats>>()
     const sourcesMap = new Map<string, string[]>()
 
     const get = (id: string) => {
@@ -147,30 +203,24 @@ function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
       return playerMap.get(id)!
     }
 
-    // Batting
     for (const b of result.batting as ScrapedBatter[]) {
       const p = matchPlayer(b.name, players)
       if (!p) { unmatched.push({ scrapedName: b.name, role: 'batting', detail: b.dnb ? 'DNB' : `${b.runs}(${b.balls})` }); continue }
       const s = get(p.id)
-      s.runs = b.dnb ? 0 : b.runs
-      s.balls = b.dnb ? 0 : b.balls
-      s.fours = b.dnb ? 0 : b.fours
-      s.sixes = b.dnb ? 0 : b.sixes
+      s.runs = b.dnb ? 0 : b.runs;  s.balls = b.dnb ? 0 : b.balls
+      s.fours = b.dnb ? 0 : b.fours; s.sixes = b.dnb ? 0 : b.sixes
       s.dnb = b.dnb
       sourcesMap.get(p.id)!.push(b.dnb ? 'DNB' : `${b.runs}(${b.balls}), ${b.fours}×4, ${b.sixes}×6`)
     }
 
-    // Bowling
     for (const b of result.bowling as ScrapedBowler[]) {
       const p = matchPlayer(b.name, players)
       if (!p) { unmatched.push({ scrapedName: b.name, role: 'bowling', detail: `${b.wickets}/${b.overs}ov` }); continue }
       const s = get(p.id)
-      s.wickets = b.wickets
-      s.maidens = b.maidens
+      s.wickets = b.wickets; s.maidens = b.maidens
       sourcesMap.get(p.id)!.push(`${b.wickets}wkts, ${b.maidens}mdns (${b.overs}ov)`)
     }
 
-    // Fielding
     for (const f of result.fielding as ScrapedFielder[]) {
       const p = matchPlayer(f.name, players)
       if (!p) { unmatched.push({ scrapedName: f.name, role: 'fielding', detail: `${f.catches}ct ${f.stumpings}st` }); continue }
@@ -192,6 +242,7 @@ function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
     setApplied(true)
   }
 
+  // ── Collapsed trigger button ───────────────────────────────────────────────
   if (!open) {
     return (
       <button
@@ -203,6 +254,9 @@ function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
     )
   }
 
+  const busy = urlBusy || pdfBusy
+  const activeErr = tab === 'url' ? urlErr : pdfErr
+
   return (
     <Card className="border-[#262162]/20 bg-[#eeedf8]/40">
       <CardHeader className="pb-3">
@@ -210,35 +264,103 @@ function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
           <CardTitle className="text-base text-[#262162]">🏏 Import from Play-Cricket</CardTitle>
           <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-gray-700 text-lg leading-none">✕</button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Paste the scorecard URL (e.g. <code className="bg-white px-1 rounded text-[11px]">https://slough.play-cricket.com/game/12345/scorecard</code>).
-          Stats are fetched server-side, then matched to your player list for review before applying.
-        </p>
+
+        {/* Tab switcher */}
+        <div className="flex gap-1 mt-2 p-1 bg-white rounded-lg border border-[#262162]/10 w-fit">
+          <button
+            onClick={() => switchTab('url')}
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+              tab === 'url'
+                ? 'bg-[#262162] text-white'
+                : 'text-muted-foreground hover:text-[#262162]'
+            }`}
+          >
+            🔗 Paste URL
+          </button>
+          <button
+            onClick={() => switchTab('pdf')}
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+              tab === 'pdf'
+                ? 'bg-[#262162] text-white'
+                : 'text-muted-foreground hover:text-[#262162]'
+            }`}
+          >
+            📄 Upload PDF
+          </button>
+        </div>
       </CardHeader>
+
       <CardContent className="space-y-4">
 
-        {/* URL input */}
-        <div className="flex gap-2">
-          <Input
-            value={url}
-            onChange={e => setUrl(e.target.value)}
-            placeholder="https://slough.play-cricket.com/game/…/scorecard"
-            className="flex-1 bg-white text-sm"
-            onKeyDown={e => e.key === 'Enter' && handleFetch()}
-          />
-          <Button
-            onClick={handleFetch}
-            disabled={fetching || !url.trim()}
-            className="bg-[#262162] hover:bg-[#1a1748] shrink-0"
-            size="sm"
-          >
-            {fetching ? 'Fetching…' : 'Fetch Scorecard'}
-          </Button>
-        </div>
+        {/* ── URL tab ─────────────────────────────────────────────────────── */}
+        {tab === 'url' && (
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">
+              Paste the Play-Cricket results URL — any tab works (scorecard, summary, etc.).
+            </p>
+            <div className="flex gap-2">
+              <Input
+                value={url}
+                onChange={e => setUrl(e.target.value)}
+                placeholder="https://slough.play-cricket.com/game/…"
+                className="flex-1 bg-white text-sm"
+                onKeyDown={e => e.key === 'Enter' && handleFetchUrl()}
+              />
+              <Button
+                onClick={handleFetchUrl}
+                disabled={busy || !url.trim()}
+                className="bg-[#262162] hover:bg-[#1a1748] shrink-0"
+                size="sm"
+              >
+                {urlBusy ? 'Fetching…' : 'Fetch'}
+              </Button>
+            </div>
+          </div>
+        )}
 
-        {fetchErr && (
+        {/* ── PDF tab ─────────────────────────────────────────────────────── */}
+        {tab === 'pdf' && (
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">
+              Download the scorecard PDF from Play-Cricket then upload it here.
+              The PDF must be text-based (not a scanned image).
+            </p>
+
+            {/* Drop zone */}
+            <label
+              onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={onDrop}
+              className={`flex flex-col items-center justify-center gap-2 w-full h-28 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${
+                dragOver
+                  ? 'border-[#262162] bg-[#eeedf8]'
+                  : 'border-[#262162]/30 bg-white hover:border-[#262162]/60 hover:bg-[#eeedf8]/40'
+              }`}
+            >
+              <input type="file" accept=".pdf,application/pdf" className="sr-only" onChange={onFileInput} />
+              {pdfBusy ? (
+                <p className="text-sm text-[#262162] font-medium">Parsing PDF…</p>
+              ) : pdfFile && !pdfErr ? (
+                <>
+                  <span className="text-2xl">📄</span>
+                  <p className="text-xs text-[#262162] font-medium">{pdfFile.name}</p>
+                  <p className="text-[11px] text-muted-foreground">Click or drop to replace</p>
+                </>
+              ) : (
+                <>
+                  <span className="text-2xl">⬆️</span>
+                  <p className="text-sm font-medium text-[#262162]">Drop PDF here or click to browse</p>
+                  <p className="text-[11px] text-muted-foreground">Play-Cricket scorecard PDF, max 10 MB</p>
+                </>
+              )}
+            </label>
+          </div>
+        )}
+
+        {/* Error */}
+        {activeErr && (
           <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2">
-            {fetchErr}
+            {activeErr}
           </div>
         )}
 
@@ -251,7 +373,7 @@ function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
           </div>
         )}
 
-        {/* Preview */}
+        {/* ── Preview (shared) ────────────────────────────────────────────── */}
         {result && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -266,7 +388,6 @@ function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
               )}
             </div>
 
-            {/* Matched players */}
             {matchRows.length > 0 && (
               <div className="rounded-lg border bg-white overflow-hidden">
                 <table className="w-full text-xs">
@@ -288,7 +409,6 @@ function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
               </div>
             )}
 
-            {/* Unmatched names */}
             {unmatched.length > 0 && (
               <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
                 <p className="text-xs font-semibold text-amber-800 mb-1">
@@ -309,15 +429,13 @@ function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
               <Button
                 onClick={handleApply}
                 disabled={matchRows.length === 0 || applied}
-                className={`${applied ? 'bg-green-600' : 'bg-[#262162] hover:bg-[#1a1748]'}`}
+                className={applied ? 'bg-green-600' : 'bg-[#262162] hover:bg-[#1a1748]'}
                 size="sm"
               >
                 {applied ? '✓ Applied to form' : `Apply ${matchRows.length} players to form`}
               </Button>
               {applied && (
-                <p className="text-xs text-green-700">
-                  Stats pre-filled — review below, then save as normal.
-                </p>
+                <p className="text-xs text-green-700">Stats pre-filled — review below, then save as normal.</p>
               )}
             </div>
           </div>
