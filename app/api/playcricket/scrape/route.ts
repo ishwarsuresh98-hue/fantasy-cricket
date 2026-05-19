@@ -264,6 +264,42 @@ function parseScorecard(html: string): ScrapeResult {
 
 // ── Route handler ─────────────────────────────────────────────────────────────
 
+/**
+ * Normalise any Play-Cricket match URL to the /scorecard tab.
+ *
+ * Examples:
+ *   …/results/12345              → …/results/12345/scorecard
+ *   …/results/12345/summary      → …/results/12345/scorecard
+ *   …/results/12345/ball-by-ball → …/results/12345/scorecard
+ *   …/results/12345/statistics   → …/results/12345/scorecard
+ *   …/results/12345/scorecard    → unchanged
+ */
+function normaliseToScorecard(raw: string): string {
+  let u: URL
+  try {
+    u = new URL(raw)
+  } catch {
+    return raw // not a valid URL — let the fetch fail naturally
+  }
+
+  const KNOWN_TABS = ['summary', 'ball-by-ball', 'statistics', 'teams', 'overview', 'scorecard']
+
+  const parts = u.pathname.replace(/\/$/, '').split('/')
+  const last = parts[parts.length - 1]
+
+  if (KNOWN_TABS.includes(last)) {
+    // Replace existing tab with /scorecard
+    parts[parts.length - 1] = 'scorecard'
+  } else if (/^\d+$/.test(last)) {
+    // Bare numeric match ID — append /scorecard
+    parts.push('scorecard')
+  }
+  // Otherwise leave the path untouched
+
+  u.pathname = parts.join('/')
+  return u.toString()
+}
+
 export async function POST(request: Request) {
   const { url } = (await request.json()) as { url?: string }
 
@@ -274,9 +310,11 @@ export async function POST(request: Request) {
     )
   }
 
+  const scorecardUrl = normaliseToScorecard(url)
+
   let html: string
   try {
-    const res = await fetch(url, {
+    const res = await fetch(scorecardUrl, {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
