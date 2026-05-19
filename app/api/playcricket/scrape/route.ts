@@ -37,7 +37,8 @@ export interface ScrapeResult {
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
-function cellText(el: { text: string }): string {
+function cellText(el: { text: string } | undefined): string {
+  if (!el) return ''
   return el.text.replace(/\s+/g, ' ').trim()
 }
 
@@ -86,71 +87,90 @@ function normaliseToPrint(raw: string): string {
 
 // ── Dismissal reconstruction ───────────────────────────────────────────────────
 //
-// The print-page batting table has two separate columns:
-//   "How Out"  — dismissal method + optional fielder name, e.g. "Caught Smith"
-//   "Bowler"   — the bowler's name (own column)
+// The print page uses this two-column layout (confirmed from live HTML):
 //
-// This function combines them into a standard notation string.
+//   How Out col          Bowler col                Meaning
+//   ─────────────────    ────────────────────────  ──────────────────────────
+//   (empty)              ct & b  Oliver Wright     caught and bowled
+//   ct  David Eaton      b  Oliver Wright          caught
+//   st  David Eaton      b  Oliver Wright          stumped
+//   lbw                  b  Oliver Wright          leg before wicket
+//   run out (K. Coyne)   (empty)                   run out
+//   (empty)              b  Oliver Wright           bowled (how-out cell blank)
+//   (empty)              (empty)                   not out
+//   Did Not Bat          (empty)                   did not bat
+//
+// node-html-parser's .text already decodes &nbsp; → regular space.
+// The Bowler column contains "b Name" — NOT a bare name.
 
 function buildDismissal(howOut: string, bowler: string): string {
-  const h = howOut.trim()
-  const b = bowler.trim()
-  const low = h.toLowerCase()
+  // Collapse any residual non-breaking / double spaces left after entity decode
+  const h = howOut.trim().replace(/\s+/g, ' ')
+  const b = bowler.trim().replace(/\s+/g, ' ')
+  const hLow = h.toLowerCase()
 
-  if (!h || low === 'not out')                   return 'not out'
-  if (/^did\s+not\s+bat$|^dnb$/i.test(low))     return 'did not bat'
-  if (/^absent/i.test(low))                      return 'absent'
-  if (/^retired/i.test(low))                     return 'retired hurt'
-  if (/^obstructing/i.test(low))                 return 'obstructing the field'
+  // ── How Out cell is the authoritative source for these ──────────────────
+  if (/^did\s+not\s+bat$|^dnb$/i.test(hLow)) return 'did not bat'
+  if (/^absent/i.test(hLow))                  return 'absent'
+  if (/^retired/i.test(hLow))                 return 'retired hurt'
+  if (/^not\s+out$/i.test(hLow))              return 'not out'
+  if (/^obstructing/i.test(hLow))             return 'obstructing the field'
 
-  // "Bowled" or "B"
-  if (/^bowled?$/i.test(h) || h === 'B')
-    return b ? `b ${b}` : 'bowled'
+  // run out — fielder name already embedded in How Out cell
+  if (/^run\s*out/i.test(hLow)) return h   // e.g. "run out (Kieran Coyne)"
 
-  // "LBW" / "Leg Before Wicket"
-  if (/^lbw$|^leg\s+before/i.test(h))
-    return b ? `lbw b ${b}` : 'lbw'
+  // ── "ct & b BowlerName" lives entirely in the Bowler column ─────────────
+  if (/^ct\s*&\s*b\s+/i.test(b))
+    return b.replace(/^ct\s*&\s*b\s+/i, 'c and b ')
 
-  // "Hit Wicket"
-  if (/^hit\s+wicket$/i.test(h))
-    return b ? `hit wicket b ${b}` : 'hit wicket'
+  // ── Standard dismissals: How Out + Bowler combined ───────────────────────
+  // Bowler column is "b Name" — reuse it verbatim in the output string.
 
-  // "Run Out" (fielder sometimes in the howOut field, sometimes separate)
-  if (/^run\s*out/i.test(h)) {
-    const fielderM = h.match(/^run\s*out\s+(.+)/i)
-    return fielderM ? `run out (${fielderM[1].trim()})` : 'run out'
-  }
+  // "lbw" in How Out; Bowler col = "b Name"
+  if (/^lbw$/i.test(hLow)) return b ? `lbw ${b}` : 'lbw'
 
-  // "Stumped Smith"  /  "St Smith"  /  "Stumped" (no name)
-  const stM = h.match(/^(?:stumped?|st)\s+(.+)/i)
-  if (stM) {
-    const fielder = stM[1].trim()
-    return b ? `st ${fielder} b ${b}` : `st ${fielder}`
-  }
-  if (/^(?:stumped?|st)$/i.test(h))
-    return b ? `st b ${b}` : 'stumped'
+  // "ct FielderName" in How Out; Bowler col = "b BowlerName"
+  const ctM = h.match(/^ct\s+(.+)/i)
+  if (ctM) return b ? `c ${ctM[1].trim()} ${b}` : `c ${ctM[1].trim()}`
 
-  // "Caught Smith"  /  "C Smith"  /  "Caught" (c&b)
-  const cM = h.match(/^(?:caught|c)\s+(.+)/i)
-  if (cM) {
-    const fielder = cM[1].trim()
-    return b ? `c ${fielder} b ${b}` : `c ${fielder}`
-  }
-  if (/^(?:caught|c)$/i.test(h))
-    return b ? `c and b ${b}` : 'caught'
+  // "st FielderName" in How Out; Bowler col = "b BowlerName"
+  const stM = h.match(/^st\s+(.+)/i)
+  if (stM) return b ? `st ${stM[1].trim()} ${b}` : `st ${stM[1].trim()}`
 
-  // Fallback: return raw value
-  return h
+  // "hit wicket" in How Out; Bowler col = "b BowlerName"
+  if (/^hit\s+wicket$/i.test(hLow)) return b ? `hit wicket ${b}` : 'hit wicket'
+
+  // How Out empty, Bowler = "b Name" → bowled
+  if (!h && b) return b
+
+  // Both empty → not out
+  if (!h && !b) return 'not out'
+
+  // Fallback: concatenate whatever is present
+  return [h, b].filter(Boolean).join(' ')
 }
 
-/** Extract a fielder name + method from the "How Out" cell of an opposing batter.
- *  Returns null when there is no credited fielder (bowled, lbw, run out, etc.). */
-function extractFielder(howOut: string): { name: string; method: 'catch' | 'stumping' } | null {
-  const cM = howOut.match(/^(?:caught|c)\s+(.+)/i)
-  if (cM) return { name: cM[1].trim(), method: 'catch' }
+/**
+ * Extract a Slough fielder's name and method from one opposition batting row.
+ * howOut  = content of the "How Out" cell   (e.g. "ct David Eaton")
+ * bowler  = content of the "Bowler"  cell   (e.g. "ct & b Oliver Wright")
+ * Returns null when no named fielder is credited (bowled, lbw, run out, etc.).
+ */
+function extractFielder(
+  howOut: string,
+  bowler: string,
+): { name: string; method: 'catch' | 'stumping' } | null {
+  // "ct FielderName" in How Out
+  const ctM = howOut.match(/^ct\s+(.+)/i)
+  if (ctM) return { name: ctM[1].trim(), method: 'catch' }
 
-  const sM = howOut.match(/^(?:stumped?|st)\s+(.+)/i)
-  if (sM) return { name: sM[1].trim(), method: 'stumping' }
+  // "ct & b BowlerName" in Bowler col → the bowler took the catch themselves
+  const cbM = bowler.match(/^ct\s*&\s*b\s+(.+)/i)
+  if (cbM) return { name: cbM[1].trim(), method: 'catch' }
+
+  // "st FielderName" in How Out
+  const stM = howOut.match(/^st\s+(.+)/i)
+  if (stM) return { name: stM[1].trim(), method: 'stumping' }
 
   return null
 }
@@ -280,7 +300,10 @@ function parsePrintPage(html: string): ScrapeResult {
     const iBalls   = idx(['balls', 'b', 'ball'])                   !== -1
                        ? idx(['balls', 'b', 'ball'])                  : 6
 
-    for (const row of sloughBatTable.querySelectorAll('tbody tr')) {
+    // Play-Cricket print page omits <tbody> — rows are direct children of <table>.
+    // Skip any <tr> that contains <th> elements (that is the header row).
+    for (const row of sloughBatTable.querySelectorAll('tr')) {
+      if (row.querySelectorAll('th').length > 0) continue   // header row
       const tds = row.querySelectorAll('td')
       if (tds.length < 3) continue
 
@@ -288,10 +311,10 @@ function parsePrintPage(html: string): ScrapeResult {
       if (!name || name.length < 2) continue
       if (/^(extras?|total\b|fall\s+of|\d)/i.test(name)) continue
 
-      const howOut  = cellText(tds[iHowOut] ?? tds[1])
-      const bowler  = cellText(tds[iBowler] ?? tds[2])
+      const howOut    = cellText(tds[iHowOut] ?? tds[1])
+      const bowler    = cellText(tds[iBowler] ?? tds[2])
       const dismissal = buildDismissal(howOut, bowler)
-      const dnb = /did\s+not\s+bat|dnb|absent/i.test(dismissal)
+      const dnb       = /did\s+not\s+bat|dnb|absent/i.test(dismissal)
 
       batting.push({
         name,
@@ -331,7 +354,9 @@ function parsePrintPage(html: string): ScrapeResult {
     const iWickets = idx(['wickets', 'wkts', 'w'])                   !== -1
                        ? idx(['wickets', 'wkts', 'w'])                 : 4
 
-    for (const row of sloughBowlTable.querySelectorAll('tbody tr')) {
+    // Same no-<tbody> fix as batting above.
+    for (const row of sloughBowlTable.querySelectorAll('tr')) {
+      if (row.querySelectorAll('th').length > 0) continue   // header row
       const tds = row.querySelectorAll('td')
       if (tds.length < 4) continue
 
@@ -373,11 +398,20 @@ function parsePrintPage(html: string): ScrapeResult {
     const iHowOut = idx(['how out', 'dismissal', 'how_out']) !== -1
                       ? idx(['how out', 'dismissal', 'how_out']) : 1
 
-    for (const row of oppBatTable.querySelectorAll('tbody tr')) {
+    // Same no-<tbody> fix.
+    const iBowlerOpp = (() => {
+      const t = oppBatTable.querySelectorAll('th').map((th: { text: string }) => th.text.trim().toLowerCase())
+      const i = t.findIndex((h: string) => h === 'bowler' || h.includes('bowler'))
+      return i !== -1 ? i : 2
+    })()
+
+    for (const row of oppBatTable.querySelectorAll('tr')) {
+      if (row.querySelectorAll('th').length > 0) continue   // header row
       const tds = row.querySelectorAll('td')
       if (tds.length < 2) continue
       const howOut = cellText(tds[iHowOut] ?? tds[1])
-      const fielder = extractFielder(howOut)
+      const bowler = cellText(tds[iBowlerOpp] ?? tds[2])
+      const fielder = extractFielder(howOut, bowler)
       if (!fielder) continue
       if (fielder.method === 'catch')    getFielder(fielder.name).catches++
       if (fielder.method === 'stumping') getFielder(fielder.name).stumpings++
