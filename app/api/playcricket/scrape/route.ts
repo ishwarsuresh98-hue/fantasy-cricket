@@ -205,27 +205,40 @@ function parsePrintPage(html: string): ScrapeResult {
 
   // ── Walk all headings + tables in document order ──────────────────────────
   // node-html-parser preserves source order inside querySelectorAll.
+  //
+  // Page layout (confirmed from live HTML):
+  //   <h3> "Slough CC - 1st XI Vs Banbury CC - 1st XI"  ← match title, NOT a team section
+  //   <h4> "Result Summary"
+  //   <h1> "Banbury CC"                                  ← OPPONENT section
+  //     <h4> "Batting"   → Banbury batting  (used for Slough fielding)
+  //     <h4> "Bowling"   → SLOUGH bowling   ← what we want for sloughBowlTable
+  //   <h1> "Slough CC"                                   ← SLOUGH section
+  //     <h4> "Batting"   → Slough batting   ← what we want for sloughBatTable
+  //     <h4> "Bowling"   → Banbury bowling  (ignore)
+  //
+  // Slough bowls in the OPPONENT's innings, so sloughBowlTable lives under
+  // the opponent heading, not the Slough heading.
+
   const elements = root.querySelectorAll('h1,h2,h3,h4,h5,h6,table')
 
-  type TableRole = 'batting' | 'bowling' | 'unknown'
+  type TableRole    = 'batting' | 'bowling' | 'unknown'
+  type SectionKind  = 'none' | 'slough' | 'opponent'
 
   function classifyTable(el: typeof elements[number]): TableRole {
     const ths = el.querySelectorAll('th').map(th => th.text.trim().toLowerCase())
-    if (ths.some(h => h.includes('how out') || h === 'how out')) return 'batting'
-    if (ths.some(h => h.includes('wicket') || h.includes('wides') || h === 'w')) return 'bowling'
-    // Fallback: a table whose first header looks like a name column and has
-    // a "runs" column is likely batting; one with "overs" is likely bowling.
+    if (ths.some(h => h === 'how out' || h.includes('how out'))) return 'batting'
+    // Use 'wickets' (full word) not 'w' — 'w' substring-matches 'bowler'
+    if (ths.some(h => h === 'wickets' || h === 'wkts' || h === 'wides')) return 'bowling'
     if (ths.some(h => h.includes('run')) && ths.some(h => h === 'name' || h === 'batsman' || h === 'batter')) return 'batting'
-    if (ths.some(h => h.includes('over') || h.includes('maiden'))) return 'bowling'
+    if (ths.some(h => h === 'overs' || h === 'maidens')) return 'bowling'
     return 'unknown'
   }
 
-  // Section state
-  let inSloughSection  = false
-  let sloughTeamLabel  = 'Slough CC'
+  let section:       SectionKind = 'none'
+  let sloughTeamLabel             = 'Slough CC'
   let sloughBatTable:  typeof elements[number] | null = null
   let sloughBowlTable: typeof elements[number] | null = null
-  let oppBatTable:     typeof elements[number] | null = null   // for fielding
+  let oppBatTable:     typeof elements[number] | null = null   // for Slough fielding
 
   for (const el of elements) {
     const tag  = el.tagName?.toLowerCase() ?? ''
@@ -234,20 +247,21 @@ function parsePrintPage(html: string): ScrapeResult {
     if (/^h[1-6]$/.test(tag)) {
       const low = text.toLowerCase()
 
+      // Match-title headings contain BOTH team names and a "v/vs" separator —
+      // e.g. "Slough CC - 1st XI Vs Banbury CC - 1st XI". Skip them.
+      if (/slough/i.test(text) && /\bvs?\b/i.test(text)) continue
+
       if (/slough/i.test(text)) {
-        // Enter Slough section
-        inSloughSection = true
+        section         = 'slough'
         sloughTeamLabel = text
         continue
       }
 
-      // Sub-headings like "Batting" / "Bowling" / "Innings" don't end the section
+      // Sub-headings (Batting / Bowling / Innings / Fall of Wickets) don't change section
       if (/\b(batting|bowling|innings|fall\s+of|extras?)\b/i.test(low)) continue
 
-      // Any other substantial heading = new team section
-      if (text.length > 3) {
-        inSloughSection = false
-      }
+      // Any other substantial heading = opponent / other section
+      if (text.length > 3) section = 'opponent'
       continue
     }
 
@@ -255,12 +269,15 @@ function parsePrintPage(html: string): ScrapeResult {
       const role = classifyTable(el)
       if (role === 'unknown') continue
 
-      if (inSloughSection) {
-        if (role === 'batting'  && !sloughBatTable)  sloughBatTable  = el
-        if (role === 'bowling'  && !sloughBowlTable) sloughBowlTable = el
-      } else {
-        // First opposition batting table — used for fielding
-        if (role === 'batting' && !oppBatTable) oppBatTable = el
+      if (section === 'slough') {
+        // Under the Slough heading: batting = Slough's batting.
+        // The bowling table here belongs to the OPPONENT's bowlers — ignore it.
+        if (role === 'batting' && !sloughBatTable) sloughBatTable = el
+      } else if (section === 'opponent') {
+        // Under the opponent heading: batting = their batting (Slough is fielding).
+        //                             bowling = SLOUGH's bowling figures.
+        if (role === 'batting' && !oppBatTable)     oppBatTable    = el
+        if (role === 'bowling' && !sloughBowlTable) sloughBowlTable = el
       }
     }
   }
@@ -346,24 +363,27 @@ function parsePrintPage(html: string): ScrapeResult {
       ths.findIndex(h => candidates.some(c => h === c || h.includes(c)))
 
     // Print page order: Bowler(0) | Overs(1) | Maidens(2) | Runs(3) | Wickets(4) | Wides(5) | No Balls(6)
-    const iName    = idx(['bowler', 'name', 'player'])               !== -1
-                       ? idx(['bowler', 'name', 'player'])             : 0
-    const iOvers   = idx(['overs', 'o', 'ov'])                       !== -1
-                       ? idx(['overs', 'o', 'ov'])                     : 1
-    const iMaidens = idx(['maidens', 'mdns', 'm'])                   !== -1
-                       ? idx(['maidens', 'mdns', 'm'])                 : 2
-    const iWickets = idx(['wickets', 'wkts', 'w'])                   !== -1
-                       ? idx(['wickets', 'wkts', 'w'])                 : 4
+    //
+    // IMPORTANT: remove single-char / short candidates — they substring-match 'bowler':
+    //   'bowler'.includes('o') → true  (breaks iOvers)
+    //   'bowler'.includes('w') → true  (breaks iWickets)
+    //   'bowler'.includes('m') → false (safe, but remove anyway for clarity)
+    const iName    = idx(['bowler', 'name', 'player']) !== -1 ? idx(['bowler', 'name', 'player']) : 0
+    const iOvers   = idx(['overs', 'ov'])              !== -1 ? idx(['overs', 'ov'])               : 1
+    const iMaidens = idx(['maidens', 'mdns'])          !== -1 ? idx(['maidens', 'mdns'])            : 2
+    const iWickets = idx(['wickets', 'wkts'])          !== -1 ? idx(['wickets', 'wkts'])            : 4
 
-    // Same no-<tbody> fix as batting above.
+    // Player bowling rows always have 7 cells.
+    // "Fielding Extras/Non-bowler wickets" has 3 cells — filtered by the < 7 guard.
+    // "Total" has 7 cells but caught by the name check below.
     for (const row of sloughBowlTable.querySelectorAll('tr')) {
       if (row.querySelectorAll('th').length > 0) continue   // header row
       const tds = row.querySelectorAll('td')
-      if (tds.length < 4) continue
+      if (tds.length < 7) continue
 
       const name = cellText(tds[iName])
       if (!name || name.length < 2) continue
-      if (/^(extras?|total\b|\d)/i.test(name)) continue
+      if (/^(extras?|total\b|fielding|non-?bowler|\d)/i.test(name)) continue
 
       bowling.push({
         name,
