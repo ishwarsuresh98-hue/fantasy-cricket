@@ -283,31 +283,32 @@ function parsePrintPage(html: string): ScrapeResult {
     const idx = (candidates: string[]) =>
       ths.findIndex(h => candidates.some(c => h === c || h.includes(c)))
 
-    // Column positions — detect by header name, fall back to known print-page order
-    //   Print page order: Name(0) | How Out(1) | Bowler(2) | Runs(3) | 4s(4) | 6s(5) | Balls(6)
-    const iName    = idx(['name', 'batsman', 'batter', 'player'])  !== -1
-                       ? idx(['name', 'batsman', 'batter', 'player']) : 0
-    const iHowOut  = idx(['how out', 'dismissal', 'how_out'])       !== -1
-                       ? idx(['how out', 'dismissal', 'how_out'])     : 1
-    const iBowler  = idx(['bowler'])                                !== -1
-                       ? idx(['bowler'])                              : 2
-    const iRuns    = idx(['runs', 'r'])                             !== -1
-                       ? idx(['runs', 'r'])                           : 3
-    const iFours   = idx(['4s', '4', 'fours'])                     !== -1
-                       ? idx(['4s', '4', 'fours'])                    : 4
-    const iSixes   = idx(['6s', '6', 'sixes'])                     !== -1
-                       ? idx(['6s', '6', 'sixes'])                    : 5
-    const iBalls   = idx(['balls', 'b', 'ball'])                   !== -1
-                       ? idx(['balls', 'b', 'ball'])                  : 6
+    // Column positions — detect by header name, fall back to known print-page order.
+    // Print page order: Name(0) | How Out(1) | Bowler(2) | Runs(3) | 4s(4) | 6s(5) | Balls(6)
+    //
+    // IMPORTANT: keep candidates unambiguous — short strings like 'r', 'b', '4', '6'
+    // would substring-match earlier columns ('bowler'.includes('r') etc.) and resolve
+    // to the wrong index.
+    const iName   = idx(['name', 'batsman', 'batter', 'player']) !== -1 ? idx(['name', 'batsman', 'batter', 'player']) : 0
+    const iHowOut = idx(['how out', 'how_out', 'dismissal'])      !== -1 ? idx(['how out', 'how_out', 'dismissal'])     : 1
+    const iBowler = idx(['bowler'])                               !== -1 ? idx(['bowler'])                              : 2
+    const iRuns   = idx(['runs'])                                 !== -1 ? idx(['runs'])                                : 3
+    const iFours  = idx(['4s', 'fours'])                          !== -1 ? idx(['4s', 'fours'])                         : 4
+    const iSixes  = idx(['6s', 'sixes'])                          !== -1 ? idx(['6s', 'sixes'])                         : 5
+    const iBalls  = idx(['balls'])                                !== -1 ? idx(['balls'])                               : 6
 
     // Play-Cricket print page omits <tbody> — rows are direct children of <table>.
-    // Skip any <tr> that contains <th> elements (that is the header row).
+    // Player rows always have exactly 7 cells (Name|HowOut|Bowler|Runs|4s|6s|Balls).
+    // Summary rows (Extras, Total, Wickets, footnote) use colspan and appear as ≤4 cells.
+    // Run-out rows keep all 7 cells — Bowler is simply an empty <td>, no column shifting.
     for (const row of sloughBatTable.querySelectorAll('tr')) {
       if (row.querySelectorAll('th').length > 0) continue   // header row
       const tds = row.querySelectorAll('td')
-      if (tds.length < 3) continue
+      if (tds.length < 7) continue                          // summary / footnote rows
 
-      const name   = cellText(tds[iName])
+      // Strip captain (*) and wicket-keeper (†) symbols from the name cell.
+      // node-html-parser decodes &dagger; → † before we ever see the text.
+      const name = cellText(tds[iName]).replace(/[†*]/g, '').trim()
       if (!name || name.length < 2) continue
       if (/^(extras?|total\b|fall\s+of|\d)/i.test(name)) continue
 
