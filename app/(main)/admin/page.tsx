@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import CreateSeasonForm from '@/components/admin/CreateSeasonForm'
+import RecalculatePointsButton from '@/components/admin/RecalculatePointsButton'
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -85,6 +86,20 @@ export default async function AdminPage() {
       </div>
 
       <CreateSeasonForm currentSeason={season} />
+
+      {/* ── Maintenance ─────────────────────────────────────────────────────── */}
+      <Card className="border-amber-200">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base text-amber-800">⚙ Maintenance</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1">
+          <p className="text-sm text-muted-foreground">
+            Recalculate fantasy points for all existing match performances. Use this if scoring
+            rules changed or a migration was applied after stats were saved.
+          </p>
+          <RecalculatePointsButton />
+        </CardContent>
+      </Card>
     </div>
   )
 }
