@@ -23,6 +23,7 @@ const NAV_LINKS = [
   { href: '/team', label: 'My Team' },
   { href: '/transfers', label: 'Transfers' },
   { href: '/leaderboard', label: 'Leaderboard' },
+  { href: '/teams', label: 'Teams' },
   { href: '/matches', label: 'Matches' },
   { href: '/rules', label: 'Rules' },
 ]
