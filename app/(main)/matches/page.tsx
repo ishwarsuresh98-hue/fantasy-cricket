@@ -27,10 +27,10 @@ export default async function MatchesPage() {
     .from('matches')
     .select('*')
     .eq('season_id', season.id)
-    .order('match_date')
+    .order('match_number', { ascending: true })
 
-  const upcoming = (matches ?? []).filter((m: Match) => m.status === 'upcoming')
-  const completed = (matches ?? []).filter((m: Match) => m.status === 'completed').reverse()
+  const upcoming  = (matches ?? []).filter((m: Match) => m.status === 'upcoming')
+  const completed = (matches ?? []).filter((m: Match) => m.status === 'completed')
 
   const MatchCard = ({ match }: { match: Match }) => (
     <Link href={`/matches/${match.id}`}>
