@@ -6,6 +6,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { Match } from '@/types'
 import MatchForm from '@/components/admin/MatchForm'
+import DeleteMatchButton from '@/components/admin/DeleteMatchButton'
 
 const MAX_XI = 11
 
@@ -141,6 +142,10 @@ export default async function AdminMatchesPage() {
                       {match.status === 'completed' ? 'Edit Stats' : 'Enter Stats'}
                     </Link>
                     <MatchForm seasonId={season.id} match={match} nextMatchNumber={match.match_number} />
+                    <DeleteMatchButton
+                      matchId={match.id}
+                      matchLabel={`Match ${match.match_number} vs ${match.opponent}`}
+                    />
                   </div>
                 </div>
               ))}
