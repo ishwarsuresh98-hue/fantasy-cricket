@@ -8,10 +8,18 @@ import { cn } from '@/lib/utils'
 import { PLAYER_ROLE_LABELS } from '@/lib/scoring'
 import type { MatchPerformance, Player } from '@/types'
 
+const ROLE_BADGE: Record<string, string> = {
+  batsman:        'bg-blue-100 text-blue-700',
+  bowler:         'bg-[#fceaea] text-[#b5211e]',
+  all_rounder:    'bg-[#eeedf8] text-[#262162]',
+  wicket_keeper:  'bg-[#fefde8] text-[#262162]',
+}
+
 export default async function MatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
 
+  // ── Match ─────────────────────────────────────────────────────────────────
   const { data: match } = await supabase
     .from('matches')
     .select('*')
@@ -20,53 +28,66 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
 
   if (!match) notFound()
 
-  const [{ data: performances }, { data: userResult }] = await Promise.all([
-    supabase.from('match_performances').select('*, players(*)').eq('match_id', id).order('base_points', { ascending: false }),
+  // ── Performances (public) + optional admin check ──────────────────────────
+  const [{ data: performances }, { data: { user } }] = await Promise.all([
+    supabase
+      .from('match_performances')
+      .select('*, players(*)')
+      .eq('match_id', id)
+      .order('base_points', { ascending: false }),
     supabase.auth.getUser(),
   ])
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', userResult.user!.id)
-    .single()
+  // Only fetch profile when a user is actually logged in
+  let isAdmin = false
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    isAdmin = profile?.role === 'admin'
+  }
 
-  const isAdmin = profile?.role === 'admin'
+  const formattedDate = new Date(match.match_date).toLocaleDateString('en-AU', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  })
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  const cell = (v: number | null | undefined) => (v ?? 0) || '—'
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
+
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Link href="/matches" className="text-sm text-muted-foreground hover:text-[#262162] hover:underline">Matches</Link>
-            <span className="text-muted-foreground">/</span>
-            <span className="text-sm">Match {match.match_number}</span>
+          <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
+            <Link href="/matches" className="hover:text-[#262162] hover:underline">Matches</Link>
+            <span>/</span>
+            <span className="text-gray-900 font-medium">Match {match.match_number}</span>
           </div>
           <h1 className="text-3xl font-bold text-[#262162]">{match.opponent}</h1>
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
             <Badge variant="outline">Match {match.match_number}</Badge>
             {match.status === 'completed'
               ? <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">Completed</Badge>
               : <Badge className="bg-[#fefde8] text-[#262162] border border-[#fbf927] hover:bg-[#fefde8]">Upcoming</Badge>
             }
           </div>
-          {match.venue && <p className="text-muted-foreground mt-1">{match.venue}</p>}
-          <p className="text-muted-foreground">
-            {new Date(match.match_date).toLocaleDateString('en-AU', {
-              weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-            })}
-          </p>
-          {match.result && (
-            <p className="text-[#b5211e] font-semibold mt-1">{match.result}</p>
-          )}
+          {match.venue   && <p className="text-muted-foreground mt-1">{match.venue}</p>}
+          <p className="text-muted-foreground">{formattedDate}</p>
+          {match.result  && <p className="text-[#b5211e] font-semibold mt-1">{match.result}</p>}
         </div>
+
         {isAdmin && (
           <Link
             href={`/admin/matches/${match.id}/stats`}
-            className={cn(buttonVariants({ variant: match.status === 'completed' ? 'outline' : 'default' }),
+            className={cn(
+              buttonVariants({ variant: match.status === 'completed' ? 'outline' : 'default' }),
               match.status === 'completed'
-                ? 'border-[#262162] text-[#262162] hover:bg-[#eeedf8]'
-                : 'bg-[#262162] hover:bg-[#1a1748] text-white'
+                ? 'border-[#262162] text-[#262162] hover:bg-[#eeedf8] shrink-0'
+                : 'bg-[#262162] hover:bg-[#1a1748] text-white shrink-0',
             )}
           >
             {match.status === 'completed' ? 'Edit Stats' : 'Enter Stats'}
@@ -74,17 +95,19 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
         )}
       </div>
 
+      {/* Scorecard */}
       {match.status === 'completed' && performances && performances.length > 0 ? (
         <Card>
           <CardHeader className="bg-[#262162] rounded-t-xl">
-            <CardTitle className="text-white">Player Scorecard</CardTitle>
+            <CardTitle className="text-white text-base">Player Scorecard</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wide px-6 py-3">Player</th>
+                    <th className="text-left   text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3 min-w-[140px]">Player</th>
+                    <th className="text-left   text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">Role</th>
                     <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">R</th>
                     <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">B</th>
                     <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">4s</th>
@@ -92,26 +115,44 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                     <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">W</th>
                     <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">Ct</th>
                     <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">St</th>
-                    <th className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wide px-6 py-3">Pts</th>
+                    <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">Dots</th>
+                    <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">Mdns</th>
+                    <th className="text-right  text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Pts</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {performances.map((perf: MatchPerformance & { players: Player }) => (
-                    <tr key={perf.id} className="hover:bg-[#eeedf8]">
-                      <td className="px-6 py-3">
-                        <p className="font-medium text-sm">{perf.players?.name}</p>
-                        <p className="text-xs text-muted-foreground">{PLAYER_ROLE_LABELS[perf.players?.role]}</p>
-                      </td>
-                      <td className="px-3 py-3 text-center text-sm">{perf.did_not_bat ? 'DNB' : perf.runs_scored}</td>
-                      <td className="px-3 py-3 text-center text-sm text-muted-foreground">{perf.did_not_bat ? '—' : perf.balls_faced}</td>
-                      <td className="px-3 py-3 text-center text-sm">{perf.fours || '—'}</td>
-                      <td className="px-3 py-3 text-center text-sm">{perf.sixes || '—'}</td>
-                      <td className="px-3 py-3 text-center text-sm">{perf.wickets || '—'}</td>
-                      <td className="px-3 py-3 text-center text-sm">{perf.catches || '—'}</td>
-                      <td className="px-3 py-3 text-center text-sm">{perf.stumpings || '—'}</td>
-                      <td className="px-6 py-3 text-right font-bold text-[#262162]">{perf.base_points.toFixed(1)}</td>
-                    </tr>
-                  ))}
+                  {(performances as (MatchPerformance & { players: Player })[]).map((perf) => {
+                    const role = perf.players?.role ?? ''
+                    return (
+                      <tr key={perf.id} className="hover:bg-[#eeedf8] transition-colors">
+                        <td className="px-4 py-3 font-medium">{perf.players?.name ?? '—'}</td>
+                        <td className="px-3 py-3">
+                          <Badge className={cn('text-xs font-normal', ROLE_BADGE[role] ?? 'bg-gray-100 text-gray-600')}>
+                            {PLAYER_ROLE_LABELS[role] ?? role}
+                          </Badge>
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          {perf.did_not_bat
+                            ? <span className="text-muted-foreground text-xs">DNB</span>
+                            : <span className="font-medium">{perf.runs_scored}</span>
+                          }
+                        </td>
+                        <td className="px-3 py-3 text-center text-muted-foreground">
+                          {perf.did_not_bat ? '—' : (perf.balls_faced ?? 0)}
+                        </td>
+                        <td className="px-3 py-3 text-center">{cell(perf.fours)}</td>
+                        <td className="px-3 py-3 text-center">{cell(perf.sixes)}</td>
+                        <td className="px-3 py-3 text-center">{cell(perf.wickets)}</td>
+                        <td className="px-3 py-3 text-center">{cell(perf.catches)}</td>
+                        <td className="px-3 py-3 text-center">{cell(perf.stumpings)}</td>
+                        <td className="px-3 py-3 text-center text-muted-foreground">{cell(perf.dot_balls)}</td>
+                        <td className="px-3 py-3 text-center text-muted-foreground">{cell(perf.maidens)}</td>
+                        <td className="px-4 py-3 text-right font-bold text-[#262162]">
+                          {Number(perf.base_points).toFixed(1)}
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -129,13 +170,17 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
           <CardContent className="py-16 text-center">
             <p className="text-muted-foreground">No performance data entered yet.</p>
             {isAdmin && (
-              <Link href={`/admin/matches/${match.id}/stats`} className={cn(buttonVariants(), 'mt-4 inline-flex bg-[#262162] hover:bg-[#1a1748]')}>
+              <Link
+                href={`/admin/matches/${match.id}/stats`}
+                className={cn(buttonVariants(), 'mt-4 inline-flex bg-[#262162] hover:bg-[#1a1748]')}
+              >
                 Enter Player Stats
               </Link>
             )}
           </CardContent>
         </Card>
       )}
+
     </div>
   )
 }

@@ -23,7 +23,8 @@ declare
 begin
   -- Touch every row: the BEFORE UPDATE trigger recalculates points for each.
   update public.match_performances
-  set    runs_scored = runs_scored;   -- semantic no-op; fires trg_performance_scoring
+  set    runs_scored = runs_scored    -- semantic no-op; fires trg_performance_scoring
+  where  id is not null;             -- satisfies Supabase's "no unbounded UPDATE" guard
 
   get diagnostics v_count = row_count;
   return v_count;
