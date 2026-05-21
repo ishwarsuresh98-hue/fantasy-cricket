@@ -15,6 +15,33 @@ const ROLE_BADGE: Record<string, string> = {
   wicket_keeper:  'bg-[#fefde8] text-[#262162]',
 }
 
+/** Strike-rate bonus. Returns null when not applicable (DNB or < 10 balls). */
+function srBonus(runs: number, balls: number, didNotBat: boolean): number | null {
+  if (didNotBat || balls < 10) return null
+  const sr = (runs / balls) * 100
+  if (sr >= 150) return  3
+  if (sr >= 125) return  2
+  if (sr >= 100) return  1
+  if (sr >=  75) return  0
+  return -2
+}
+
+/** Bowling milestone + maiden + dot-ball bonus. Returns 0 when none applies. */
+function bowlBonus(wickets: number, maidens: number, dotBalls: number): number {
+  let milestone = 0
+  if      (wickets >= 5) milestone = 16
+  else if (wickets >= 4) milestone =  8
+  else if (wickets >= 3) milestone =  4
+  return milestone + maidens * 8 + dotBalls
+}
+
+/** Render a bonus number: green positive, red negative, muted zero / null. */
+function BonusCell({ value }: { value: number | null }) {
+  if (value === null || value === 0) return <span className="text-muted-foreground">—</span>
+  if (value > 0) return <span className="font-semibold text-green-600">+{value}</span>
+  return <span className="font-semibold text-red-500">{value}</span>
+}
+
 export default async function MatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
@@ -117,6 +144,8 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                     <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">St</th>
                     <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">Dots</th>
                     <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">Mdns</th>
+                    <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">SR Bonus</th>
+                    <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">Bowl Bonus</th>
                     <th className="text-right  text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3">Pts</th>
                   </tr>
                 </thead>
@@ -147,6 +176,12 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                         <td className="px-3 py-3 text-center">{cell(perf.stumpings)}</td>
                         <td className="px-3 py-3 text-center text-muted-foreground">{cell(perf.dot_balls)}</td>
                         <td className="px-3 py-3 text-center text-muted-foreground">{cell(perf.maidens)}</td>
+                        <td className="px-3 py-3 text-center">
+                          <BonusCell value={srBonus(perf.runs_scored, perf.balls_faced ?? 0, perf.did_not_bat)} />
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          <BonusCell value={bowlBonus(perf.wickets ?? 0, perf.maidens ?? 0, perf.dot_balls ?? 0) || null} />
+                        </td>
                         <td className="px-4 py-3 text-right font-bold text-[#262162]">
                           {Number(perf.base_points).toFixed(1)}
                         </td>
