@@ -95,8 +95,7 @@ interface MatchRow {
 }
 interface UnmatchedRow {
   scrapedName: string
-  role: 'batting' | 'bowling' | 'fielding'
-  detail: string
+  details: string[]   // one entry per section (batting / bowling / fielding)
 }
 
 interface ImportPanelProps {
@@ -196,10 +195,15 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
   const { matchRows, unmatched } = (() => {
     if (!result) return { matchRows: [] as MatchRow[], unmatched: [] as UnmatchedRow[] }
 
-    const matchRows: MatchRow[] = []
-    const unmatched: UnmatchedRow[] = []
-    const playerMap  = new Map<string, Partial<PlayerStats>>()
-    const sourcesMap = new Map<string, string[]>()
+    const matchRows:    MatchRow[]                    = []
+    const unmatchedMap: Map<string, string[]>         = new Map()   // name → details[]
+    const playerMap:    Map<string, Partial<PlayerStats>> = new Map()
+    const sourcesMap:   Map<string, string[]>         = new Map()
+
+    const addUnmatched = (name: string, detail: string) => {
+      if (!unmatchedMap.has(name)) unmatchedMap.set(name, [])
+      unmatchedMap.get(name)!.push(detail)
+    }
 
     const get = (id: string) => {
       if (!playerMap.has(id)) { playerMap.set(id, {}); sourcesMap.set(id, []) }
@@ -208,7 +212,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
 
     for (const b of result.batting as ScrapedBatter[]) {
       const p = matchPlayer(b.name, players)
-      if (!p) { unmatched.push({ scrapedName: b.name, role: 'batting', detail: b.dnb ? 'DNB' : `${b.runs}(${b.balls})` }); continue }
+      if (!p) { addUnmatched(b.name, b.dnb ? 'DNB' : `bat: ${b.runs}(${b.balls})`); continue }
       const s = get(p.id)
       s.runs = b.dnb ? 0 : b.runs;  s.balls = b.dnb ? 0 : b.balls
       s.fours = b.dnb ? 0 : b.fours; s.sixes = b.dnb ? 0 : b.sixes
@@ -218,7 +222,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
 
     for (const b of result.bowling as ScrapedBowler[]) {
       const p = matchPlayer(b.name, players)
-      if (!p) { unmatched.push({ scrapedName: b.name, role: 'bowling', detail: `${b.wickets}/${b.overs}ov` }); continue }
+      if (!p) { addUnmatched(b.name, `bowl: ${b.wickets}/${b.overs}ov`); continue }
       const s = get(p.id)
       s.wickets = b.wickets; s.maidens = b.maidens
       sourcesMap.get(p.id)!.push(`${b.wickets}wkts, ${b.maidens}mdns (${b.overs}ov)`)
@@ -226,7 +230,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
 
     for (const f of result.fielding as ScrapedFielder[]) {
       const p = matchPlayer(f.name, players)
-      if (!p) { unmatched.push({ scrapedName: f.name, role: 'fielding', detail: `${f.catches}ct ${f.stumpings}st` }); continue }
+      if (!p) { addUnmatched(f.name, `field: ${f.catches}ct ${f.stumpings}st`); continue }
       const s = get(p.id)
       s.catches   = (s.catches   ?? 0) + f.catches
       s.stumpings = (s.stumpings ?? 0) + f.stumpings
@@ -237,6 +241,12 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
       const player = players.find(p => p.id === id)!
       matchRows.push({ player, partial, sources: sourcesMap.get(id) ?? [] })
     }
+
+    // One UnmatchedRow per unique name, details merged across sections.
+    const unmatched: UnmatchedRow[] = Array.from(unmatchedMap.entries()).map(
+      ([scrapedName, details]) => ({ scrapedName, details })
+    )
+
     return { matchRows, unmatched }
   })()
 
@@ -495,7 +505,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
                   {unmatched.map((u, i) => (
                     <p key={i} className="text-xs text-amber-700">
                       <span className="font-medium">{u.scrapedName}</span>
-                      <span className="ml-2 text-amber-600">({u.role}: {u.detail})</span>
+                      <span className="ml-2 text-amber-600">({u.details.join(', ')})</span>
                     </p>
                   ))}
                 </div>
