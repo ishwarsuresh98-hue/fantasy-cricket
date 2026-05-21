@@ -100,11 +100,12 @@ interface UnmatchedRow {
 }
 
 interface ImportPanelProps {
+  matchId: string
   players: Player[]
-  onApply: (rows: MatchRow[]) => void
+  onApply: (rows: MatchRow[], newPlayers: Player[]) => void
 }
 
-function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
+function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps) {
   const [open,      setOpen]      = useState(false)
   const [tab,       setTab]       = useState<'url' | 'pdf'>('url')
 
@@ -122,6 +123,8 @@ function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
   // Shared
   const [result,    setResult]    = useState<ScrapeResult | null>(null)
   const [applied,   setApplied]   = useState(false)
+  const [creating,  setCreating]  = useState(false)
+  const [createErr, setCreateErr] = useState<string | null>(null)
 
   // ── Reset result whenever the user switches tabs ────────────────────────────
   function switchTab(t: 'url' | 'pdf') {
@@ -237,8 +240,82 @@ function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
     return { matchRows, unmatched }
   })()
 
-  function handleApply() {
-    onApply(matchRows)
+  async function handleApply() {
+    if (!result) return
+    setCreating(true)
+    setCreateErr(null)
+
+    // ── Auto-create unmatched players ────────────────────────────────────────
+    // Collect unique scraped names that didn't match anyone in the roster.
+    const unmatchedNames = new Set(unmatched.map(u => u.scrapedName))
+    const newPlayers: Player[] = []
+
+    for (const name of unmatchedNames) {
+      try {
+        const res  = await fetch('/api/admin/create-player', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ name, matchId }),
+        })
+        const data = await res.json()
+        if (!res.ok || data.error) {
+          setCreateErr(`Failed to create player "${name}": ${data.error ?? 'unknown error'}`)
+          setCreating(false)
+          return
+        }
+        newPlayers.push(data as Player)
+      } catch {
+        setCreateErr(`Network error while creating player "${name}".`)
+        setCreating(false)
+        return
+      }
+    }
+
+    // ── Re-run matching with the extended player list ─────────────────────
+    // Build matchRows again using the combined roster so new players are
+    // included without duplicating the matching logic.
+    const allPlayers   = [...players, ...newPlayers]
+    const playerMap    = new Map<string, Partial<PlayerStats>>()
+    const sourcesMap   = new Map<string, string[]>()
+
+    const get = (id: string) => {
+      if (!playerMap.has(id)) { playerMap.set(id, {}); sourcesMap.set(id, []) }
+      return playerMap.get(id)!
+    }
+
+    for (const b of result.batting as ScrapedBatter[]) {
+      const p = matchPlayer(b.name, allPlayers)
+      if (!p) continue
+      const s = get(p.id)
+      s.runs = b.dnb ? 0 : b.runs;  s.balls = b.dnb ? 0 : b.balls
+      s.fours = b.dnb ? 0 : b.fours; s.sixes = b.dnb ? 0 : b.sixes
+      s.dnb = b.dnb
+      sourcesMap.get(p.id)!.push(b.dnb ? 'DNB' : `${b.runs}(${b.balls}), ${b.fours}×4, ${b.sixes}×6`)
+    }
+    for (const b of result.bowling as ScrapedBowler[]) {
+      const p = matchPlayer(b.name, allPlayers)
+      if (!p) continue
+      const s = get(p.id)
+      s.wickets = b.wickets; s.maidens = b.maidens
+      sourcesMap.get(p.id)!.push(`${b.wickets}wkts, ${b.maidens}mdns (${b.overs}ov)`)
+    }
+    for (const f of result.fielding as ScrapedFielder[]) {
+      const p = matchPlayer(f.name, allPlayers)
+      if (!p) continue
+      const s = get(p.id)
+      s.catches   = (s.catches   ?? 0) + f.catches
+      s.stumpings = (s.stumpings ?? 0) + f.stumpings
+      if (f.catches + f.stumpings > 0) sourcesMap.get(p.id)!.push(`${f.catches}ct, ${f.stumpings}st`)
+    }
+
+    const fullMatchRows: MatchRow[] = []
+    for (const [id, partial] of playerMap.entries()) {
+      const player = allPlayers.find(p => p.id === id)!
+      fullMatchRows.push({ player, partial, sources: sourcesMap.get(id) ?? [] })
+    }
+
+    setCreating(false)
+    onApply(fullMatchRows, newPlayers)
     setApplied(true)
   }
 
@@ -254,7 +331,7 @@ function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
     )
   }
 
-  const busy = urlBusy || pdfBusy
+  const busy = urlBusy || pdfBusy || creating
   const activeErr = tab === 'url' ? urlErr : pdfErr
 
   return (
@@ -425,14 +502,27 @@ function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
               </div>
             )}
 
+            {createErr && (
+              <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2">
+                {createErr}
+              </div>
+            )}
+
             <div className="flex items-center gap-3">
               <Button
                 onClick={handleApply}
-                disabled={matchRows.length === 0 || applied}
+                disabled={matchRows.length === 0 && unmatched.length === 0 || applied || creating}
                 className={applied ? 'bg-green-600' : 'bg-[#262162] hover:bg-[#1a1748]'}
                 size="sm"
               >
-                {applied ? '✓ Applied to form' : `Apply ${matchRows.length} players to form`}
+                {creating
+                  ? `Creating ${unmatched.length} player${unmatched.length !== 1 ? 's' : ''}…`
+                  : applied
+                    ? '✓ Applied to form'
+                    : unmatched.length > 0
+                      ? `Apply & create ${unmatched.length} new player${unmatched.length !== 1 ? 's' : ''}`
+                      : `Apply ${matchRows.length} players to form`
+                }
               </Button>
               {applied && (
                 <p className="text-xs text-green-700">Stats pre-filled — review below, then save as normal.</p>
@@ -447,6 +537,10 @@ function PlayCricketImportPanel({ players, onApply }: ImportPanelProps) {
 
 export default function StatsForm({ matchId, players, existingPerfs, matchStatus }: StatsFormProps) {
   const router = useRouter()
+
+  // localPlayers grows when the import panel auto-creates unmatched players.
+  const [localPlayers, setLocalPlayers] = useState<Player[]>(players)
+
   const [stats, setStats] = useState<Record<string, PlayerStats>>(
     () => Object.fromEntries(players.map((p) => [p.id, defaultStats(existingPerfs[p.id])]))
   )
@@ -455,7 +549,20 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
   const [error, setError] = useState<string | null>(null)
   const [savedMessage, setSavedMessage] = useState<string | null>(null)
 
-  function handleImport(rows: MatchRow[]) {
+  function handleImport(rows: MatchRow[], newPlayers: Player[]) {
+    // Add newly created players to the roster and initialise their stats.
+    if (newPlayers.length > 0) {
+      setLocalPlayers(prev => [...prev, ...newPlayers])
+      setStats(prev => {
+        const next = { ...prev }
+        for (const p of newPlayers) {
+          if (!next[p.id]) next[p.id] = defaultStats()
+        }
+        return next
+      })
+    }
+
+    // Apply scraped stats (works for both pre-existing and newly created players).
     setStats(prev => {
       const next = { ...prev }
       for (const { player, partial } of rows) {
@@ -490,7 +597,7 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
     setError(null)
     const supabase = createClient()
 
-    const rows = players.map((p) => {
+    const rows = localPlayers.map((p) => {
       const s = stats[p.id]
       return {
         match_id: matchId,
@@ -537,14 +644,14 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
     }).catch(() => {/* ignore */})
   }
 
-  const totalPoints = players.reduce((sum, p) => sum + previewPoints(stats[p.id]), 0)
+  const totalPoints = localPlayers.reduce((sum, p) => sum + previewPoints(stats[p.id] ?? defaultStats()), 0)
 
   return (
     <div className="space-y-6">
       {/* Play-Cricket import */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">Enter stats manually or import from Play-Cricket.</p>
-        <PlayCricketImportPanel players={players} onApply={handleImport} />
+        <PlayCricketImportPanel matchId={matchId} players={localPlayers} onApply={handleImport} />
       </div>
 
       {/* Match result */}
@@ -592,8 +699,8 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {players.map((player) => {
-                  const s = stats[player.id]
+                {localPlayers.map((player) => {
+                  const s = stats[player.id] ?? defaultStats()
                   const pts = previewPoints(s)
                   return (
                     <tr key={player.id} className="hover:bg-gray-50">
