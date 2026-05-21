@@ -34,6 +34,11 @@ export default function DeleteMatchButton({ matchId, matchLabel }: Props) {
 
     setOpen(false)
     router.refresh()
+
+    if (data.warning) {
+      // Deletion succeeded but renumbering hit a problem — log so it's visible.
+      console.warn('[DeleteMatchButton]', data.warning)
+    }
   }
 
   return (
