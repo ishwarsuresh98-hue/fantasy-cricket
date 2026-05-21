@@ -195,14 +195,22 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
   const { matchRows, unmatched } = (() => {
     if (!result) return { matchRows: [] as MatchRow[], unmatched: [] as UnmatchedRow[] }
 
-    const matchRows:    MatchRow[]                    = []
-    const unmatchedMap: Map<string, string[]>         = new Map()   // name → details[]
-    const playerMap:    Map<string, Partial<PlayerStats>> = new Map()
-    const sourcesMap:   Map<string, string[]>         = new Map()
+    const matchRows:  MatchRow[]                       = []
+    const playerMap:  Map<string, Partial<PlayerStats>> = new Map()
+    const sourcesMap: Map<string, string[]>             = new Map()
 
-    const addUnmatched = (name: string, detail: string) => {
-      if (!unmatchedMap.has(name)) unmatchedMap.set(name, [])
-      unmatchedMap.get(name)!.push(detail)
+    // Keyed by lowercased+trimmed name so "Shanay Mehta", " shanay mehta",
+    // "SHANAY MEHTA" all collapse to the same entry.
+    const unmatchedDetails:  Map<string, string[]> = new Map()  // normKey → details[]
+    const unmatchedDisplay:  Map<string, string>   = new Map()  // normKey → display name
+
+    const addUnmatched = (rawName: string, detail: string) => {
+      const key = rawName.trim().toLowerCase()
+      if (!unmatchedDetails.has(key)) {
+        unmatchedDetails.set(key, [])
+        unmatchedDisplay.set(key, rawName.trim())  // keep first-seen capitalisation
+      }
+      unmatchedDetails.get(key)!.push(detail)
     }
 
     const get = (id: string) => {
@@ -242,9 +250,9 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
       matchRows.push({ player, partial, sources: sourcesMap.get(id) ?? [] })
     }
 
-    // One UnmatchedRow per unique name, details merged across sections.
-    const unmatched: UnmatchedRow[] = Array.from(unmatchedMap.entries()).map(
-      ([scrapedName, details]) => ({ scrapedName, details })
+    // One row per unique normalised name.
+    const unmatched: UnmatchedRow[] = Array.from(unmatchedDetails.entries()).map(
+      ([key, details]) => ({ scrapedName: unmatchedDisplay.get(key)!, details })
     )
 
     return { matchRows, unmatched }
