@@ -112,21 +112,12 @@ export default async function TeamsPage() {
   // SelRow enriched with the gameweek-total points for that player
   type EnrichedSelRow = SelRow & { gwPoints: number }
 
-  // ── Build matchId → sibling matchIds (same calendar date) ────────────────
-  // allMatches is the full season list already fetched above.
-  const matchDateStr = new Map<string, string>()       // matchId → YYYY-MM-DD
+  // ── matchId → calendar date string (YYYY-MM-DD, UTC) ─────────────────────
+  // Built from the full season match list so every match — regardless of
+  // which XI played — maps to its correct gameweek date.
+  const matchDateStr = new Map<string, string>()
   for (const m of (allMatches ?? [])) {
     matchDateStr.set(m.id, new Date(m.match_date).toISOString().slice(0, 10))
-  }
-  const dateToMatchIds = new Map<string, string[]>()   // dateStr → matchIds[]
-  for (const [id, d] of matchDateStr) {
-    if (!dateToMatchIds.has(d)) dateToMatchIds.set(d, [])
-    dateToMatchIds.get(d)!.push(id)
-  }
-  // Final lookup: matchId → all matchIds on the same date (incl. self)
-  const gwMatchIds = new Map<string, string[]>()
-  for (const [id, d] of matchDateStr) {
-    gwMatchIds.set(id, dateToMatchIds.get(d)!)
   }
 
   // ── Collect all match IDs to query ────────────────────────────────────────
@@ -161,12 +152,15 @@ export default async function TeamsPage() {
 
   // For each team:
   //   1. Pick the highest-priority match (refMatch > most-recent completed)
-  //   2. Use that match's rows as the squad (players, captain/vc flags)
-  //   3. Sum points_earned for each player across ALL matches on the same date
+  //      → determines the squad composition (who is in, who is C/VC)
+  //   2. Derive the GW date from that match (YYYY-MM-DD)
+  //   3. Walk the team's entire matchMap and sum points_earned for each player
+  //      across every match whose date equals the GW date.
+  //      This covers 1st XI, 2nd XI, 3rd XI etc. on the same calendar day.
   const squadByTeam = new Map<string, EnrichedSelRow[]>()
   for (const [teamId, matchMap] of byTeamMatch) {
-    // Find best match
-    let bestOrder = -1
+    // Step 1: find the best (highest-priority) match for squad display
+    let bestOrder   = -1
     let bestMatchId: string | null = null
     for (const [matchId] of matchMap) {
       const order = matchOrder.get(matchId) ?? -1
@@ -176,18 +170,27 @@ export default async function TeamsPage() {
 
     const baseSels = matchMap.get(bestMatchId)!
 
-    // All match IDs on the same gameweek date as the chosen match
-    const siblingIds = gwMatchIds.get(bestMatchId) ?? [bestMatchId]
+    // Step 2: GW date = the calendar date of the chosen display match
+    const gwDate = matchDateStr.get(bestMatchId)
 
-    // Enrich each player row with the sum of their points across the GW
-    const enriched: EnrichedSelRow[] = baseSels.map((sel) => {
-      const gwPoints = siblingIds.reduce((sum, mid) => {
-        const sibSels = matchMap.get(mid) ?? []
-        const playerSel = sibSels.find((s) => s.players.id === sel.players.id)
-        return sum + (playerSel?.points_earned ?? 0)
-      }, 0)
-      return { ...sel, gwPoints }
-    })
+    // Step 3: for each player, sum points_earned across ALL of this team's
+    // selections whose match falls on the same date.
+    // We iterate matchMap (the team's own selection rows) and group by date —
+    // no intermediate sibling-ID lookup needed, so there's no risk of missing
+    // a match that the team does have selections for.
+    const playerGwPts = new Map<string, number>()   // playerId → GW total
+    for (const [matchId, sels] of matchMap) {
+      if (matchDateStr.get(matchId) !== gwDate) continue   // different GW date
+      for (const sel of sels) {
+        const pid = sel.players.id
+        playerGwPts.set(pid, (playerGwPts.get(pid) ?? 0) + sel.points_earned)
+      }
+    }
+
+    const enriched: EnrichedSelRow[] = baseSels.map((sel) => ({
+      ...sel,
+      gwPoints: playerGwPts.get(sel.players.id) ?? 0,
+    }))
 
     squadByTeam.set(teamId, enriched)
   }
