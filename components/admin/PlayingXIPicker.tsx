@@ -39,6 +39,7 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
   const [saved, setSaved]       = useState(false)
   const [error, setError]       = useState<string | null>(null)
   const [activeRole, setActiveRole] = useState<string>('wicket_keeper')
+  const [search, setSearch]         = useState('')
 
   const count = selected.size
   const full  = count === MAX_XI
@@ -100,7 +101,12 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
     return acc
   }, {})
 
-  const rolePlayers = grouped[activeRole] ?? []
+  const allRolePlayers = grouped[activeRole] ?? []
+  const rolePlayers    = search.trim()
+    ? allRolePlayers.filter((p) =>
+        p.name.toLowerCase().includes(search.trim().toLowerCase())
+      )
+    : allRolePlayers
 
   return (
     <div className="space-y-5">
@@ -167,7 +173,7 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
           return (
             <button
               key={role}
-              onClick={() => setActiveRole(role)}
+              onClick={() => { setActiveRole(role); setSearch('') }}
               className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all ${
                 isActive
                   ? 'bg-[#262162] text-white border-[#262162]'
@@ -185,6 +191,34 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
             </button>
           )
         })}
+      </div>
+
+      {/* Search input */}
+      <div className="relative">
+        <svg
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0Z" />
+        </svg>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={`Search ${ROLE_SHORT[activeRole]} players…`}
+          className="w-full pl-9 pr-9 py-2.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-[#262162] focus:ring-1 focus:ring-[#262162]/30 transition-colors"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Clear search"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Player grid */}
@@ -237,7 +271,11 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
         })}
 
         {rolePlayers.length === 0 && (
-          <p className="col-span-full text-center text-muted-foreground py-8">No {PLAYER_ROLE_LABELS[activeRole]} registered this season.</p>
+          <p className="col-span-full text-center text-muted-foreground py-8">
+            {search.trim()
+              ? <>No {ROLE_SHORT[activeRole]} players match &ldquo;{search}&rdquo;.</>
+              : <>No {PLAYER_ROLE_LABELS[activeRole]} registered this season.</>}
+          </p>
         )}
       </div>
 
