@@ -90,26 +90,62 @@ export default async function TeamsPage() {
     .eq('season_id', season.id)
     .order('total_points', { ascending: false })
 
-  // ── Selections for the reference match, joined with player data ───────────
-  const { data: selections } = refMatch
-    ? await supabase
-        .from('fantasy_selections')
-        .select('fantasy_team_id, is_captain, is_vice_captain, players(id, name, role)')
-        .eq('match_id', refMatch.id)
-    : { data: [] }
+  // ── Selections — fetch across all completed matches + refMatch ────────────
+  //
+  // Strategy per team:
+  //   1. Primary  — use selections for refMatch if the team has them.
+  //   2. Fallback — if no refMatch selections, use the team's most recent
+  //                 completed-match selections (highest match_date index).
+  //
+  // This ensures teams that haven't updated their squad for the latest match
+  // still show their last known squad rather than "No squad selected yet".
 
-  // Group selections by fantasy team
   type SelRow = {
     fantasy_team_id: string
+    match_id: string
     is_captain: boolean
     is_vice_captain: boolean
     players: { id: string; name: string; role: string }
   }
 
+  // Collect all match IDs to query: every completed match + refMatch (may be upcoming)
+  const queryMatchIds = new Set<string>(completedMatches.map((m: Match) => m.id))
+  if (refMatch) queryMatchIds.add(refMatch.id)
+
+  const { data: allSels } = queryMatchIds.size > 0
+    ? await supabase
+        .from('fantasy_selections')
+        .select('fantasy_team_id, match_id, is_captain, is_vice_captain, players(id, name, role)')
+        .in('match_id', [...queryMatchIds])
+    : { data: [] }
+
+  // Priority map: matchId → sort order (higher = preferred)
+  // completedMatches is sorted ascending, so higher index = more recent.
+  // refMatch always gets the highest priority so it wins when available.
+  const matchOrder = new Map<string, number>()
+  completedMatches.forEach((m: Match, i) => matchOrder.set(m.id, i))
+  if (refMatch) matchOrder.set(refMatch.id, completedMatches.length + 1)
+
+  // Group all rows by (teamId → matchId → rows)
+  const byTeamMatch = new Map<string, Map<string, SelRow[]>>()
+  for (const sel of (allSels ?? []) as unknown as SelRow[]) {
+    if (!byTeamMatch.has(sel.fantasy_team_id))
+      byTeamMatch.set(sel.fantasy_team_id, new Map())
+    const matchMap = byTeamMatch.get(sel.fantasy_team_id)!
+    if (!matchMap.has(sel.match_id)) matchMap.set(sel.match_id, [])
+    matchMap.get(sel.match_id)!.push(sel)
+  }
+
+  // For each team pick the highest-priority match they actually have selections for
   const squadByTeam = new Map<string, SelRow[]>()
-  for (const sel of (selections ?? []) as unknown as SelRow[]) {
-    if (!squadByTeam.has(sel.fantasy_team_id)) squadByTeam.set(sel.fantasy_team_id, [])
-    squadByTeam.get(sel.fantasy_team_id)!.push(sel)
+  for (const [teamId, matchMap] of byTeamMatch) {
+    let bestOrder = -1
+    let bestSels: SelRow[] = []
+    for (const [matchId, sels] of matchMap) {
+      const order = matchOrder.get(matchId) ?? -1
+      if (order > bestOrder) { bestOrder = order; bestSels = sels }
+    }
+    if (bestSels.length > 0) squadByTeam.set(teamId, bestSels)
   }
 
   // Sort each squad: captain first, then vice-captain, then alphabetical
