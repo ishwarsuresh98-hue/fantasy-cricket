@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { PLAYER_ROLE_LABELS } from '@/lib/scoring'
@@ -39,16 +39,26 @@ type PerfRow = {
   match_id: string
   player_id: string
   runs_scored: number
-  balls_faced: number | null
-  fours: number | null
-  sixes: number | null
   wickets: number | null
   catches: number | null
-  stumpings: number | null
+  fours: number | null
+  sixes: number | null
   maidens: number | null
-  dot_balls: number | null
   base_points: number
   did_not_bat: boolean
+}
+
+// One aggregated row per player per gameweek
+type GwPlayerRow = {
+  playerId:        string
+  playerName:      string
+  playerRole:      string
+  isCaptain:       boolean
+  isViceCaptain:   boolean
+  totalRuns:       number
+  totalWickets:    number
+  totalBasePoints: number   // sum of match_performances.base_points
+  totalEarned:     number   // sum of fantasy_selections.points_earned (incl. C/VC/booster mult)
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -89,12 +99,10 @@ export default async function TeamDetailPage({
   // ── Collect unique matches ────────────────────────────────────────────────
   const matchMetaMap = new Map<string, MatchMeta>()
   for (const sel of selections) {
-    if (!matchMetaMap.has(sel.match_id)) {
+    if (!matchMetaMap.has(sel.match_id))
       matchMetaMap.set(sel.match_id, sel.matches)
-    }
   }
 
-  // Sort matches ascending by date for gameweek ordering
   const allMatchesList = [...matchMetaMap.values()].sort(
     (a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime(),
   )
@@ -103,14 +111,14 @@ export default async function TeamDetailPage({
     .filter((m) => m.status === 'completed')
     .map((m) => m.id)
 
-  // ── Fetch match performances (LEFT JOIN equivalent — missing perf = no row) ─
+  // ── Fetch performances ────────────────────────────────────────────────────
   const { data: perfData } =
     completedMatchIds.length > 0
       ? await supabase
           .from('match_performances')
           .select(
-            'match_id, player_id, runs_scored, balls_faced, fours, sixes, ' +
-            'wickets, catches, stumpings, maidens, dot_balls, base_points, did_not_bat',
+            'match_id, player_id, runs_scored, wickets, catches, fours, sixes, ' +
+            'maidens, base_points, did_not_bat',
           )
           .in('match_id', completedMatchIds)
       : { data: [] }
@@ -125,33 +133,78 @@ export default async function TeamDetailPage({
     perfByMatchPlayer.get(perf.match_id)!.set(perf.player_id, perf)
   }
 
-  // ── Group selections by match, sort by base_points DESC ──────────────────
+  // matchId → SelRow[]
   const selsByMatch = new Map<string, SelRow[]>()
   for (const sel of selections) {
     if (!selsByMatch.has(sel.match_id)) selsByMatch.set(sel.match_id, [])
     selsByMatch.get(sel.match_id)!.push(sel)
-  }
-  for (const [matchId, sels] of selsByMatch) {
-    const perfMap = perfByMatchPlayer.get(matchId) ?? new Map()
-    sels.sort(
-      (a, b) =>
-        (perfMap.get(b.player_id)?.base_points ?? 0) -
-        (perfMap.get(a.player_id)?.base_points ?? 0),
-    )
   }
 
   // ── Gameweeks ─────────────────────────────────────────────────────────────
   const gameweeks = buildGameweeks(allMatchesList)
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  const cell = (v: number | null | undefined) => (v ?? 0) || '—'
-
-  function fmtPts(pts: number): string {
-    return pts % 1 === 0 ? pts.toString() : pts.toFixed(1)
+  function fmtPts(n: number): string {
+    return n % 1 === 0 ? n.toString() : n.toFixed(1)
   }
 
-  // ── Empty state ───────────────────────────────────────────────────────────
-  const hasHistory = gameweeks.length > 0
+  function fmtBonus(bonus: number) {
+    if (bonus === 0) return <span className="text-muted-foreground">—</span>
+    if (bonus > 0)   return <span className="font-semibold text-green-600">+{fmtPts(bonus)}</span>
+    return               <span className="font-semibold text-red-500">{fmtPts(bonus)}</span>
+  }
+
+  // ── Aggregate per-GW player rows ──────────────────────────────────────────
+  // Returns one GwPlayerRow per player, summing stats across every match in the GW.
+  // C/VC flag is taken from the first selection encountered (consistent within a GW).
+  function buildGwRows(matchIds: string[]): GwPlayerRow[] {
+    const byPlayer = new Map<string, GwPlayerRow>()
+
+    for (const matchId of matchIds) {
+      const sels    = selsByMatch.get(matchId) ?? []
+      const perfMap = perfByMatchPlayer.get(matchId) ?? new Map()
+
+      for (const sel of sels) {
+        const pid = sel.player_id
+
+        if (!byPlayer.has(pid)) {
+          byPlayer.set(pid, {
+            playerId:        pid,
+            playerName:      sel.players.name,
+            playerRole:      sel.players.role,
+            isCaptain:       sel.is_captain,
+            isViceCaptain:   sel.is_vice_captain,
+            totalRuns:       0,
+            totalWickets:    0,
+            totalBasePoints: 0,
+            totalEarned:     0,
+          })
+        }
+
+        const row  = byPlayer.get(pid)!
+        const perf = perfMap.get(pid)
+
+        row.totalEarned += sel.points_earned ?? 0
+
+        if (perf) {
+          if (!perf.did_not_bat) row.totalRuns    += perf.runs_scored ?? 0
+          row.totalWickets    += perf.wickets     ?? 0
+          row.totalBasePoints += perf.base_points ?? 0
+        }
+      }
+    }
+
+    // Sort: captain first, then VC, then by total points earned descending
+    return [...byPlayer.values()].sort((a, b) => {
+      if (a.isCaptain      && !b.isCaptain)      return -1
+      if (!a.isCaptain     && b.isCaptain)        return  1
+      if (a.isViceCaptain  && !b.isViceCaptain)   return -1
+      if (!a.isViceCaptain && b.isViceCaptain)    return  1
+      return b.totalEarned - a.totalEarned
+    })
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-6">
@@ -175,7 +228,7 @@ export default async function TeamDetailPage({
         </div>
       </div>
 
-      {!hasHistory ? (
+      {gameweeks.length === 0 ? (
         <Card>
           <CardContent className="py-16 text-center">
             <div className="text-4xl mb-3">📋</div>
@@ -185,244 +238,170 @@ export default async function TeamDetailPage({
       ) : (
         <div className="space-y-10">
           {gameweeks.map((gw) => {
-            // Matches in this GW that this team has selections for
-            const gwMatches = gw.matchIds
-              .map((id) => matchMetaMap.get(id))
-              .filter((m): m is MatchMeta => !!m)
+            // Only include match IDs this team actually has selections for
+            const gwMatchIds = gw.matchIds.filter((id) => matchMetaMap.has(id))
+            if (gwMatchIds.length === 0) return null
+
+            const rows    = buildGwRows(gwMatchIds)
+            const gwTotal = rows.reduce((s, r) => s + r.totalEarned, 0)
+
+            // Sub-heading: list of opponents in this GW
+            const gwMatchMetas = gwMatchIds
+              .map((id) => matchMetaMap.get(id)!)
               .sort((a, b) => a.match_number - b.match_number)
-
-            if (gwMatches.length === 0) return null
-
-            // GW total = sum of points_earned across all selections in this GW
-            const gwTotal = gw.matchIds.reduce((sum, mid) => {
-              const sels = selsByMatch.get(mid) ?? []
-              return sum + sels.reduce((s, sel) => s + (sel.points_earned ?? 0), 0)
-            }, 0)
+            const opponentLine = gwMatchMetas
+              .map((m) => `M${m.match_number} vs ${m.opponent}`)
+              .join(' · ')
 
             return (
               <div key={gw.dateStr}>
 
                 {/* Gameweek header */}
-                <div className="flex items-center gap-3 mb-4 px-1 text-[#262162]">
-                  <div className="h-px flex-1 bg-[#262162]/30" />
+                <div className="flex items-center gap-3 mb-1 px-1">
+                  <div className="h-px flex-1 bg-[#262162]/20" />
                   <div className="shrink-0 flex items-center gap-2">
-                    <span className="text-sm font-semibold">Gameweek {gw.gw}</span>
+                    <span className="text-sm font-semibold text-[#262162]">
+                      Gameweek {gw.gw}
+                    </span>
                     <span className="text-sm text-[#262162]/60">— {gw.label}</span>
                     <Badge className="bg-[#262162] text-white text-xs font-bold hover:bg-[#262162]">
                       {fmtPts(gwTotal)} pts
                     </Badge>
                   </div>
-                  <div className="h-px flex-1 bg-[#262162]/30" />
+                  <div className="h-px flex-1 bg-[#262162]/20" />
                 </div>
 
-                {/* Match cards */}
-                <div className="space-y-4">
-                  {gwMatches.map((match) => {
-                    const matchSels = selsByMatch.get(match.id) ?? []
-                    const perfMap = perfByMatchPlayer.get(match.id) ?? new Map()
-                    const matchTotal = matchSels.reduce(
-                      (s, sel) => s + (sel.points_earned ?? 0),
-                      0,
-                    )
-                    const isCompleted = match.status === 'completed'
+                {/* Match context line */}
+                <p className="text-xs text-muted-foreground text-center mb-4 px-1">
+                  {opponentLine}
+                </p>
 
-                    return (
-                      <Card key={match.id}>
-                        <CardHeader className="pb-3 bg-[#eeedf8] rounded-t-xl">
-                          <div className="flex items-center justify-between gap-4">
-                            <div>
-                              <CardTitle className="text-[#262162] text-sm font-semibold">
-                                <Link
-                                  href={`/matches/${match.id}`}
-                                  className="hover:underline"
-                                >
-                                  Match {match.match_number} vs {match.opponent}
-                                </Link>
-                              </CardTitle>
-                              <p className="text-xs text-[#262162]/60 mt-0.5">
-                                {new Date(match.match_date).toLocaleDateString(
-                                  'en-AU',
-                                  { day: 'numeric', month: 'short', year: 'numeric' },
-                                )}
-                                {match.result && (
-                                  <span className="ml-1 font-medium text-[#b5211e]">
-                                    · {match.result}
-                                  </span>
-                                )}
-                              </p>
-                            </div>
-                            {isCompleted && matchSels.length > 0 && (
-                              <div className="text-right shrink-0">
-                                <p className="text-[#262162] font-bold text-lg leading-none">
-                                  {fmtPts(matchTotal)}
-                                </p>
-                                <p className="text-[#262162]/60 text-[10px] mt-0.5">pts</p>
-                              </div>
-                            )}
-                          </div>
-                        </CardHeader>
+                {/* One table for the whole gameweek */}
+                <Card>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-50 border-b">
+                          <tr>
+                            <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3 min-w-[160px]">
+                              Player
+                            </th>
+                            <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">
+                              Role
+                            </th>
+                            <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">
+                              R
+                            </th>
+                            <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">
+                              W
+                            </th>
+                            <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3 whitespace-nowrap">
+                              Pts (base)
+                            </th>
+                            <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">
+                              Bonus
+                            </th>
+                            <th className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3 whitespace-nowrap">
+                              Total Pts
+                            </th>
+                          </tr>
+                        </thead>
 
-                        <CardContent className="p-0">
-                          {matchSels.length === 0 ? (
-                            <div className="py-6 text-center text-sm text-muted-foreground">
-                              No squad selected for this match.
-                            </div>
-                          ) : (
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-sm">
-                                <thead className="bg-gray-50 border-b">
-                                  <tr>
-                                    <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-2.5 min-w-[150px]">
-                                      Player
-                                    </th>
-                                    <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-2.5">
-                                      Role
-                                    </th>
-                                    <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-2.5">
-                                      R
-                                    </th>
-                                    <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-2.5">
-                                      B
-                                    </th>
-                                    <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-2.5">
-                                      4s
-                                    </th>
-                                    <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-2.5">
-                                      6s
-                                    </th>
-                                    <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-2.5">
-                                      W
-                                    </th>
-                                    <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-2.5">
-                                      Ct
-                                    </th>
-                                    <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-2.5">
-                                      Mdns
-                                    </th>
-                                    <th className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-2.5">
-                                      Pts
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                  {matchSels.map((sel) => {
-                                    const perf = perfMap.get(sel.player_id)
-                                    const role = sel.players.role
+                        <tbody className="divide-y divide-gray-100">
+                          {rows.map((row) => {
+                            const bonus = row.totalEarned - row.totalBasePoints
 
-                                    return (
-                                      <tr
-                                        key={sel.player_id}
-                                        className="hover:bg-[#eeedf8] transition-colors"
-                                      >
-                                        {/* Player name with C/VC badge */}
-                                        <td className="px-4 py-2.5">
-                                          <div className="flex items-center gap-1.5">
-                                            {sel.is_captain ? (
-                                              <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#fbf927] text-[#262162] text-[10px] font-black">
-                                                C
-                                              </span>
-                                            ) : sel.is_vice_captain ? (
-                                              <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-[10px] font-black">
-                                                V
-                                              </span>
-                                            ) : (
-                                              <span className="flex-shrink-0 w-5" />
-                                            )}
-                                            <span className="font-medium">
-                                              {sel.players.name}
-                                            </span>
-                                          </div>
-                                        </td>
+                            return (
+                              <tr
+                                key={row.playerId}
+                                className="hover:bg-[#eeedf8] transition-colors"
+                              >
+                                {/* Player + C/VC badge */}
+                                <td className="px-4 py-2.5">
+                                  <div className="flex items-center gap-1.5">
+                                    {row.isCaptain ? (
+                                      <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#fbf927] text-[#262162] text-[10px] font-black">
+                                        C
+                                      </span>
+                                    ) : row.isViceCaptain ? (
+                                      <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-[10px] font-black">
+                                        V
+                                      </span>
+                                    ) : (
+                                      <span className="flex-shrink-0 w-5" />
+                                    )}
+                                    <span className="font-medium">{row.playerName}</span>
+                                  </div>
+                                </td>
 
-                                        {/* Role */}
-                                        <td className="px-3 py-2.5">
-                                          <Badge
-                                            className={cn(
-                                              'text-xs font-normal',
-                                              ROLE_BADGE[role] ?? 'bg-gray-100 text-gray-600',
-                                            )}
-                                          >
-                                            {PLAYER_ROLE_LABELS[role] ?? role}
-                                          </Badge>
-                                        </td>
+                                {/* Role badge */}
+                                <td className="px-3 py-2.5">
+                                  <Badge
+                                    className={cn(
+                                      'text-xs font-normal',
+                                      ROLE_BADGE[row.playerRole] ?? 'bg-gray-100 text-gray-600',
+                                    )}
+                                  >
+                                    {PLAYER_ROLE_LABELS[row.playerRole] ?? row.playerRole}
+                                  </Badge>
+                                </td>
 
-                                        {/* Batting stats */}
-                                        <td className="px-3 py-2.5 text-center">
-                                          {perf
-                                            ? perf.did_not_bat
-                                              ? <span className="text-muted-foreground text-xs">DNB</span>
-                                              : <span className="font-medium">{perf.runs_scored}</span>
-                                            : <span className="text-muted-foreground">—</span>}
-                                        </td>
-                                        <td className="px-3 py-2.5 text-center text-muted-foreground">
-                                          {perf && !perf.did_not_bat
-                                            ? perf.balls_faced ?? 0
-                                            : '—'}
-                                        </td>
-                                        <td className="px-3 py-2.5 text-center">
-                                          {perf ? cell(perf.fours) : '—'}
-                                        </td>
-                                        <td className="px-3 py-2.5 text-center">
-                                          {perf ? cell(perf.sixes) : '—'}
-                                        </td>
+                                {/* Runs */}
+                                <td className="px-3 py-2.5 text-center">
+                                  {row.totalRuns > 0
+                                    ? <span className="font-medium">{row.totalRuns}</span>
+                                    : <span className="text-muted-foreground">—</span>}
+                                </td>
 
-                                        {/* Bowling / fielding stats */}
-                                        <td className="px-3 py-2.5 text-center">
-                                          {perf ? cell(perf.wickets) : '—'}
-                                        </td>
-                                        <td className="px-3 py-2.5 text-center">
-                                          {perf ? cell(perf.catches) : '—'}
-                                        </td>
-                                        <td className="px-3 py-2.5 text-center text-muted-foreground">
-                                          {perf ? cell(perf.maidens) : '—'}
-                                        </td>
+                                {/* Wickets */}
+                                <td className="px-3 py-2.5 text-center">
+                                  {row.totalWickets > 0
+                                    ? <span className="font-medium">{row.totalWickets}</span>
+                                    : <span className="text-muted-foreground">—</span>}
+                                </td>
 
-                                        {/* Fantasy points (includes captain multiplier) */}
-                                        <td className="px-4 py-2.5 text-right font-bold text-[#262162]">
-                                          {sel.points_earned > 0
-                                            ? fmtPts(sel.points_earned)
-                                            : <span className="text-muted-foreground font-normal">—</span>}
-                                        </td>
-                                      </tr>
-                                    )
-                                  })}
+                                {/* Base points */}
+                                <td className="px-3 py-2.5 text-center text-muted-foreground">
+                                  {row.totalBasePoints > 0
+                                    ? fmtPts(row.totalBasePoints)
+                                    : '—'}
+                                </td>
 
-                                  {/* Match total row */}
-                                  {isCompleted && (
-                                    <tr className="bg-gray-50 border-t-2 border-gray-200">
-                                      <td
-                                        colSpan={9}
-                                        className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide"
-                                      >
-                                        Match {match.match_number} total
-                                      </td>
-                                      <td className="px-4 py-2 text-right font-bold text-[#262162]">
-                                        {fmtPts(matchTotal)}
-                                      </td>
-                                    </tr>
-                                  )}
-                                </tbody>
-                              </table>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    )
-                  })}
-                </div>
+                                {/* Bonus (multiplier effect) */}
+                                <td className="px-3 py-2.5 text-center">
+                                  {fmtBonus(bonus)}
+                                </td>
 
-                {/* GW summary footer */}
-                {gwMatches.length > 1 && (
-                  <div className="mt-3 flex items-center justify-end gap-2 px-1">
-                    <span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-                      Gameweek {gw.gw} total
-                    </span>
-                    <span className="text-base font-bold text-[#262162]">
-                      {fmtPts(gwTotal)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">pts</span>
-                  </div>
-                )}
+                                {/* Total fantasy points */}
+                                <td className="px-4 py-2.5 text-right font-bold text-[#262162]">
+                                  {row.totalEarned > 0
+                                    ? fmtPts(row.totalEarned)
+                                    : <span className="text-muted-foreground font-normal">—</span>}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+
+                        {/* GW total footer row */}
+                        <tfoot>
+                          <tr className="bg-[#262162]">
+                            <td
+                              colSpan={6}
+                              className="px-4 py-2.5 text-xs font-semibold text-white/70 uppercase tracking-wide"
+                            >
+                              Gameweek {gw.gw} total
+                            </td>
+                            <td className="px-4 py-2.5 text-right font-bold text-[#fbf927] text-base">
+                              {fmtPts(gwTotal)}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+
               </div>
             )
           })}
