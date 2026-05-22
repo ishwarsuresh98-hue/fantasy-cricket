@@ -105,6 +105,7 @@ export default async function TeamsPage() {
     match_id: string
     is_captain: boolean
     is_vice_captain: boolean
+    points_earned: number
     players: { id: string; name: string; role: string }
   }
 
@@ -115,7 +116,7 @@ export default async function TeamsPage() {
   const { data: allSels } = queryMatchIds.size > 0
     ? await supabase
         .from('fantasy_selections')
-        .select('fantasy_team_id, match_id, is_captain, is_vice_captain, players(id, name, role)')
+        .select('fantasy_team_id, match_id, is_captain, is_vice_captain, points_earned, players(id, name, role)')
         .in('match_id', [...queryMatchIds])
     : { data: [] }
 
@@ -260,28 +261,43 @@ export default async function TeamsPage() {
                       {squad.map((sel) => (
                         <li
                           key={sel.players.id}
-                          className="flex items-center justify-between px-4 py-2 hover:bg-gray-50 transition-colors"
+                          className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 transition-colors"
                         >
-                          <div className="flex items-center gap-2 min-w-0">
-                            {sel.is_captain ? (
-                              <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#fbf927] text-[#262162] text-[10px] font-black">
-                                C
-                              </span>
-                            ) : sel.is_vice_captain ? (
-                              <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-[10px] font-black">
-                                V
-                              </span>
-                            ) : (
-                              <span className="flex-shrink-0 w-5" />
-                            )}
-                            <span className="text-sm font-medium truncate">{sel.players.name}</span>
-                          </div>
+                          {/* Captain / VC badge */}
+                          {sel.is_captain ? (
+                            <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#fbf927] text-[#262162] text-[10px] font-black">
+                              C
+                            </span>
+                          ) : sel.is_vice_captain ? (
+                            <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-[10px] font-black">
+                              V
+                            </span>
+                          ) : (
+                            <span className="flex-shrink-0 w-5" />
+                          )}
+
+                          {/* Player name — grows to fill available space */}
+                          <span className="text-sm font-medium truncate flex-1 min-w-0">
+                            {sel.players.name}
+                          </span>
+
+                          {/* Role badge */}
                           <Badge className={cn(
-                            'text-[10px] px-1.5 py-0 flex-shrink-0 ml-2',
+                            'text-[10px] px-1.5 py-0 flex-shrink-0',
                             ROLE_BADGE[sel.players.role] ?? 'bg-gray-100 text-gray-600',
                           )}>
                             {PLAYER_ROLE_LABELS[sel.players.role] ?? sel.players.role}
                           </Badge>
+
+                          {/* Points earned for this match */}
+                          <span className="flex-shrink-0 w-10 text-right text-sm font-semibold text-[#262162]">
+                            {sel.points_earned > 0
+                              ? sel.points_earned % 1 === 0
+                                ? sel.points_earned.toString()
+                                : sel.points_earned.toFixed(1)
+                              : <span className="text-muted-foreground font-normal">—</span>
+                            }
+                          </span>
                         </li>
                       ))}
                     </ul>
