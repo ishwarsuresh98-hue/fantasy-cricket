@@ -19,6 +19,7 @@ export default async function TeamsPage() {
 
   const { data: { user } } = await supabase.auth.getUser()
 
+  // ── Active season ──────────────────────────────────────────────────────────
   const { data: season } = await supabase
     .from('seasons')
     .select('*')
@@ -35,15 +36,7 @@ export default async function TeamsPage() {
     )
   }
 
-  // ── Determine which locked squad to display ───────────────────────────────
-  //
-  // Rule: never reveal a team's upcoming-match transfers until after that
-  // match's deadline has passed (= lockStart: 1 hour before earliest match).
-  //
-  // • Before deadline → show last COMPLETED match's squad (previous lock)
-  // • After deadline  → show UPCOMING match's squad (now locked in)
-  // • No upcoming     → show last COMPLETED match's squad
-  //
+  // ── All matches for this season (needed for deadline + ref-match logic) ────
   const { data: allMatches } = await supabase
     .from('matches')
     .select('*')
@@ -53,31 +46,44 @@ export default async function TeamsPage() {
   const upcomingMatches  = (allMatches ?? []).filter((m: Match) => m.status === 'upcoming')
   const completedMatches = (allMatches ?? []).filter((m: Match) => m.status === 'completed')
 
+  // Next upcoming match; most-recent completed match
   const nextMatch = upcomingMatches[0] as Match | undefined
-  const prevMatch = [...completedMatches].sort(
-    (a: Match, b: Match) => new Date(b.match_date).getTime() - new Date(a.match_date).getTime()
-  )[0] as Match | undefined
+  const prevMatch = completedMatches.length > 0
+    ? completedMatches[completedMatches.length - 1] as Match   // already sorted asc
+    : undefined
 
-  // Compute the deadline for the next upcoming match day
+  // ── Squad visibility rule ──────────────────────────────────────────────────
+  //
+  //  BEFORE the deadline (1 h before next match):
+  //    → show each team's squad for the LAST COMPLETED match.
+  //      (Hides any transfer changes made in preparation for the upcoming match.)
+  //
+  //  AFTER the deadline (or no upcoming match):
+  //    → show the UPCOMING match's squad (now locked in).
+  //
   const lockWindow     = computeMatchDayLockWindow(upcomingMatches)
   const deadlinePassed = lockWindow ? Date.now() >= lockWindow.lockStart.getTime() : false
 
-  // The reference match whose selections we'll show
+  // The reference match whose selections we'll display
   const refMatch: Match | undefined =
-    nextMatch && deadlinePassed ? nextMatch   // deadline passed → upcoming squad is locked
-    : prevMatch                               // before deadline → last completed squad
+    nextMatch && deadlinePassed
+      ? nextMatch   // deadline passed → upcoming squad is locked, safe to show
+      : prevMatch   // before deadline → show last completed squad
 
-  // Human-readable label for the header
+  // Human-readable label for the sub-heading
   const refLabel = refMatch
     ? deadlinePassed && refMatch.id === nextMatch?.id
       ? `Match ${refMatch.match_number} vs ${refMatch.opponent} (locked)`
       : `Match ${refMatch.match_number} vs ${refMatch.opponent}`
     : null
 
-  // Explanation shown when squads are hidden behind the deadline
+  // Banner shown when upcoming-match transfers are being hidden
   const hiddenBehindDeadline = !!nextMatch && !deadlinePassed
 
-  // ── All teams in the season ────────────────────────────────────────────────
+  // ── All fantasy teams for the active season ────────────────────────────────
+  // Note: profiles.display_name is the correct column name.
+  // Migration 013 ensures all authenticated members can read all profiles,
+  // so the join returns real names instead of null.
   const { data: teams } = await supabase
     .from('fantasy_teams')
     .select('id, team_name, total_points, user_id, profiles(display_name)')
@@ -92,7 +98,7 @@ export default async function TeamsPage() {
         .eq('match_id', refMatch.id)
     : { data: [] }
 
-  // Group selections by team
+  // Group selections by fantasy team
   type SelRow = {
     fantasy_team_id: string
     is_captain: boolean
@@ -151,10 +157,12 @@ export default async function TeamsPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {teams.map((team, idx) => {
-            const isMe    = team.user_id === user?.id
-            const squad   = squadByTeam.get(team.id) ?? []
-            const owner   = (team.profiles as unknown as { display_name: string } | null)?.display_name ?? 'Unknown'
-            const rank    = idx + 1
+            const isMe  = team.user_id === user?.id
+            const squad = squadByTeam.get(team.id) ?? []
+            // profiles join returns { display_name: string } — see migration 013 for RLS fix
+            // Cast via unknown because the Supabase inferred type wraps joins in an array
+            const owner = (team.profiles as unknown as { display_name: string } | null)?.display_name ?? 'Unknown'
+            const rank  = idx + 1
 
             return (
               <Card
@@ -219,7 +227,6 @@ export default async function TeamsPage() {
                           className="flex items-center justify-between px-4 py-2 hover:bg-gray-50 transition-colors"
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            {/* Captain / vice-captain marker */}
                             {sel.is_captain ? (
                               <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#fbf927] text-[#262162] text-[10px] font-black">
                                 C
