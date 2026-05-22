@@ -2,43 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-
-// ── Gameweek helpers ──────────────────────────────────────────────────────────
-
-/** UTC date string (YYYY-MM-DD) for grouping matches into gameweeks. */
-function matchDay(dateStr: string): string {
-  return new Date(dateStr).toISOString().slice(0, 10)
-}
-
-interface Gameweek {
-  gw: number           // 1-based gameweek number
-  dateStr: string      // YYYY-MM-DD
-  label: string        // human-readable, e.g. "16 May 2026"
-  matchIds: string[]
-}
-
-function buildGameweeks(
-  matches: { id: string; match_date: string }[]
-): Gameweek[] {
-  // Collect unique dates in chronological order
-  const dateSet = new Map<string, string[]>()   // dateStr → matchIds[]
-  for (const m of matches) {
-    const d = matchDay(m.match_date)
-    if (!dateSet.has(d)) dateSet.set(d, [])
-    dateSet.get(d)!.push(m.id)
-  }
-
-  const sortedDates = [...dateSet.keys()].sort()
-
-  return sortedDates.map((d, i) => ({
-    gw:       i + 1,
-    dateStr:  d,
-    label:    new Date(d).toLocaleDateString('en-AU', {
-                day: 'numeric', month: 'short', year: 'numeric',
-              }),
-    matchIds: dateSet.get(d)!,
-  }))
-}
+import { buildGameweeks, type Gameweek } from '@/lib/gameweeks'
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 

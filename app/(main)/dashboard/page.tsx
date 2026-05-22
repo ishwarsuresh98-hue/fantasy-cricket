@@ -6,6 +6,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { BOOSTERS } from '@/lib/boosters'
 import { computeMatchDayLockWindow } from '@/lib/deadline'
+import { buildGameweeks } from '@/lib/gameweeks'
 import HeroCountdown from '@/components/HeroCountdown'
 import type { Match, Season, TeamBooster, FantasyTeam } from '@/types'
 
@@ -51,7 +52,8 @@ export default async function DashboardPage() {
   const nextMatch = upcomingMatches[0] as Match | undefined
 
   // Matchday breakdown — only if there are completed matches
-  let matchdayBreakdown: Record<string, Record<string, number>> = {} // teamId -> matchId -> points
+  // pointsByTeamMatch: teamId → matchId → total points for that match
+  let pointsByTeamMatch: Record<string, Record<string, number>> = {}
   if (completedMatches.length > 0 && allTeams && allTeams.length > 0) {
     const completedIds = completedMatches.map((m: Match) => m.id)
     const { data: breakdownSels } = await supabase
@@ -59,10 +61,19 @@ export default async function DashboardPage() {
       .select('fantasy_team_id, match_id, points_earned')
       .in('match_id', completedIds)
     for (const sel of breakdownSels ?? []) {
-      if (!matchdayBreakdown[sel.fantasy_team_id]) matchdayBreakdown[sel.fantasy_team_id] = {}
-      matchdayBreakdown[sel.fantasy_team_id][sel.match_id] =
-        (matchdayBreakdown[sel.fantasy_team_id][sel.match_id] ?? 0) + sel.points_earned
+      if (!pointsByTeamMatch[sel.fantasy_team_id]) pointsByTeamMatch[sel.fantasy_team_id] = {}
+      pointsByTeamMatch[sel.fantasy_team_id][sel.match_id] =
+        (pointsByTeamMatch[sel.fantasy_team_id][sel.match_id] ?? 0) + sel.points_earned
     }
+  }
+
+  // Group completed matches by calendar date → gameweeks (GW1, GW2, …)
+  const gameweeks = buildGameweeks(completedMatches)
+
+  // Sum a team's points across all matches in a gameweek
+  function gwPoints(teamId: string, matchIds: string[]): number {
+    const teamMap = pointsByTeamMatch[teamId] ?? {}
+    return matchIds.reduce((sum, mid) => sum + (teamMap[mid] ?? 0), 0)
   }
 
   const lockWindow = computeMatchDayLockWindow(upcomingMatches)
@@ -248,24 +259,32 @@ export default async function DashboardPage() {
         </Card>
       )}
 
-      {/* Matchday points breakdown */}
-      {completedMatches.length > 0 && allTeams && allTeams.length > 0 && (
+      {/* Gameweek points breakdown */}
+      {gameweeks.length > 0 && allTeams && allTeams.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg text-[#262162]">Matchday Points Breakdown</CardTitle>
+            <CardTitle className="text-lg text-[#262162]">Gameweek Points Breakdown</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide min-w-[140px]">Team</th>
-                    {completedMatches.map((m: Match) => (
-                      <th key={m.id} className="text-center px-3 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">
-                        M{m.match_number}
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide min-w-[140px]">
+                      Team
+                    </th>
+                    {gameweeks.map((gw) => (
+                      <th
+                        key={gw.dateStr}
+                        title={gw.label}
+                        className="text-center px-3 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide min-w-[52px]"
+                      >
+                        GW{gw.gw}
                       </th>
                     ))}
-                    <th className="text-right px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Total</th>
+                    <th className="text-right px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+                      Total
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -275,21 +294,40 @@ export default async function DashboardPage() {
                       <tr key={team.id} className={isMe ? 'bg-[#eeedf8]' : 'hover:bg-gray-50'}>
                         <td className="px-4 py-3 font-medium">
                           {team.team_name}
-                          {isMe && <Badge className="ml-2 bg-[#fbf927] text-[#262162] hover:bg-[#fbf927] text-xs">You</Badge>}
+                          {isMe && (
+                            <Badge className="ml-2 bg-[#fbf927] text-[#262162] hover:bg-[#fbf927] text-xs">
+                              You
+                            </Badge>
+                          )}
                         </td>
-                        {completedMatches.map((m: Match) => (
-                          <td key={m.id} className="px-3 py-3 text-center">
-                            {matchdayBreakdown[team.id]?.[m.id] != null
-                              ? <span className="font-medium">{matchdayBreakdown[team.id][m.id].toFixed(1)}</span>
-                              : <span className="text-muted-foreground text-xs">—</span>}
-                          </td>
-                        ))}
-                        <td className="px-4 py-3 text-right font-bold text-[#262162]">{team.total_points.toFixed(1)}</td>
+                        {gameweeks.map((gw) => {
+                          const pts = gwPoints(team.id, gw.matchIds)
+                          return (
+                            <td key={gw.dateStr} className="px-3 py-3 text-center">
+                              {pts > 0
+                                ? <span className="font-medium">{pts.toFixed(1)}</span>
+                                : <span className="text-muted-foreground text-xs">—</span>
+                              }
+                            </td>
+                          )
+                        })}
+                        <td className="px-4 py-3 text-right font-bold text-[#262162]">
+                          {team.total_points.toFixed(1)}
+                        </td>
                       </tr>
                     )
                   })}
                 </tbody>
               </table>
+            </div>
+
+            {/* GW date key */}
+            <div className="border-t px-4 py-3 flex flex-wrap gap-x-4 gap-y-1">
+              {gameweeks.map((gw) => (
+                <span key={gw.dateStr} className="text-xs text-muted-foreground">
+                  <span className="font-medium text-gray-700">GW{gw.gw}</span> = {gw.label}
+                </span>
+              ))}
             </div>
           </CardContent>
         </Card>
