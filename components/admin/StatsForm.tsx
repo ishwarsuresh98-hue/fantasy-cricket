@@ -646,6 +646,9 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
       result: result.trim() || null,
     }).eq('id', matchId)
 
+    // Sync fantasy points for all selections linked to this match
+    await supabase.rpc('sync_fantasy_points')
+
     // Auto-adjust player credits based on performance vs match average
     await supabase.rpc('adjust_player_credits', { p_match_id: matchId })
 

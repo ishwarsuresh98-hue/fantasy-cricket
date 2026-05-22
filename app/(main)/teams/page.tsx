@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -112,12 +113,19 @@ export default async function TeamsPage() {
   // SelRow enriched with the gameweek-total points for that player
   type EnrichedSelRow = SelRow & { gwPoints: number }
 
-  // ── matchId → calendar date string (YYYY-MM-DD, UTC) ─────────────────────
-  // Built from the full season match list so every match — regardless of
-  // which XI played — maps to its correct gameweek date.
-  const matchDateStr = new Map<string, string>()
+  // ── matchId → Match object (for date lookups) ─────────────────────────────
+  // Using the full match object (not a pre-computed date string) means every
+  // date comparison below uses an explicit non-undefined value — avoiding the
+  // subtle bug where matchDateStr.get(id) returns undefined for both sides of
+  // the comparison, making `undefined !== undefined` → false and accidentally
+  // including all matches in the GW sum.
+  const allMatchesById = new Map<string, Match>()
   for (const m of (allMatches ?? [])) {
-    matchDateStr.set(m.id, new Date(m.match_date).toISOString().slice(0, 10))
+    allMatchesById.set(m.id, m)
+  }
+
+  function toDateStr(matchDate: string): string {
+    return new Date(matchDate).toISOString().slice(0, 10)
   }
 
   // ── Collect all match IDs to query ────────────────────────────────────────
@@ -153,13 +161,17 @@ export default async function TeamsPage() {
   // For each team:
   //   1. Pick the highest-priority match (refMatch > most-recent completed)
   //      → determines the squad composition (who is in, who is C/VC)
-  //   2. Derive the GW date from that match (YYYY-MM-DD)
-  //   3. Walk the team's entire matchMap and sum points_earned for each player
-  //      across every match whose date equals the GW date.
-  //      This covers 1st XI, 2nd XI, 3rd XI etc. on the same calendar day.
+  //   2. Resolve the GW date from that match object (not a cached string).
+  //      If the match is somehow missing from allMatchesById, skip the team
+  //      rather than accidentally summing the wrong data.
+  //   3. Walk the team's matchMap and sum points_earned for each player across
+  //      every match whose date equals the GW date (covers 1st XI, 2nd XI etc.
+  //      on the same calendar day).  Each iteration uses toDateStr() on the
+  //      real match object — never a possibly-undefined cached lookup — so the
+  //      filter cannot silently pass on undefined === undefined.
   const squadByTeam = new Map<string, EnrichedSelRow[]>()
   for (const [teamId, matchMap] of byTeamMatch) {
-    // Step 1: find the best (highest-priority) match for squad display
+    // Step 1: find the highest-priority match for squad display
     let bestOrder   = -1
     let bestMatchId: string | null = null
     for (const [matchId] of matchMap) {
@@ -168,19 +180,21 @@ export default async function TeamsPage() {
     }
     if (!bestMatchId) continue
 
+    // Step 2: resolve GW date — bail out if the match object is missing
+    const bestMatchObj = allMatchesById.get(bestMatchId)
+    if (!bestMatchObj) continue                        // should never happen
+    const gwDate = toDateStr(bestMatchObj.match_date)  // e.g. "2026-05-16"
+
     const baseSels = matchMap.get(bestMatchId)!
 
-    // Step 2: GW date = the calendar date of the chosen display match
-    const gwDate = matchDateStr.get(bestMatchId)
-
-    // Step 3: for each player, sum points_earned across ALL of this team's
-    // selections whose match falls on the same date.
-    // We iterate matchMap (the team's own selection rows) and group by date —
-    // no intermediate sibling-ID lookup needed, so there's no risk of missing
-    // a match that the team does have selections for.
-    const playerGwPts = new Map<string, number>()   // playerId → GW total
+    // Step 3: sum per-player points across all of this team's selections
+    // where match_date === gwDate.  Using the match object for the date
+    // means the comparison is always string vs string — never undefined.
+    const playerGwPts = new Map<string, number>()   // playerId → GW-only total
     for (const [matchId, sels] of matchMap) {
-      if (matchDateStr.get(matchId) !== gwDate) continue   // different GW date
+      const matchObj = allMatchesById.get(matchId)
+      if (!matchObj) continue                                   // match gone — skip
+      if (toDateStr(matchObj.match_date) !== gwDate) continue   // different GW date
       for (const sel of sels) {
         const pid = sel.players.id
         playerGwPts.set(pid, (playerGwPts.get(pid) ?? 0) + sel.points_earned)
@@ -349,6 +363,16 @@ export default async function TeamsPage() {
                     </ul>
                   )}
                 </CardContent>
+
+                {/* View history button */}
+                <div className="px-4 py-3 border-t border-gray-100">
+                  <Link
+                    href={`/teams/${team.id}`}
+                    className="flex items-center justify-center w-full px-4 py-2 rounded-lg bg-[#262162] text-white text-sm font-semibold hover:bg-[#1a1748] transition-colors"
+                  >
+                    View History
+                  </Link>
+                </div>
               </Card>
             )
           })}
