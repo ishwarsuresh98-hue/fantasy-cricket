@@ -109,7 +109,29 @@ export default async function TeamsPage() {
     players: { id: string; name: string; role: string }
   }
 
-  // Collect all match IDs to query: every completed match + refMatch (may be upcoming)
+  // SelRow enriched with the gameweek-total points for that player
+  type EnrichedSelRow = SelRow & { gwPoints: number }
+
+  // ── Build matchId → sibling matchIds (same calendar date) ────────────────
+  // allMatches is the full season list already fetched above.
+  const matchDateStr = new Map<string, string>()       // matchId → YYYY-MM-DD
+  for (const m of (allMatches ?? [])) {
+    matchDateStr.set(m.id, new Date(m.match_date).toISOString().slice(0, 10))
+  }
+  const dateToMatchIds = new Map<string, string[]>()   // dateStr → matchIds[]
+  for (const [id, d] of matchDateStr) {
+    if (!dateToMatchIds.has(d)) dateToMatchIds.set(d, [])
+    dateToMatchIds.get(d)!.push(id)
+  }
+  // Final lookup: matchId → all matchIds on the same date (incl. self)
+  const gwMatchIds = new Map<string, string[]>()
+  for (const [id, d] of matchDateStr) {
+    gwMatchIds.set(id, dateToMatchIds.get(d)!)
+  }
+
+  // ── Collect all match IDs to query ────────────────────────────────────────
+  // Every completed match + refMatch (may be upcoming). Selections for each
+  // are needed both for squad display and for per-player GW point sums.
   const queryMatchIds = new Set<string>(completedMatches.map((m: Match) => m.id))
   if (refMatch) queryMatchIds.add(refMatch.id)
 
@@ -137,16 +159,37 @@ export default async function TeamsPage() {
     matchMap.get(sel.match_id)!.push(sel)
   }
 
-  // For each team pick the highest-priority match they actually have selections for
-  const squadByTeam = new Map<string, SelRow[]>()
+  // For each team:
+  //   1. Pick the highest-priority match (refMatch > most-recent completed)
+  //   2. Use that match's rows as the squad (players, captain/vc flags)
+  //   3. Sum points_earned for each player across ALL matches on the same date
+  const squadByTeam = new Map<string, EnrichedSelRow[]>()
   for (const [teamId, matchMap] of byTeamMatch) {
+    // Find best match
     let bestOrder = -1
-    let bestSels: SelRow[] = []
-    for (const [matchId, sels] of matchMap) {
+    let bestMatchId: string | null = null
+    for (const [matchId] of matchMap) {
       const order = matchOrder.get(matchId) ?? -1
-      if (order > bestOrder) { bestOrder = order; bestSels = sels }
+      if (order > bestOrder) { bestOrder = order; bestMatchId = matchId }
     }
-    if (bestSels.length > 0) squadByTeam.set(teamId, bestSels)
+    if (!bestMatchId) continue
+
+    const baseSels = matchMap.get(bestMatchId)!
+
+    // All match IDs on the same gameweek date as the chosen match
+    const siblingIds = gwMatchIds.get(bestMatchId) ?? [bestMatchId]
+
+    // Enrich each player row with the sum of their points across the GW
+    const enriched: EnrichedSelRow[] = baseSels.map((sel) => {
+      const gwPoints = siblingIds.reduce((sum, mid) => {
+        const sibSels = matchMap.get(mid) ?? []
+        const playerSel = sibSels.find((s) => s.players.id === sel.players.id)
+        return sum + (playerSel?.points_earned ?? 0)
+      }, 0)
+      return { ...sel, gwPoints }
+    })
+
+    squadByTeam.set(teamId, enriched)
   }
 
   // Sort each squad: captain first, then vice-captain, then alphabetical
@@ -289,12 +332,12 @@ export default async function TeamsPage() {
                             {PLAYER_ROLE_LABELS[sel.players.role] ?? sel.players.role}
                           </Badge>
 
-                          {/* Points earned for this match */}
+                          {/* Gameweek points (sum across all matches on the same date) */}
                           <span className="flex-shrink-0 w-10 text-right text-sm font-semibold text-[#262162]">
-                            {sel.points_earned > 0
-                              ? sel.points_earned % 1 === 0
-                                ? sel.points_earned.toString()
-                                : sel.points_earned.toFixed(1)
+                            {sel.gwPoints > 0
+                              ? sel.gwPoints % 1 === 0
+                                ? sel.gwPoints.toString()
+                                : sel.gwPoints.toFixed(1)
                               : <span className="text-muted-foreground font-normal">—</span>
                             }
                           </span>
