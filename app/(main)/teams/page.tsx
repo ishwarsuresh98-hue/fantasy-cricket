@@ -4,16 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
-import { PLAYER_ROLE_LABELS } from '@/lib/scoring'
 import { computeMatchDayLockWindow } from '@/lib/deadline'
-import type { Match } from '@/types'
-
-const ROLE_BADGE: Record<string, string> = {
-  batsman:       'bg-blue-100 text-blue-700',
-  bowler:        'bg-[#fceaea] text-[#b5211e]',
-  all_rounder:   'bg-[#eeedf8] text-[#262162]',
-  wicket_keeper: 'bg-[#fefde8] text-[#262162]',
-}
+import type { Match, PlayerRole } from '@/types'
+import PlayerCard from '@/components/players/PlayerCard'
 
 export default async function TeamsPage() {
   const supabase = await createClient()
@@ -317,50 +310,21 @@ export default async function TeamsPage() {
                       No squad selected yet
                     </div>
                   ) : (
-                    <ul className="divide-y divide-gray-100">
+                    <div className="divide-y divide-gray-100">
                       {squad.map((sel) => (
-                        <li
+                        <PlayerCard
                           key={sel.players.id}
-                          className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 transition-colors"
-                        >
-                          {/* Captain / VC badge */}
-                          {sel.is_captain ? (
-                            <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#fbf927] text-[#262162] text-[10px] font-black">
-                              C
-                            </span>
-                          ) : sel.is_vice_captain ? (
-                            <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-[10px] font-black">
-                              V
-                            </span>
-                          ) : (
-                            <span className="flex-shrink-0 w-5" />
-                          )}
-
-                          {/* Player name — grows to fill available space */}
-                          <span className="text-sm font-medium truncate flex-1 min-w-0">
-                            {sel.players.name}
-                          </span>
-
-                          {/* Role badge */}
-                          <Badge className={cn(
-                            'text-[10px] px-1.5 py-0 flex-shrink-0',
-                            ROLE_BADGE[sel.players.role] ?? 'bg-gray-100 text-gray-600',
-                          )}>
-                            {PLAYER_ROLE_LABELS[sel.players.role] ?? sel.players.role}
-                          </Badge>
-
-                          {/* Gameweek points (sum across all matches on the same date) */}
-                          <span className="flex-shrink-0 w-10 text-right text-sm font-semibold text-[#262162]">
-                            {sel.gwPoints > 0
-                              ? sel.gwPoints % 1 === 0
-                                ? sel.gwPoints.toString()
-                                : sel.gwPoints.toFixed(1)
-                              : <span className="text-muted-foreground font-normal">—</span>
-                            }
-                          </span>
-                        </li>
+                          id={sel.players.id}
+                          name={sel.players.name}
+                          role={sel.players.role as PlayerRole}
+                          price={0}
+                          size="compact"
+                          isCaptain={sel.is_captain}
+                          isViceCaptain={sel.is_vice_captain}
+                          gwPoints={sel.gwPoints}
+                        />
                       ))}
-                    </ul>
+                    </div>
                   )}
                 </CardContent>
 

@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import PitchView from '@/components/team/PitchView'
 
 interface TeamBuilderProps {
   season: Season
@@ -510,40 +511,39 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
           </Card>
         </div>
 
-        {/* Selected team sidebar */}
-        <div className="space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Selected XI</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              {selectedPlayers.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  Click players to add them
-                </p>
-              ) : (
-                <div className="divide-y">
-                  {selectedPlayers.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between px-4 py-2.5">
-                      <div>
-                        <p className="text-sm font-medium">{p.name}</p>
-                        <p className="text-xs text-muted-foreground">{PLAYER_ROLE_LABELS[p.role]}</p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {captainId === p.id && (
-                          <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs px-1.5">C</Badge>
-                        )}
-                        {vcId === p.id && (
-                          <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 text-xs px-1.5">VC</Badge>
-                        )}
-                        <span className="text-xs text-muted-foreground ml-1">{p.price}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        {/* Pitch view sidebar */}
+        <div className="space-y-3">
+          {/* Player / budget counters */}
+          <div className="flex items-center justify-between text-sm">
+            <span className={`font-bold ${selectedIds.size === maxPlayers ? 'text-green-700' : 'text-gray-500'}`}>
+              {selectedIds.size}/{maxPlayers} players
+            </span>
+            {!captainId && selectedIds.size > 0 && (
+              <span className="text-amber-600 text-xs font-semibold">⚠ Pick a captain</span>
+            )}
+            {captainId && !vcId && (
+              <span className="text-amber-600 text-xs font-semibold">⚠ Pick a vice captain</span>
+            )}
+            {captainId && vcId && (
+              <span className="text-green-600 text-xs font-semibold">✓ C &amp; VC set</span>
+            )}
+          </div>
+
+          <PitchView
+            selectedPlayers={selectedPlayers}
+            captainId={captainId}
+            vcId={vcId}
+            playingXI={playingXI}
+            creditTrends={creditTrends}
+            selectionPercentages={selectionPercentages}
+            onRemove={(id) => {
+              const p = players.find((pl) => pl.id === id)
+              if (p) togglePlayer(p)
+            }}
+            onSetCaptain={(id) => setCaptain(id)}
+            onSetVC={(id) => setVC(id)}
+            isLocked={isLocked}
+          />
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded-md whitespace-pre-line">
@@ -559,7 +559,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
           <Button
             onClick={handleSave}
             disabled={isPending || isLocked}
-            className="w-full"
+            className="w-full bg-[#262162] hover:bg-[#1a1748] text-white font-bold"
           >
             {isLocked ? '🏏 Match In Progress' : isPending ? 'Saving...' : myTeam ? 'Update Team' : 'Save Team'}
           </Button>
