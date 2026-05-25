@@ -7,6 +7,10 @@ interface Props {
   deadline: string | null
   /** ISO string — lockEnd (30 min after latest match starts). */
   lockUntil: string | null
+  /** e.g. "Match 3 vs Marlow Cricket Club" — shown above the clock */
+  matchLabel?: string
+  /** Human-readable date string — shown below the match label */
+  matchDate?: string
 }
 
 function getRemainingMs(iso: string) {
@@ -34,7 +38,7 @@ function DigitBox({ value, label }: { value: number; label: string }) {
   )
 }
 
-export default function HeroCountdown({ deadline, lockUntil }: Props) {
+export default function HeroCountdown({ deadline, lockUntil, matchLabel, matchDate }: Props) {
   const [, setTick] = useState(0)
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 1000)
@@ -94,21 +98,36 @@ export default function HeroCountdown({ deadline, lockUntil }: Props) {
     <div className={`w-full rounded-2xl px-6 py-8 flex flex-col items-center gap-6 shadow-lg transition-colors ${
       urgent ? 'bg-[#3d1a1a]' : 'bg-[#262162]'
     }`}>
-      <div className="flex flex-col items-center gap-1">
+      <div className="flex flex-col items-center gap-1 text-center">
         <p className={`text-xs font-bold uppercase tracking-[0.25em] ${urgent ? 'text-orange-300' : 'text-white/50'}`}>
-          {urgent ? '⚠️ Closing Soon' : '⏱ Gameweek'}
+          {urgent ? '⚠️ Transfers Closing Soon' : '🏏 Next Match'}
         </p>
-        <p className="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider">
-          Gameweek Locks In
-        </p>
+        {matchLabel && (
+          <p className="text-xl sm:text-2xl font-black text-white">
+            {matchLabel}
+          </p>
+        )}
+        {matchDate && (
+          <p className="text-sm text-white/50">{matchDate}</p>
+        )}
+        {!matchLabel && (
+          <p className="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider">
+            Gameweek Locks In
+          </p>
+        )}
       </div>
 
-      <div className="flex items-end gap-3 sm:gap-5">
-        <DigitBox value={h} label="Hours" />
-        <span className="text-3xl font-black text-[#fbf927]/60 mb-5">:</span>
-        <DigitBox value={m} label="Minutes" />
-        <span className="text-3xl font-black text-[#fbf927]/60 mb-5">:</span>
-        <DigitBox value={s} label="Seconds" />
+      <div>
+        <p className={`text-center text-[10px] font-bold uppercase tracking-widest mb-3 ${urgent ? 'text-orange-300' : 'text-[#fbf927]/70'}`}>
+          Transfers close in
+        </p>
+        <div className="flex items-end gap-3 sm:gap-5">
+          <DigitBox value={h} label="Hours" />
+          <span className="text-3xl font-black text-[#fbf927]/60 mb-5">:</span>
+          <DigitBox value={m} label="Minutes" />
+          <span className="text-3xl font-black text-[#fbf927]/60 mb-5">:</span>
+          <DigitBox value={s} label="Seconds" />
+        </div>
       </div>
 
       <p className={`text-xs font-semibold uppercase tracking-wider ${urgent ? 'text-orange-300' : 'text-white/40'}`}>
