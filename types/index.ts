@@ -148,6 +148,27 @@ export interface MatchPlayingXI {
   created_at: string
 }
 
+export type ContestType = 'public' | 'private'
+
+export interface Contest {
+  id:                string
+  season_id:         string
+  name:              string
+  type:              ContestType
+  entry_code:        string | null
+  max_teams:         number
+  prize_description: string | null
+  created_by:        string
+  created_at:        string
+}
+
+export interface ContestEntry {
+  id:              string
+  contest_id:      string
+  fantasy_team_id: string
+  joined_at:       string
+}
+
 export interface Notification {
   id: string
   user_id: string

@@ -19,13 +19,14 @@ import NotificationBell from '@/components/nav/NotificationBell'
 import NavCountdown from '@/components/nav/NavCountdown'
 
 const NAV_LINKS = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/team', label: 'My Team' },
-  { href: '/transfers', label: 'Transfers' },
+  { href: '/dashboard',  label: 'Dashboard' },
+  { href: '/team',       label: 'My Team' },
+  { href: '/transfers',  label: 'Transfers' },
   { href: '/leaderboard', label: 'Leaderboard' },
-  { href: '/teams', label: 'Teams' },
-  { href: '/matches', label: 'Matches' },
-  { href: '/rules', label: 'Rules' },
+  { href: '/contests',   label: 'Contests' },
+  { href: '/teams',      label: 'Teams' },
+  { href: '/matches',    label: 'Matches' },
+  { href: '/rules',      label: 'Rules' },
 ]
 
 interface NavbarProps {

@@ -85,6 +85,20 @@ export default async function AdminPage() {
         </Card>
       </div>
 
+      <div className="grid sm:grid-cols-2 gap-4">
+        <Card className="hover:border-[#262162] transition-colors">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base text-[#262162]">🏆 Contests</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-3">Create and manage public contests and private leagues.</p>
+            <Link href="/admin/contests" className={cn(buttonVariants({ size: 'sm' }), 'bg-[#262162] hover:bg-[#1a1748]')}>
+              Manage Contests
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+
       <CreateSeasonForm currentSeason={season} />
 
       {/* ── Maintenance ─────────────────────────────────────────────────────── */}
