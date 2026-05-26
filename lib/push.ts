@@ -13,7 +13,7 @@ function ensureVapid() {
   if (vapidReady) return
   const pub  = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
   const priv = process.env.VAPID_PRIVATE_KEY
-  const sub  = process.env.VAPID_SUBJECT ?? 'mailto:admin@sloughcc.co.uk'
+  const sub  = process.env.VAPID_SUBJECT ?? 'mailto:ishwarsuresh98@outlook.com'
   if (!pub || !priv) {
     throw new Error('NEXT_PUBLIC_VAPID_PUBLIC_KEY or VAPID_PRIVATE_KEY env var missing')
   }
