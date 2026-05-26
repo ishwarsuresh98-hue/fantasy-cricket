@@ -148,15 +148,23 @@ export interface MatchPlayingXI {
   created_at: string
 }
 
-export type ContestType = 'public' | 'private'
+export type ContestType     = 'public' | 'private'
+export type ContestCategory = 'mega' | 'h2h' | 'small_league' | 'jackpot' | 'practice'
+export type PaymentGateway  = 'flatpay'
+export type PaymentStatus   = 'pending' | 'confirmed' | 'failed'
 
 export interface Contest {
   id:                string
   season_id:         string
+  match_id:          string | null
   name:              string
   type:              ContestType
+  contest_category:  ContestCategory
   entry_code:        string | null
   max_teams:         number
+  entry_fee:         number
+  prize_pool:        number
+  guaranteed_prize:  boolean
   prize_description: string | null
   created_by:        string
   created_at:        string
@@ -167,6 +175,47 @@ export interface ContestEntry {
   contest_id:      string
   fantasy_team_id: string
   joined_at:       string
+}
+
+export interface Wallet {
+  id:         string
+  user_id:    string
+  balance:    number
+  created_at: string
+  updated_at: string
+}
+
+export interface WalletTransaction {
+  id:           string
+  wallet_id:    string
+  type:         'credit' | 'debit'
+  amount:       number
+  description:  string
+  reference_id: string | null
+  created_at:   string
+}
+
+export interface PaymentIntent {
+  id:                string
+  user_id:           string
+  contest_id:        string
+  fantasy_team_id:   string
+  amount:            number
+  status:            PaymentStatus
+  gateway:           PaymentGateway
+  gateway_reference: string | null
+  created_at:        string
+  updated_at:        string
+}
+
+export interface ContestPayout {
+  id:              string
+  contest_id:      string
+  user_id:         string
+  fantasy_team_id: string
+  rank:            number
+  prize_amount:    number
+  paid_at:         string | null
 }
 
 export interface Notification {
