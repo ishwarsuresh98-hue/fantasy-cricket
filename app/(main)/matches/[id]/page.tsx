@@ -154,7 +154,16 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                     const role = perf.players?.role ?? ''
                     return (
                       <tr key={perf.id} className="hover:bg-[#eeedf8] transition-colors">
-                        <td className="px-4 py-3 font-medium">{perf.players?.name ?? '—'}</td>
+                        <td className="px-4 py-3 font-medium">
+                          {perf.players?.id ? (
+                            <Link
+                              href={`/players/${perf.players.id}`}
+                              className="hover:text-[#262162] hover:underline"
+                            >
+                              {perf.players.name}
+                            </Link>
+                          ) : (perf.players?.name ?? '—')}
+                        </td>
                         <td className="px-3 py-3">
                           <Badge className={cn('text-xs font-normal', ROLE_BADGE[role] ?? 'bg-gray-100 text-gray-600')}>
                             {PLAYER_ROLE_LABELS[role] ?? role}

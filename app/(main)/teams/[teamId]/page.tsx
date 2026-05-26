@@ -330,7 +330,12 @@ export default async function TeamDetailPage({
                                     ) : (
                                       <span className="flex-shrink-0 w-5" />
                                     )}
-                                    <span className="font-medium">{row.playerName}</span>
+                                    <Link
+                                      href={`/players/${row.playerId}`}
+                                      className="font-medium hover:text-[#262162] hover:underline"
+                                    >
+                                      {row.playerName}
+                                    </Link>
                                   </div>
                                 </td>
 
