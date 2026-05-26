@@ -48,6 +48,18 @@ export default function MatchForm({ seasonId, nextMatchNumber, match }: MatchFor
     } else {
       const { error: err } = await supabase.from('matches').insert(payload)
       if (err) { setError(err.message); setLoading(false); return }
+
+      // Fire-and-forget push notification to all subscribers about new match
+      fetch('/api/push/send', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          type:        'new_match',
+          opponent:    payload.opponent,
+          matchDate:   payload.match_date,
+          matchNumber: payload.match_number,
+        }),
+      }).catch(() => {/* ignore */})
     }
 
     setOpen(false)

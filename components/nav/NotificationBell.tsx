@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { usePushSubscription } from '@/lib/usePushSubscription'
 import type { Notification } from '@/types'
 import {
   DropdownMenu,
@@ -12,6 +13,8 @@ import {
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [open, setOpen] = useState(false)
+  const { state: pushState, subscribe } = usePushSubscription()
+  const [subscribing, setSubscribing] = useState(false)
 
   const fetchNotifications = useCallback(async () => {
     const supabase = createClient()
@@ -23,9 +26,7 @@ export default function NotificationBell() {
     setNotifications(data ?? [])
   }, [])
 
-  useEffect(() => {
-    fetchNotifications()
-  }, [fetchNotifications])
+  useEffect(() => { fetchNotifications() }, [fetchNotifications])
 
   async function markAllRead() {
     const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id)
@@ -37,13 +38,21 @@ export default function NotificationBell() {
 
   function handleOpenChange(val: boolean) {
     setOpen(val)
-    if (val) {
-      // Re-fetch and mark read when opened
-      fetchNotifications().then(markAllRead)
-    }
+    if (val) fetchNotifications().then(markAllRead)
+  }
+
+  async function handleEnablePush() {
+    setSubscribing(true)
+    await subscribe()
+    setSubscribing(false)
   }
 
   const unreadCount = notifications.filter((n) => !n.is_read).length
+
+  // Bell icon changes based on push state
+  const bellIcon =
+    pushState === 'subscribed'   ? '🔔' :
+    pushState === 'denied'       ? '🔕' : '🔔'
 
   function relativeTime(iso: string) {
     const diff = Date.now() - new Date(iso).getTime()
@@ -59,28 +68,66 @@ export default function NotificationBell() {
     <DropdownMenu open={open} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger
         render={
-          <button className="relative flex items-center justify-center w-9 h-9 rounded-md hover:bg-white/10 transition-colors" />
+          <button
+            className="relative flex items-center justify-center w-9 h-9 rounded-md hover:bg-white/10 transition-colors"
+            title={pushState === 'subscribed' ? 'Notifications on' : pushState === 'denied' ? 'Notifications blocked' : 'Notifications off'}
+          />
         }
       >
-        <span className="text-white text-lg">🔔</span>
+        <span className="text-white text-lg">{bellIcon}</span>
+        {/* Unread badge */}
         {unreadCount > 0 && (
           <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] bg-[#b5211e] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
+        {/* Push-status dot when no unread: green = on, grey = off */}
+        {unreadCount === 0 && pushState !== 'loading' && pushState !== 'unsupported' && (
+          <span className={`absolute bottom-0.5 right-0.5 w-2 h-2 rounded-full border border-[#262162] ${
+            pushState === 'subscribed' ? 'bg-green-400' :
+            pushState === 'denied'    ? 'bg-gray-400'  : 'bg-gray-500'
+          }`} />
+        )}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 max-h-[420px] overflow-y-auto p-0">
+
+      <DropdownMenuContent align="end" className="w-80 max-h-[460px] overflow-y-auto p-0">
+        {/* Header */}
         <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between">
           <p className="font-semibold text-sm text-[#262162]">Notifications</p>
           {unreadCount > 0 && (
-            <button
-              onClick={markAllRead}
-              className="text-xs text-[#262162] hover:underline"
-            >
+            <button onClick={markAllRead} className="text-xs text-[#262162] hover:underline">
               Mark all read
             </button>
           )}
         </div>
+
+        {/* Push opt-in banner — only when unsubscribed */}
+        {(pushState === 'unsubscribed') && (
+          <div className="border-b bg-[#eeedf8] px-4 py-3 flex items-center gap-2.5">
+            <span className="text-lg">🔔</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-[#262162]">Enable push notifications</p>
+              <p className="text-[10px] text-[#262162]/60">Get score alerts &amp; deadline reminders.</p>
+            </div>
+            <button
+              onClick={handleEnablePush}
+              disabled={subscribing}
+              className="flex-shrink-0 text-[11px] font-bold bg-[#262162] text-white px-2.5 py-1.5 rounded-lg hover:bg-[#1a1748] disabled:opacity-50 transition-colors"
+            >
+              {subscribing ? '…' : 'Enable'}
+            </button>
+          </div>
+        )}
+
+        {/* Denied notice */}
+        {pushState === 'denied' && (
+          <div className="border-b bg-amber-50 px-4 py-2.5 flex items-center gap-2">
+            <span className="text-base">🔕</span>
+            <p className="text-xs text-amber-700">Notifications blocked in browser settings.</p>
+          </div>
+        )}
+
+        {/* Notifications list */}
         {notifications.length === 0 ? (
           <div className="px-4 py-8 text-center">
             <p className="text-sm text-muted-foreground">No notifications yet.</p>
@@ -88,10 +135,7 @@ export default function NotificationBell() {
         ) : (
           <div className="divide-y">
             {notifications.map((n) => (
-              <div
-                key={n.id}
-                className={`px-4 py-3 ${n.is_read ? 'bg-white' : 'bg-[#eeedf8]'}`}
-              >
+              <div key={n.id} className={`px-4 py-3 ${n.is_read ? 'bg-white' : 'bg-[#eeedf8]'}`}>
                 <div className="flex items-start gap-2">
                   <span className="text-base shrink-0 mt-0.5">
                     {n.type === 'rank_change'

@@ -657,11 +657,18 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
     router.refresh()
     setLoading(false)
 
-    // Fire-and-forget notification generation (don't block UI)
+    // Fire-and-forget: in-app notifications + push notifications (both non-blocking)
+    const notifPayload = JSON.stringify({ matchId })
     fetch('/api/notifications/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ matchId }),
+      body: notifPayload,
+    }).catch(() => {/* ignore */})
+
+    fetch('/api/push/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'score_update', matchId }),
     }).catch(() => {/* ignore */})
   }
 

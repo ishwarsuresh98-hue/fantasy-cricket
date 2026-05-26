@@ -7,6 +7,7 @@ import { BOOSTERS } from '@/lib/boosters'
 import { computeMatchDayLockWindow } from '@/lib/deadline'
 import { buildGameweeks } from '@/lib/gameweeks'
 import HeroCountdown from '@/components/HeroCountdown'
+import PushPermissionButton from '@/components/push/PushPermissionButton'
 import type { Match, Season, TeamBooster, FantasyTeam } from '@/types'
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -552,6 +553,10 @@ export default async function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* ── Push notifications opt-in ──────────────────────────────────────── */}
+      <PushPermissionButton />
+
     </div>
   )
 }
