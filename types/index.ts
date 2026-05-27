@@ -160,7 +160,7 @@ export interface MatchPlayingXI {
 
 export type ContestType     = 'public' | 'private'
 export type ContestCategory = 'mega' | 'h2h' | 'small_league' | 'jackpot' | 'practice'
-export type PaymentGateway  = 'flatpay'
+export type PaymentGateway  = 'flatpay' | 'stripe'
 export type PaymentStatus   = 'pending' | 'confirmed' | 'failed'
 
 export interface Contest {
