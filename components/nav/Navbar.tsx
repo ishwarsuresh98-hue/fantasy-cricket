@@ -25,6 +25,7 @@ interface NavbarProps {
 
 function buildNavLinks(slug: string | null) {
   // With a club slug use club-scoped routes; without, fall back to (main) routes
+  // Wallet and Admin live in the profile dropdown — not here.
   const base = slug ? `/clubs/${slug}` : ''
   return [
     { href: `${base}/dashboard`,   label: 'Dashboard' },
@@ -32,7 +33,6 @@ function buildNavLinks(slug: string | null) {
     { href: `${base}/transfers`,   label: 'Transfers' },
     { href: `${base}/leaderboard`, label: 'Leaderboard' },
     { href: `${base}/contests`,    label: 'Contests' },
-    { href: `${base}/wallet`,      label: 'Wallet' },
     { href: `${base}/teams`,       label: 'Teams' },
     { href: `${base}/matches`,     label: 'Matches' },
     { href: `${base}/rules`,       label: 'Rules' },
@@ -110,18 +110,6 @@ export default function Navbar({ profile, club }: NavbarProps) {
                 {label}
               </Link>
             ))}
-            {profile.role === 'admin' && (
-              <Link
-                href={adminHref}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname.startsWith(adminHref)
-                    ? 'bg-[#b5211e] text-white font-semibold'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                }`}
-              >
-                Admin
-              </Link>
-            )}
           </div>
 
           {/* Gameweek countdown */}
@@ -144,25 +132,39 @@ export default function Navbar({ profile, club }: NavbarProps) {
               </Avatar>
               <span className="hidden sm:block text-sm font-medium text-[#0b0b0b]">{profile.display_name}</span>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <div className="px-3 py-2">
-                <p className="text-sm font-medium">{profile.display_name}</p>
-                <p className="text-xs text-muted-foreground capitalize">{profile.role}</p>
+            <DropdownMenuContent align="end" className="w-52">
+              {/* Identity header */}
+              <div className="px-3 py-2.5">
+                <p className="text-sm font-semibold text-gray-900">{profile.display_name}</p>
+                <p className="text-xs text-gray-400 capitalize">{profile.role}</p>
               </div>
               <DropdownMenuSeparator />
+
+              {/* Mobile-only nav links */}
               <div className="md:hidden">
                 {navLinks.map(({ href, label }) => (
                   <DropdownMenuItem key={href} render={<Link href={href} />}>
                     {label}
                   </DropdownMenuItem>
                 ))}
-                {profile.role === 'admin' && (
-                  <DropdownMenuItem render={<Link href={adminHref} />}>
-                    Admin Panel
-                  </DropdownMenuItem>
-                )}
                 <DropdownMenuSeparator />
               </div>
+
+              {/* Profile + Wallet + Admin (always visible, all screen sizes) */}
+              <DropdownMenuItem render={<Link href={slug ? `/clubs/${slug}/profile` : '/profile'} />}>
+                👤 My Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link href={slug ? `/clubs/${slug}/wallet` : '/wallet'} />}>
+                💰 Wallet
+              </DropdownMenuItem>
+              {profile.role === 'admin' && (
+                <DropdownMenuItem render={<Link href={adminHref} />}>
+                  ⚙️ Admin
+                </DropdownMenuItem>
+              )}
+
+              <DropdownMenuSeparator />
+
               {/* Back to The XI hub if inside a club */}
               {club && (
                 <>
@@ -172,8 +174,9 @@ export default function Navbar({ profile, club }: NavbarProps) {
                   <DropdownMenuSeparator />
                 </>
               )}
+
               <DropdownMenuItem onClick={handleSignOut} className="text-red-600 cursor-pointer">
-                Sign Out
+                🚪 Sign Out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
