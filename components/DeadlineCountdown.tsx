@@ -79,15 +79,15 @@ export default function DeadlineCountdown({ deadline, lockUntil, className = '' 
       className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${
         urgent
           ? 'border-orange-200 bg-orange-50'
-          : 'border-[#262162]/20 bg-[#eeedf8]'
+          : 'border-[#C9A84C]/20 bg-[#1c1c1c]'
       } ${className}`}
     >
       <span className="text-lg">{urgent ? '⚠️' : '⏰'}</span>
       <div className="flex-1">
-        <p className={`text-xs font-medium uppercase tracking-wide ${urgent ? 'text-orange-700' : 'text-[#262162]/70'}`}>
+        <p className={`text-xs font-medium uppercase tracking-wide ${urgent ? 'text-orange-700' : 'text-[#C9A84C]/70'}`}>
           Gameweek locks in
         </p>
-        <p className={`text-xl font-bold tabular-nums tracking-tight ${urgent ? 'text-orange-700' : 'text-[#262162]'}`}>
+        <p className={`text-xl font-bold tabular-nums tracking-tight ${urgent ? 'text-orange-700' : 'text-[#C9A84C]'}`}>
           {cd}
         </p>
       </div>

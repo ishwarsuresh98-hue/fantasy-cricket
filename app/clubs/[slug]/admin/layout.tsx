@@ -31,7 +31,7 @@ export default async function ClubAdminLayout({
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href={`/clubs/${slug}/dashboard`} className="hover:underline">Home</Link>
         <span>/</span>
-        <span className="text-gray-900 font-medium">Admin</span>
+        <span className="text-[#ebebeb] font-medium">Admin</span>
       </div>
 
       <div className="flex gap-2 border-b pb-4 flex-wrap">
@@ -46,7 +46,7 @@ export default async function ClubAdminLayout({
           <Link
             key={href}
             href={href}
-            className="px-4 py-2 rounded-md text-sm font-medium bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors"
+            className="px-4 py-2 rounded-md text-sm font-medium bg-[#1a1500] text-[#C9A84C] hover:bg-[#231c00] transition-colors"
           >
             {label}
           </Link>

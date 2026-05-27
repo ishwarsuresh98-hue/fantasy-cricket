@@ -57,22 +57,22 @@ export default async function ClubAdminContestsPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#262162]">Contests</h2>
+          <h2 className="text-2xl font-bold text-[#C9A84C]">Contests</h2>
           <p className="text-gray-500 text-sm mt-0.5">{season.name}</p>
         </div>
         <AdminCreateContest seasonId={season.id} userId={user!.id} />
       </div>
 
       {(!contests || contests.length === 0) ? (
-        <div className="rounded-2xl bg-white border border-gray-200 p-16 text-center">
+        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] p-16 text-center">
           <div className="text-4xl mb-3">🏆</div>
           <p className="text-gray-500">No contests yet. Create one to get started.</p>
         </div>
       ) : (
-        <div className="rounded-2xl bg-white border border-gray-200 overflow-hidden">
+        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
+              <tr className="bg-[#0f0f0f] border-b border-[#1e1e1e]">
                 <th className="text-left text-xs font-bold uppercase tracking-widest text-gray-400 px-5 py-3">Name</th>
                 <th className="text-center text-xs font-bold uppercase tracking-widest text-gray-400 px-4 py-3">Type</th>
                 <th className="text-center text-xs font-bold uppercase tracking-widest text-gray-400 px-4 py-3">Code</th>
@@ -86,36 +86,36 @@ export default async function ClubAdminContestsPage({
                 const count = countMap[contest.id] ?? 0
                 const pct   = Math.round((count / contest.max_teams) * 100)
                 return (
-                  <tr key={contest.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={contest.id} className="hover:bg-[#0f0f0f] transition-colors">
                     <td className="px-5 py-3">
-                      <p className="font-semibold text-gray-800">{contest.name}</p>
+                      <p className="font-semibold text-[#d4d4d4]">{contest.name}</p>
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className={cn(
                         'text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full',
                         contest.type === 'private'
-                          ? 'bg-[#fefde8] text-[#262162] border border-[#fbf927]/40'
-                          : 'bg-[#eeedf8] text-[#262162]',
+                          ? 'bg-[#1a1500] text-[#C9A84C] border border-[#C9A84C]/40'
+                          : 'bg-[#1c1c1c] text-[#C9A84C]',
                       )}>
                         {contest.type}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
                       {contest.entry_code
-                        ? <span className="font-black tracking-[0.2em] text-[#262162] font-mono text-sm">{contest.entry_code}</span>
+                        ? <span className="font-black tracking-[0.2em] text-[#C9A84C] font-mono text-sm">{contest.entry_code}</span>
                         : <span className="text-gray-300 text-xs">—</span>
                       }
                     </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex flex-col items-center gap-1">
-                        <span className="font-semibold text-gray-700 text-sm tabular-nums">
+                        <span className="font-semibold text-[#aaaaaa] text-sm tabular-nums">
                           {count} / {contest.max_teams}
                         </span>
-                        <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="w-16 h-1.5 bg-[#141414] rounded-full overflow-hidden">
                           <div
                             className={cn(
                               'h-full rounded-full',
-                              pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-orange-400' : 'bg-[#262162]',
+                              pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-orange-400' : 'bg-[#111111]',
                             )}
                             style={{ width: `${Math.min(100, pct)}%` }}
                           />
@@ -131,7 +131,7 @@ export default async function ClubAdminContestsPage({
                     <td className="px-5 py-3 text-right">
                       <Link
                         href={`${base}/contests/${contest.id}`}
-                        className="text-xs font-semibold text-[#262162] hover:underline"
+                        className="text-xs font-semibold text-[#C9A84C] hover:underline"
                       >
                         View →
                       </Link>

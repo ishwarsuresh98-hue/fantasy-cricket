@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    title: "SCC Fantasy",
+    title: "The XI",
     statusBarStyle: "black-translucent",
   },
   icons: {
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor:       "#262162",
+  themeColor:       "#0b0b0b",
   width:            "device-width",
   initialScale:     1,
   maximumScale:     1,

@@ -6,7 +6,7 @@ export default function RulesPage() {
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-[#262162]">Rules & Scoring</h1>
+        <h1 className="text-3xl font-bold text-[#C9A84C]">Rules & Scoring</h1>
         <p className="text-muted-foreground mt-1">
           Everything you need to know to play Slough CC Fantasy League.
         </p>
@@ -15,11 +15,11 @@ export default function RulesPage() {
       {/* How to Play */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-[#262162] flex items-center gap-2">
+          <CardTitle className="text-[#C9A84C] flex items-center gap-2">
             🏏 How to Play
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm text-gray-700 leading-relaxed">
+        <CardContent className="space-y-3 text-sm text-[#aaaaaa] leading-relaxed">
           <p>
             Each gameweek is a <strong>single calendar day</strong>. When Slough CC have multiple matches on the same day,
             all confirmed players across every XI form a <strong>combined player pool</strong> for that gameweek.
@@ -37,22 +37,22 @@ export default function RulesPage() {
       {/* Gameweek & Deadlines */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-[#262162] flex items-center gap-2">
+          <CardTitle className="text-[#C9A84C] flex items-center gap-2">
             📅 Gameweeks & Deadlines
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 text-sm text-gray-700 leading-relaxed">
+        <CardContent className="space-y-4 text-sm text-[#aaaaaa] leading-relaxed">
           <div className="grid sm:grid-cols-3 gap-3">
-            <div className="p-3 rounded-lg border bg-[#eeedf8] border-[#262162]/20 text-center">
-              <p className="text-2xl font-bold text-[#262162]">1 day</p>
+            <div className="p-3 rounded-lg border bg-[#1c1c1c] border-[#C9A84C]/20 text-center">
+              <p className="text-2xl font-bold text-[#C9A84C]">1 day</p>
               <p className="text-xs text-muted-foreground mt-1">= 1 gameweek</p>
             </div>
-            <div className="p-3 rounded-lg border bg-[#fefde8] border-[#fbf927]/60 text-center">
-              <p className="text-2xl font-bold text-[#262162]">−30 min</p>
+            <div className="p-3 rounded-lg border bg-[#1a1500] border-[#C9A84C]/60 text-center">
+              <p className="text-2xl font-bold text-[#C9A84C]">−30 min</p>
               <p className="text-xs text-muted-foreground mt-1">before earliest match</p>
             </div>
             <div className="p-3 rounded-lg border bg-blue-50 border-blue-200 text-center">
-              <p className="text-2xl font-bold text-[#262162]">All XIs</p>
+              <p className="text-2xl font-bold text-[#C9A84C]">All XIs</p>
               <p className="text-xs text-muted-foreground mt-1">form one combined pool</p>
             </div>
           </div>
@@ -68,14 +68,14 @@ export default function RulesPage() {
       {/* Transfers */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-[#262162] flex items-center gap-2">
+          <CardTitle className="text-[#C9A84C] flex items-center gap-2">
             🔄 Transfers
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 text-sm text-gray-700 leading-relaxed">
+        <CardContent className="space-y-4 text-sm text-[#aaaaaa] leading-relaxed">
           <div className="grid sm:grid-cols-3 gap-3">
-            <div className="p-3 rounded-lg border bg-[#eeedf8] border-[#262162]/20 text-center">
-              <p className="text-2xl font-bold text-[#262162]">300</p>
+            <div className="p-3 rounded-lg border bg-[#1c1c1c] border-[#C9A84C]/20 text-center">
+              <p className="text-2xl font-bold text-[#C9A84C]">300</p>
               <p className="text-xs text-muted-foreground mt-1">transfers per season</p>
             </div>
             <div className="p-3 rounded-lg border bg-green-50 border-green-200 text-center">
@@ -101,14 +101,14 @@ export default function RulesPage() {
       {/* Player Credits */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-[#262162] flex items-center gap-2">
+          <CardTitle className="text-[#C9A84C] flex items-center gap-2">
             💰 Player Credits
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 text-sm text-gray-700 leading-relaxed">
+        <CardContent className="space-y-4 text-sm text-[#aaaaaa] leading-relaxed">
           <div className="grid sm:grid-cols-3 gap-3">
-            <div className="p-3 rounded-lg border bg-[#eeedf8] border-[#262162]/20 text-center">
-              <p className="text-2xl font-bold text-[#262162]">6.0 – 11.0</p>
+            <div className="p-3 rounded-lg border bg-[#1c1c1c] border-[#C9A84C]/20 text-center">
+              <p className="text-2xl font-bold text-[#C9A84C]">6.0 – 11.0</p>
               <p className="text-xs text-muted-foreground mt-1">credit range</p>
             </div>
             <div className="p-3 rounded-lg border bg-green-50 border-green-200 text-center">
@@ -132,16 +132,16 @@ export default function RulesPage() {
       {/* Squad Selection Rules */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-[#262162] flex items-center gap-2">
+          <CardTitle className="text-[#C9A84C] flex items-center gap-2">
             📋 Squad Selection Rules
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 text-sm text-gray-700">
+        <CardContent className="space-y-4 text-sm text-[#aaaaaa]">
           <div className="grid sm:grid-cols-2 gap-3">
             {[
-              { role: 'Wicket-Keepers', range: '1 – 4', color: 'bg-[#fefde8] text-[#262162] border-yellow-200' },
+              { role: 'Wicket-Keepers', range: '1 – 4', color: 'bg-[#1a1500] text-[#C9A84C] border-yellow-200' },
               { role: 'Batsmen', range: '3 – 6', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-              { role: 'All-Rounders', range: '1 – 4', color: 'bg-[#eeedf8] text-[#262162] border-[#262162]/20' },
+              { role: 'All-Rounders', range: '1 – 4', color: 'bg-[#1c1c1c] text-[#C9A84C] border-[#C9A84C]/20' },
               { role: 'Bowlers', range: '3 – 6', color: 'bg-[#fceaea] text-[#b5211e] border-red-200' },
             ].map(({ role, range, color }) => (
               <div key={role} className={`flex items-center justify-between px-4 py-3 rounded-lg border ${color}`}>
@@ -162,14 +162,14 @@ export default function RulesPage() {
       {/* Points System */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-[#262162] flex items-center gap-2">
+          <CardTitle className="text-[#C9A84C] flex items-center gap-2">
             📊 Points System
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Batting */}
           <div>
-            <h3 className="font-semibold text-[#262162] mb-3">
+            <h3 className="font-semibold text-[#C9A84C] mb-3">
               <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-bold">BATTING</span>
             </h3>
             <div className="overflow-x-auto">
@@ -202,7 +202,7 @@ export default function RulesPage() {
 
           {/* Bowling */}
           <div>
-            <h3 className="font-semibold text-[#262162] mb-3">
+            <h3 className="font-semibold text-[#C9A84C] mb-3">
               <span className="bg-[#fceaea] text-[#b5211e] px-2 py-0.5 rounded text-xs font-bold">BOWLING</span>
             </h3>
             <div className="overflow-x-auto">
@@ -227,8 +227,8 @@ export default function RulesPage() {
 
           {/* Fielding */}
           <div>
-            <h3 className="font-semibold text-[#262162] mb-3">
-              <span className="bg-[#eeedf8] text-[#262162] px-2 py-0.5 rounded text-xs font-bold">FIELDING</span>
+            <h3 className="font-semibold text-[#C9A84C] mb-3">
+              <span className="bg-[#1c1c1c] text-[#C9A84C] px-2 py-0.5 rounded text-xs font-bold">FIELDING</span>
             </h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -249,7 +249,7 @@ export default function RulesPage() {
 
           {/* Captain / VC */}
           <div>
-            <h3 className="font-semibold text-[#262162] mb-3">
+            <h3 className="font-semibold text-[#C9A84C] mb-3">
               <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-xs font-bold">CAPTAIN & VICE-CAPTAIN</span>
             </h3>
             <div className="overflow-x-auto">
@@ -279,7 +279,7 @@ export default function RulesPage() {
       {/* Boosters */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-[#262162] flex items-center gap-2">
+          <CardTitle className="text-[#C9A84C] flex items-center gap-2">
             ⚡ Boosters
           </CardTitle>
         </CardHeader>
@@ -297,12 +297,12 @@ export default function RulesPage() {
                 { icon: '🧤', name: 'Keeping Surge', uses: '1×', desc: 'Your wicket-keeper earns 2× points for that match.' },
                 { icon: '🆓', name: 'Free Hit', uses: '1×', desc: 'No budget restriction this match — pick any players. Your squad automatically reverts after.' },
               ].map(({ icon, name, uses, desc }) => (
-                <div key={name} className="flex gap-3 p-3 rounded-lg border bg-gray-50">
+                <div key={name} className="flex gap-3 p-3 rounded-lg border bg-[#0f0f0f]">
                   <span className="text-2xl shrink-0">{icon}</span>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold text-[#262162]">{name}</p>
-                      <Badge className="bg-[#262162] text-white hover:bg-[#262162] text-xs px-1.5">{uses} per season</Badge>
+                      <p className="text-sm font-semibold text-[#C9A84C]">{name}</p>
+                      <Badge className="bg-[#111111] text-white hover:bg-[#111111] text-xs px-1.5">{uses} per season</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
                   </div>
@@ -321,12 +321,12 @@ export default function RulesPage() {
                 { icon: '🧊', name: 'Score Freeze', uses: '2×', desc: 'Lock in your current season total as a guaranteed floor. If your team scores less than that floor this matchday, the shortfall is topped up automatically. If you score more, you get the higher score.' },
                 { icon: '🎲', name: 'Underdog', uses: '2×', desc: 'If your team scores below the matchday average your points are doubled. If you score above average, points are normal. Rewards risk-taking and keeps lower-ranked managers competitive.' },
               ].map(({ icon, name, uses, desc }) => (
-                <div key={name} className="flex gap-3 p-3 rounded-lg border bg-[#fefde8] border-[#fbf927]/60">
+                <div key={name} className="flex gap-3 p-3 rounded-lg border bg-[#1a1500] border-[#C9A84C]/60">
                   <span className="text-2xl shrink-0">{icon}</span>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold text-[#262162]">{name}</p>
-                      <Badge className="bg-[#fbf927] text-[#262162] hover:bg-[#fbf927] text-xs px-1.5 font-bold">{uses} per season</Badge>
+                      <p className="text-sm font-semibold text-[#C9A84C]">{name}</p>
+                      <Badge className="bg-[#C9A84C] text-[#C9A84C] hover:bg-[#C9A84C] text-xs px-1.5 font-bold">{uses} per season</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
                   </div>
@@ -340,11 +340,11 @@ export default function RulesPage() {
       {/* General Rules */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-[#262162] flex items-center gap-2">
+          <CardTitle className="text-[#C9A84C] flex items-center gap-2">
             📌 General Rules
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-gray-700 space-y-2 leading-relaxed">
+        <CardContent className="text-sm text-[#aaaaaa] space-y-2 leading-relaxed">
           <ul className="list-disc list-inside space-y-2 pl-2">
             <li>Squads must be submitted <strong>before the matchday deadline</strong> (30 minutes before the earliest match on that day). Late submissions will not count.</li>
             <li>You can change your team freely before the deadline — transfers are only counted when the deadline passes.</li>

@@ -86,7 +86,7 @@ export default function ContestCreateModal({ seasonId, myFantasyTeamId, userId }
     <>
       <button
         onClick={() => setOpen(true)}
-        className="px-4 py-2.5 rounded-xl bg-[#262162] text-white text-sm font-bold hover:bg-[#1a1748] transition-colors"
+        className="px-4 py-2.5 rounded-xl bg-[#111111] text-white text-sm font-bold hover:bg-[#0a0a0a] transition-colors"
       >
         + Create Private League
       </button>
@@ -97,11 +97,11 @@ export default function ContestCreateModal({ seasonId, myFantasyTeamId, userId }
           onClick={handleClose}
         >
           <div
-            className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+            className="w-full max-w-md bg-[#111111] rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="bg-[#262162] px-6 py-5">
+            <div className="bg-[#111111] px-6 py-5">
               <h2 className="text-white font-black text-lg">Create Private League</h2>
               <p className="text-white/60 text-sm mt-0.5">
                 Invite friends with a unique 6-character code.
@@ -122,7 +122,7 @@ export default function ContestCreateModal({ seasonId, myFantasyTeamId, userId }
                       onChange={(e) => setName(e.target.value)}
                       placeholder="e.g. Slough Cricket Legends"
                       maxLength={60}
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-[#262162] focus:ring-1 focus:ring-[#262162]/20 transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#2a2a2a] text-sm text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
                     />
                   </div>
 
@@ -134,7 +134,7 @@ export default function ContestCreateModal({ seasonId, myFantasyTeamId, userId }
                     <select
                       value={maxTeams}
                       onChange={(e) => setMaxTeams(Number(e.target.value))}
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 bg-white focus:outline-none focus:border-[#262162] focus:ring-1 focus:ring-[#262162]/20 transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#2a2a2a] text-sm text-[#d4d4d4] bg-[#111111] focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
                     >
                       {[5, 10, 15, 20, 30, 50, 100].map((n) => (
                         <option key={n} value={n}>{n} teams</option>
@@ -153,7 +153,7 @@ export default function ContestCreateModal({ seasonId, myFantasyTeamId, userId }
                       placeholder="e.g. Winner gets a free drink at the next home match"
                       rows={2}
                       maxLength={200}
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-[#262162] focus:ring-1 focus:ring-[#262162]/20 transition-colors resize-none"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#2a2a2a] text-sm text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors resize-none"
                     />
                   </div>
 
@@ -166,14 +166,14 @@ export default function ContestCreateModal({ seasonId, myFantasyTeamId, userId }
                   <div className="flex gap-2 pt-1">
                     <button
                       onClick={handleClose}
-                      className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors"
+                      className="flex-1 py-2.5 rounded-xl border border-[#2a2a2a] text-gray-600 text-sm font-semibold hover:bg-[#0f0f0f] transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleCreate}
                       disabled={saving}
-                      className="flex-1 py-2.5 rounded-xl bg-[#262162] text-white text-sm font-black hover:bg-[#1a1748] disabled:opacity-60 transition-colors"
+                      className="flex-1 py-2.5 rounded-xl bg-[#111111] text-white text-sm font-black hover:bg-[#0a0a0a] disabled:opacity-60 transition-colors"
                     >
                       {saving ? 'Creating…' : 'Create League'}
                     </button>
@@ -184,15 +184,15 @@ export default function ContestCreateModal({ seasonId, myFantasyTeamId, userId }
                 <div className="space-y-5 text-center">
                   <div className="text-4xl">🎉</div>
                   <div>
-                    <p className="font-bold text-gray-800 text-lg">{name}</p>
+                    <p className="font-bold text-[#d4d4d4] text-lg">{name}</p>
                     <p className="text-gray-500 text-sm mt-0.5">Your private league is ready.</p>
                   </div>
 
-                  <div className="bg-[#eeedf8] rounded-2xl p-5">
-                    <p className="text-xs font-bold uppercase tracking-widest text-[#262162]/60 mb-2">
+                  <div className="bg-[#1c1c1c] rounded-2xl p-5">
+                    <p className="text-xs font-bold uppercase tracking-widest text-[#C9A84C]/60 mb-2">
                       Invite Code
                     </p>
-                    <p className="text-4xl font-black tracking-[0.3em] text-[#262162] font-mono">
+                    <p className="text-4xl font-black tracking-[0.3em] text-[#C9A84C] font-mono">
                       {created.code}
                     </p>
                   </div>
@@ -203,7 +203,7 @@ export default function ContestCreateModal({ seasonId, myFantasyTeamId, userId }
                       'w-full py-3 rounded-xl font-bold text-sm transition-all',
                       copied
                         ? 'bg-green-500 text-white'
-                        : 'bg-[#262162] text-white hover:bg-[#1a1748]',
+                        : 'bg-[#111111] text-white hover:bg-[#0a0a0a]',
                     )}
                   >
                     {copied ? '✓ Copied!' : 'Copy Invite Code'}
@@ -214,7 +214,7 @@ export default function ContestCreateModal({ seasonId, myFantasyTeamId, userId }
                       handleClose()
                       router.push(`/contests/${created.id}`)
                     }}
-                    className="w-full py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors"
+                    className="w-full py-2.5 rounded-xl border border-[#2a2a2a] text-gray-600 text-sm font-semibold hover:bg-[#0f0f0f] transition-colors"
                   >
                     View League →
                   </button>

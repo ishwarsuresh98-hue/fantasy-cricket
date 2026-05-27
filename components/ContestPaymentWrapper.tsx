@@ -73,7 +73,7 @@ export default function ContestPaymentWrapper({
   if (loading) {
     return (
       <div className="flex flex-col items-center gap-3 py-10">
-        <div className="w-8 h-8 border-2 border-[#262162]/20 border-t-[#262162] rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#C9A84C]/20 border-t-[#C9A84C] rounded-full animate-spin" />
         <p className="text-sm text-gray-500">Preparing secure checkout…</p>
       </div>
     )
@@ -90,7 +90,7 @@ export default function ContestPaymentWrapper({
           {onCancel && (
             <button
               onClick={onCancel}
-              className="text-sm text-gray-500 underline hover:text-gray-700"
+              className="text-sm text-gray-500 underline hover:text-[#aaaaaa]"
             >
               Go back
             </button>
@@ -101,7 +101,7 @@ export default function ContestPaymentWrapper({
               setLoading(true)
               setClientSecret(null)
             }}
-            className="text-sm text-[#262162] font-semibold underline hover:text-[#1a1648]"
+            className="text-sm text-[#C9A84C] font-semibold underline hover:text-[#C9A84C]"
           >
             Retry
           </button>
@@ -119,9 +119,9 @@ export default function ContestPaymentWrapper({
         appearance: {
           theme: 'stripe',
           variables: {
-            colorPrimary:       '#262162',
-            colorBackground:    '#ffffff',
-            colorText:          '#1a1a2e',
+            colorPrimary: '#C9A84C',
+            colorBackground: '#111111',
+            colorText: '#ebebeb',
             colorDanger:        '#b5211e',
             fontFamily:         'ui-sans-serif, system-ui, sans-serif',
             spacingUnit:        '4px',

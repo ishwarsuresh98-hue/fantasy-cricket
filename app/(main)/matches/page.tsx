@@ -18,7 +18,7 @@ export default async function MatchesPage() {
     return (
       <div className="text-center py-24">
         <div className="text-5xl mb-4">📅</div>
-        <h2 className="text-2xl font-bold text-gray-800">No Active Season</h2>
+        <h2 className="text-2xl font-bold text-[#d4d4d4]">No Active Season</h2>
       </div>
     )
   }
@@ -46,7 +46,7 @@ export default async function MatchesPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-[#262162]">Matches</h1>
+          <h1 className="text-3xl font-bold text-[#C9A84C]">Matches</h1>
           <p className="text-muted-foreground mt-1">{season.name}</p>
         </div>
         <Card>
@@ -61,7 +61,7 @@ export default async function MatchesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-[#262162]">Matches</h1>
+        <h1 className="text-3xl font-bold text-[#C9A84C]">Matches</h1>
         <p className="text-muted-foreground mt-1">{season.name}</p>
       </div>
 
@@ -80,31 +80,31 @@ export default async function MatchesPage() {
               {/* Gameweek header */}
               <div
                 className={`flex items-center gap-3 mb-3 px-1 ${
-                  isActive ? 'text-[#262162]' : 'text-gray-500'
+                  isActive ? 'text-[#C9A84C]' : 'text-gray-500'
                 }`}
               >
                 <div
                   className={`h-px flex-1 ${
-                    isActive ? 'bg-[#262162]' : 'bg-gray-200'
+                    isActive ? 'bg-[#111111]' : 'bg-gray-200'
                   }`}
                 />
                 <div className="flex items-center gap-2 shrink-0">
                   {isActive && (
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold bg-[#262162] text-white px-2 py-0.5 rounded-full">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#fbf927] inline-block" />
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold bg-[#111111] text-white px-2 py-0.5 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#C9A84C] inline-block" />
                       Current
                     </span>
                   )}
-                  <span className={`text-sm font-semibold ${isActive ? 'text-[#262162]' : 'text-gray-500'}`}>
+                  <span className={`text-sm font-semibold ${isActive ? 'text-[#C9A84C]' : 'text-gray-500'}`}>
                     Gameweek {gw.gw}
                   </span>
-                  <span className={`text-sm ${isActive ? 'text-[#262162]/70' : 'text-gray-400'}`}>
+                  <span className={`text-sm ${isActive ? 'text-[#C9A84C]/70' : 'text-gray-400'}`}>
                     — {gw.label}
                   </span>
                 </div>
                 <div
                   className={`h-px flex-1 ${
-                    isActive ? 'bg-[#262162]' : 'bg-gray-200'
+                    isActive ? 'bg-[#111111]' : 'bg-gray-200'
                   }`}
                 />
               </div>
@@ -113,14 +113,14 @@ export default async function MatchesPage() {
               <div
                 className={`space-y-2 rounded-xl p-3 ${
                   isActive
-                    ? 'bg-[#eeedf8] ring-1 ring-[#262162]/20'
+                    ? 'bg-[#1c1c1c] ring-1 ring-[#C9A84C]/20'
                     : 'bg-transparent'
                 }`}
               >
                 {gwMatches.map((match) => (
                   <Link key={match.id} href={`/matches/${match.id}`}>
-                    <div className={`flex items-center justify-between p-4 rounded-lg border bg-white hover:bg-[#eeedf8] hover:border-[#262162] transition-colors cursor-pointer group ${
-                      isActive ? 'border-[#262162]/20' : 'border-gray-200'
+                    <div className={`flex items-center justify-between p-4 rounded-lg border bg-[#111111] hover:bg-[#1c1c1c] hover:border-[#C9A84C] transition-colors cursor-pointer group ${
+                      isActive ? 'border-[#C9A84C]/20' : 'border-[#2a2a2a]'
                     }`}>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
@@ -128,16 +128,16 @@ export default async function MatchesPage() {
                             Match {match.match_number}
                           </Badge>
                           {match.status === 'completed' ? (
-                            <Badge className="text-xs bg-gray-100 text-gray-600 hover:bg-gray-100">
+                            <Badge className="text-xs bg-[#141414] text-gray-600 hover:bg-[#141414]">
                               Completed
                             </Badge>
                           ) : (
-                            <Badge className="text-xs bg-[#fefde8] text-[#262162] border border-[#fbf927] hover:bg-[#fefde8]">
+                            <Badge className="text-xs bg-[#1a1500] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#1a1500]">
                               Upcoming
                             </Badge>
                           )}
                         </div>
-                        <p className="font-semibold text-gray-900 group-hover:text-[#262162]">
+                        <p className="font-semibold text-[#ebebeb] group-hover:text-[#C9A84C]">
                           {match.opponent}
                         </p>
                         {match.venue && (

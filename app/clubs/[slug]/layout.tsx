@@ -55,7 +55,7 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
   const showOnboarding = !(profile as Profile).onboarding_complete
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0f0f0f]">
       <Navbar profile={profile as Profile} club={club} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}

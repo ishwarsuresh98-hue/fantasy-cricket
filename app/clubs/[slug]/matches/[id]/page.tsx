@@ -12,8 +12,8 @@ import type { MatchPerformance, Player } from '@/types'
 const ROLE_BADGE: Record<string, string> = {
   batsman:       'bg-blue-100 text-blue-700',
   bowler:        'bg-[#fceaea] text-[#b5211e]',
-  all_rounder:   'bg-[#eeedf8] text-[#262162]',
-  wicket_keeper: 'bg-[#fefde8] text-[#262162]',
+  all_rounder:   'bg-[#1c1c1c] text-[#C9A84C]',
+  wicket_keeper: 'bg-[#1a1500] text-[#C9A84C]',
 }
 
 function srBonus(runs: number, balls: number, didNotBat: boolean): number | null {
@@ -89,16 +89,16 @@ export default async function ClubMatchDetailPage({
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
-            <Link href={`${base}/matches`} className="hover:text-[#262162] hover:underline">Matches</Link>
+            <Link href={`${base}/matches`} className="hover:text-[#C9A84C] hover:underline">Matches</Link>
             <span>/</span>
-            <span className="text-gray-900 font-medium">Match {match.match_number}</span>
+            <span className="text-[#ebebeb] font-medium">Match {match.match_number}</span>
           </div>
-          <h1 className="text-3xl font-bold text-[#262162]">{match.opponent}</h1>
+          <h1 className="text-3xl font-bold text-[#C9A84C]">{match.opponent}</h1>
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <Badge variant="outline">Match {match.match_number}</Badge>
             {match.status === 'completed'
-              ? <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">Completed</Badge>
-              : <Badge className="bg-[#fefde8] text-[#262162] border border-[#fbf927] hover:bg-[#fefde8]">Upcoming</Badge>
+              ? <Badge className="bg-[#141414] text-[#aaaaaa] hover:bg-[#141414]">Completed</Badge>
+              : <Badge className="bg-[#1a1500] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#1a1500]">Upcoming</Badge>
             }
           </div>
           {match.venue   && <p className="text-muted-foreground mt-1">{match.venue}</p>}
@@ -112,8 +112,8 @@ export default async function ClubMatchDetailPage({
             className={cn(
               buttonVariants({ variant: match.status === 'completed' ? 'outline' : 'default' }),
               match.status === 'completed'
-                ? 'border-[#262162] text-[#262162] hover:bg-[#eeedf8] shrink-0'
-                : 'bg-[#262162] hover:bg-[#1a1748] text-white shrink-0',
+                ? 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#1c1c1c] shrink-0'
+                : 'bg-[#111111] hover:bg-[#0a0a0a] text-white shrink-0',
             )}
           >
             {match.status === 'completed' ? 'Edit Stats' : 'Enter Stats'}
@@ -124,13 +124,13 @@ export default async function ClubMatchDetailPage({
       {/* Scorecard */}
       {match.status === 'completed' && performances && performances.length > 0 ? (
         <Card>
-          <CardHeader className="bg-[#262162] rounded-t-xl">
+          <CardHeader className="bg-[#111111] rounded-t-xl">
             <CardTitle className="text-white text-base">Player Scorecard</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b">
+                <thead className="bg-[#0f0f0f] border-b">
                   <tr>
                     <th className="text-left   text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3 min-w-[140px]">Player</th>
                     <th className="text-left   text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">Role</th>
@@ -152,19 +152,19 @@ export default async function ClubMatchDetailPage({
                   {(performances as (MatchPerformance & { players: Player })[]).map((perf) => {
                     const role = perf.players?.role ?? ''
                     return (
-                      <tr key={perf.id} className="hover:bg-[#eeedf8] transition-colors">
+                      <tr key={perf.id} className="hover:bg-[#1c1c1c] transition-colors">
                         <td className="px-4 py-3 font-medium">
                           {perf.players?.id ? (
                             <Link
                               href={`${base}/players/${perf.players.id}`}
-                              className="hover:text-[#262162] hover:underline"
+                              className="hover:text-[#C9A84C] hover:underline"
                             >
                               {perf.players.name}
                             </Link>
                           ) : (perf.players?.name ?? '—')}
                         </td>
                         <td className="px-3 py-3">
-                          <Badge className={cn('text-xs font-normal', ROLE_BADGE[role] ?? 'bg-gray-100 text-gray-600')}>
+                          <Badge className={cn('text-xs font-normal', ROLE_BADGE[role] ?? 'bg-[#141414] text-gray-600')}>
                             {PLAYER_ROLE_LABELS[role] ?? role}
                           </Badge>
                         </td>
@@ -187,7 +187,7 @@ export default async function ClubMatchDetailPage({
                         <td className="px-3 py-3 text-center">
                           <BonusCell value={bowlBonus(perf.wickets ?? 0, perf.maidens ?? 0, perf.dot_balls ?? 0) || null} />
                         </td>
-                        <td className="px-4 py-3 text-right font-bold text-[#262162]">
+                        <td className="px-4 py-3 text-right font-bold text-[#C9A84C]">
                           {Number(perf.base_points).toFixed(1)}
                         </td>
                       </tr>
@@ -212,7 +212,7 @@ export default async function ClubMatchDetailPage({
             {isAdmin && (
               <Link
                 href={`${base}/admin/matches/${match.id}/stats`}
-                className={cn(buttonVariants(), 'mt-4 inline-flex bg-[#262162] hover:bg-[#1a1748]')}
+                className={cn(buttonVariants(), 'mt-4 inline-flex bg-[#111111] hover:bg-[#0a0a0a]')}
               >
                 Enter Player Stats
               </Link>

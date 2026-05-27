@@ -58,7 +58,7 @@ export default async function ClubAdminBoostersPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#262162]">Booster Usage</h1>
+        <h1 className="text-2xl font-bold text-[#C9A84C]">Booster Usage</h1>
         <p className="text-muted-foreground text-sm mt-0.5">{season.name}</p>
       </div>
 
@@ -92,7 +92,7 @@ export default async function ClubAdminBoostersPage({
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-gray-50">
+                <tr className="border-b bg-[#0f0f0f]">
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Team</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Owner</th>
                   {BOOSTERS.map((b) => (
@@ -108,7 +108,7 @@ export default async function ClubAdminBoostersPage({
                   const profile = Array.isArray(team.profiles) ? team.profiles[0] : team.profiles
 
                   return (
-                    <tr key={team.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={team.id} className="hover:bg-[#0f0f0f] transition-colors">
                       <td className="px-4 py-3 font-medium">{team.team_name}</td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {(profile as { display_name?: string } | null)?.display_name ?? '—'}
@@ -122,7 +122,7 @@ export default async function ClubAdminBoostersPage({
                             {used === 0 ? (
                               <Badge
                                 variant="secondary"
-                                className="text-xs font-normal text-gray-400 bg-gray-100"
+                                className="text-xs font-normal text-gray-400 bg-[#141414]"
                               >
                                 {remaining}/{booster.maxUses}
                               </Badge>
@@ -133,7 +133,7 @@ export default async function ClubAdminBoostersPage({
                                   return (
                                     <Badge
                                       key={i}
-                                      className="bg-[#fefde8] text-[#262162] border border-[#fbf927] hover:bg-[#fefde8] text-xs block"
+                                      className="bg-[#1a1500] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#1a1500] text-xs block"
                                     >
                                       M{matchInfo.matches?.match_number ?? '?'}
                                     </Badge>

@@ -27,7 +27,7 @@ export default async function ClubTransfersPage({
     return (
       <div className="text-center py-24">
         <div className="text-5xl mb-4">🏏</div>
-        <h2 className="text-2xl font-bold text-gray-800">No Active Season</h2>
+        <h2 className="text-2xl font-bold text-[#d4d4d4]">No Active Season</h2>
         <p className="text-gray-500 mt-2">An admin needs to activate a season first.</p>
       </div>
     )
@@ -39,10 +39,10 @@ export default async function ClubTransfersPage({
   if (!myTeam) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-[#262162]">Transfers</h1>
-        <div className="rounded-2xl bg-white border border-gray-200 p-16 text-center space-y-3">
+        <h1 className="text-3xl font-bold text-[#C9A84C]">Transfers</h1>
+        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] p-16 text-center space-y-3">
           <p className="text-gray-500">You don&apos;t have a fantasy team yet.</p>
-          <Link href={`${base}/team`} className="inline-flex items-center px-5 py-2.5 rounded-xl bg-[#262162] text-white font-semibold text-sm hover:bg-[#1a1748] transition-colors">
+          <Link href={`${base}/team`} className="inline-flex items-center px-5 py-2.5 rounded-xl bg-[#111111] text-white font-semibold text-sm hover:bg-[#0a0a0a] transition-colors">
             Create Team
           </Link>
         </div>
@@ -152,18 +152,18 @@ export default async function ClubTransfersPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#262162]">Transfers</h1>
+          <h1 className="text-3xl font-bold text-[#C9A84C]">Transfers</h1>
           <p className="text-gray-500 mt-0.5">{myTeam.team_name} — {season.name}</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-4 text-center">
             <div>
-              <p className={cn('text-xl font-black tabular-nums', confirmedTransfers > 0 ? 'text-[#262162]' : 'text-gray-300')}>{confirmedTransfers}</p>
+              <p className={cn('text-xl font-black tabular-nums', confirmedTransfers > 0 ? 'text-[#C9A84C]' : 'text-gray-300')}>{confirmedTransfers}</p>
               <p className="text-[10px] uppercase tracking-wide text-gray-400">used</p>
             </div>
             <div className="w-px h-6 bg-gray-200" />
             <div>
-              <p className={cn('text-xl font-black tabular-nums', transfersRemaining <= 10 ? 'text-red-600' : 'text-[#262162]')}>{transfersRemaining}</p>
+              <p className={cn('text-xl font-black tabular-nums', transfersRemaining <= 10 ? 'text-red-600' : 'text-[#C9A84C]')}>{transfersRemaining}</p>
               <p className="text-[10px] uppercase tracking-wide text-gray-400">left</p>
             </div>
             <div className="w-px h-6 bg-gray-200" />
@@ -172,7 +172,7 @@ export default async function ClubTransfersPage({
               <p className="text-[10px] uppercase tracking-wide text-gray-400">limit</p>
             </div>
           </div>
-          <Link href={`${base}/team`} className="px-4 py-2 rounded-xl border border-[#262162] text-[#262162] text-sm font-semibold hover:bg-[#eeedf8] transition-colors">
+          <Link href={`${base}/team`} className="px-4 py-2 rounded-xl border border-[#C9A84C] text-[#C9A84C] text-sm font-semibold hover:bg-[#1c1c1c] transition-colors">
             My Team
           </Link>
         </div>
@@ -186,10 +186,10 @@ export default async function ClubTransfersPage({
         transferLimit={transferLimit} baseSquadIds={baseSquadIds} megaTransferActive={false}
       />
 
-      <div className="rounded-2xl bg-white border border-gray-200 overflow-hidden">
+      <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] overflow-hidden">
         {pendingLog && (
-          <div className="border-b border-[#fbf927]/60 bg-[#fefde8] px-5 py-4">
-            <p className="text-sm font-bold text-[#262162] mb-2">⏳ Pending Changes (not yet confirmed)</p>
+          <div className="border-b border-[#C9A84C]/60 bg-[#1a1500] px-5 py-4">
+            <p className="text-sm font-bold text-[#C9A84C] mb-2">⏳ Pending Changes (not yet confirmed)</p>
             <p className="text-xs text-gray-500 mb-3">Saved but transfers won&apos;t be deducted until the deadline passes.</p>
             <div className="flex gap-6 flex-wrap">
               <div>
@@ -203,14 +203,14 @@ export default async function ClubTransfersPage({
                   : pendingLog.players_out.map((id) => <p key={id} className="text-xs font-semibold text-red-600">− {playerMap.get(id) ?? id}</p>)}
               </div>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-[#262162] mb-1">Will Cost</p>
-                <p className="text-xl font-black text-[#262162]">{pendingLog.transfers_used}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-[#C9A84C] mb-1">Will Cost</p>
+                <p className="text-xl font-black text-[#C9A84C]">{pendingLog.transfers_used}</p>
               </div>
             </div>
           </div>
         )}
 
-        <div className="px-5 py-3 border-b border-gray-100 bg-gray-50">
+        <div className="px-5 py-3 border-b border-[#1e1e1e] bg-[#0f0f0f]">
           <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Confirmed Transfer History</p>
         </div>
 
@@ -223,12 +223,12 @@ export default async function ClubTransfersPage({
               return (
                 <div key={log.id} className="px-5 py-3 flex items-start justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-800">
+                    <p className="text-sm font-semibold text-[#d4d4d4]">
                       {logMatch ? `Match ${logMatch.match_number} — ${logMatch.opponent}` : 'Unknown Match'}
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
                       {new Date(log.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      {log.is_mega_transfer && <span className="ml-2 font-semibold text-[#262162]">⚡ Mega</span>}
+                      {log.is_mega_transfer && <span className="ml-2 font-semibold text-[#C9A84C]">⚡ Mega</span>}
                     </p>
                     <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
                       {log.players_in.length > 0 && (
@@ -239,14 +239,14 @@ export default async function ClubTransfersPage({
                       )}
                     </div>
                   </div>
-                  <span className="flex-shrink-0 inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-[#262162] text-white text-xs font-black">−{log.transfers_used}</span>
+                  <span className="flex-shrink-0 inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-[#111111] text-white text-xs font-black">−{log.transfers_used}</span>
                 </div>
               )
             })}
             {adminLogs.map((log) => (
-              <div key={log.id} className="px-5 py-3 flex items-start justify-between gap-4 bg-gray-50">
+              <div key={log.id} className="px-5 py-3 flex items-start justify-between gap-4 bg-[#0f0f0f]">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-700">Admin Adjustment</p>
+                  <p className="text-sm font-semibold text-[#aaaaaa]">Admin Adjustment</p>
                   {log.admin_note && <p className="text-xs text-gray-500 mt-0.5">{log.admin_note}</p>}
                   <p className="text-xs text-gray-400">{new Date(log.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                 </div>

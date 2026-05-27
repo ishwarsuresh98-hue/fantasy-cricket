@@ -12,8 +12,8 @@ const ROLE_ORDER = ['wicket_keeper', 'batsman', 'all_rounder', 'bowler'] as cons
 const ROLE_COLORS: Record<string, string> = {
   batsman:       'bg-blue-100 text-blue-700 border-blue-200',
   bowler:        'bg-[#fceaea] text-[#b5211e] border-red-200',
-  all_rounder:   'bg-[#eeedf8] text-[#262162] border-[#262162]/20',
-  wicket_keeper: 'bg-[#fefde8] text-[#a16207] border-yellow-200',
+  all_rounder:   'bg-[#1c1c1c] text-[#C9A84C] border-[#C9A84C]/20',
+  wicket_keeper: 'bg-[#1a1500] text-[#a16207] border-yellow-200',
 }
 const ROLE_SHORT: Record<string, string> = {
   wicket_keeper: 'WK',
@@ -112,17 +112,17 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
     <div className="space-y-5">
 
       {/* Progress bar + counter */}
-      <div className="rounded-xl bg-[#262162] p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+      <div className="rounded-xl bg-[#111111] p-5 flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex-1">
           <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-2">Players selected</p>
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-3 bg-white/10 rounded-full overflow-hidden">
+            <div className="flex-1 h-3 bg-[#111111]/10 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-300 ${full ? 'bg-green-400' : 'bg-[#fbf927]'}`}
+                className={`h-full rounded-full transition-all duration-300 ${full ? 'bg-green-400' : 'bg-[#C9A84C]'}`}
                 style={{ width: `${(count / MAX_XI) * 100}%` }}
               />
             </div>
-            <span className={`text-2xl font-black tabular-nums ${full ? 'text-green-400' : 'text-[#fbf927]'}`}>
+            <span className={`text-2xl font-black tabular-nums ${full ? 'text-green-400' : 'text-[#C9A84C]'}`}>
               {count} <span className="text-white/40 text-lg font-normal">/ {MAX_XI}</span>
             </span>
           </div>
@@ -138,7 +138,7 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
               size="sm"
               onClick={handleClear}
               disabled={clearing || saving}
-              className="border-white/30 text-white hover:bg-white/10 hover:text-white bg-transparent"
+              className="border-white/30 text-white hover:bg-[#111111]/10 hover:text-white bg-transparent"
             >
               {clearing ? 'Clearing…' : 'Clear XI'}
             </Button>
@@ -152,7 +152,7 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
                 ? 'bg-green-500 hover:bg-green-600 text-white'
                 : saved
                 ? 'bg-green-700 text-white cursor-default'
-                : 'bg-white/20 text-white/40 cursor-not-allowed'
+                : 'bg-[#111111]/20 text-white/40 cursor-not-allowed'
             }`}
           >
             {saving ? 'Saving…' : saved ? '✓ Saved!' : 'Confirm Playing XI'}
@@ -176,15 +176,15 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
               onClick={() => { setActiveRole(role); setSearch('') }}
               className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all ${
                 isActive
-                  ? 'bg-[#262162] text-white border-[#262162]'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-[#262162]/40 hover:bg-[#eeedf8]'
+                  ? 'bg-[#111111] text-white border-[#C9A84C]'
+                  : 'bg-[#111111] text-gray-600 border-[#2a2a2a] hover:border-[#C9A84C]/40 hover:bg-[#1c1c1c]'
               }`}
             >
               {ROLE_SHORT[role]}
               <span className={`ml-2 text-xs font-bold px-1.5 py-0.5 rounded-full ${
                 roleSelected > 0
-                  ? isActive ? 'bg-[#fbf927] text-[#262162]' : 'bg-[#262162] text-white'
-                  : isActive ? 'bg-white/20 text-white/60' : 'bg-gray-100 text-gray-400'
+                  ? isActive ? 'bg-[#C9A84C] text-[#C9A84C]' : 'bg-[#111111] text-white'
+                  : isActive ? 'bg-[#111111]/20 text-white/60' : 'bg-[#141414] text-gray-400'
               }`}>
                 {roleSelected}/{total}
               </span>
@@ -206,7 +206,7 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={`Search ${ROLE_SHORT[activeRole]} players…`}
-          className="w-full pl-9 pr-9 py-2.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-[#262162] focus:ring-1 focus:ring-[#262162]/30 transition-colors"
+          className="w-full pl-9 pr-9 py-2.5 text-sm rounded-lg border border-[#2a2a2a] bg-[#111111] text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/30 transition-colors"
         />
         {search && (
           <button
@@ -236,13 +236,13 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
                 isSelected
                   ? 'bg-green-50 border-green-500 shadow-sm shadow-green-100'
                   : wouldExceed
-                  ? 'bg-gray-50 border-gray-100 opacity-40 cursor-not-allowed'
-                  : 'bg-white border-gray-200 hover:border-[#262162]/40 hover:bg-[#eeedf8] cursor-pointer'
+                  ? 'bg-[#0f0f0f] border-[#1e1e1e] opacity-40 cursor-not-allowed'
+                  : 'bg-[#111111] border-[#2a2a2a] hover:border-[#C9A84C]/40 hover:bg-[#1c1c1c] cursor-pointer'
               }`}
             >
               {/* Tick / circle */}
               <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                isSelected ? 'bg-green-500 border-green-500' : 'border-gray-300 bg-white'
+                isSelected ? 'bg-green-500 border-green-500' : 'border-gray-300 bg-[#111111]'
               }`}>
                 {isSelected && (
                   <svg className="w-4 h-4 text-white" viewBox="0 0 20 20" fill="currentColor">
@@ -252,7 +252,7 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
               </div>
 
               <div className="min-w-0 flex-1">
-                <p className={`font-semibold text-sm truncate ${isSelected ? 'text-green-800' : 'text-gray-800'}`}>
+                <p className={`font-semibold text-sm truncate ${isSelected ? 'text-green-800' : 'text-[#d4d4d4]'}`}>
                   {player.name}
                 </p>
                 <div className="flex items-center gap-1.5 mt-0.5">
@@ -282,7 +282,7 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
       {/* Bottom save bar (sticky on scroll for long lists) */}
       <div className="sticky bottom-4 flex justify-end">
         <div className={`flex items-center gap-3 rounded-xl px-5 py-3 shadow-xl border transition-all ${
-          full ? 'bg-green-600 border-green-700' : 'bg-[#262162] border-[#1a1748]'
+          full ? 'bg-green-600 border-green-700' : 'bg-[#111111] border-[#1a1a1a]'
         }`}>
           <span className="text-white text-sm font-medium">
             {full ? '✓ XI complete' : `${MAX_XI - count} more to pick`}
@@ -293,10 +293,10 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
             disabled={!full || saving || saved}
             className={`font-bold ${
               full && !saved
-                ? 'bg-white text-green-700 hover:bg-green-50'
+                ? 'bg-[#111111] text-green-700 hover:bg-green-50'
                 : saved
-                ? 'bg-white/80 text-green-700 cursor-default'
-                : 'bg-white/20 text-white/50 cursor-not-allowed'
+                ? 'bg-[#111111]/80 text-green-700 cursor-default'
+                : 'bg-[#111111]/20 text-white/50 cursor-not-allowed'
             }`}
           >
             {saving ? 'Saving…' : saved ? '✓ Saved!' : 'Confirm XI'}

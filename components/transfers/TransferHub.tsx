@@ -247,9 +247,9 @@ export default function TransferHub({
 
   if (!saveMatchId) {
     return (
-      <div className="rounded-2xl bg-white border border-gray-200 p-8 text-center space-y-2">
+      <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] p-8 text-center space-y-2">
         <span className="text-3xl">📅</span>
-        <p className="text-sm font-semibold text-gray-700">No upcoming match to transfer for</p>
+        <p className="text-sm font-semibold text-[#aaaaaa]">No upcoming match to transfer for</p>
         <p className="text-xs text-gray-400">Transfer changes can be made once the next match is scheduled.</p>
       </div>
     )
@@ -261,7 +261,7 @@ export default function TransferHub({
     <div className="space-y-4">
 
       {/* ── Match + transfer status banner ─────────────────────────────── */}
-      <div className="rounded-2xl bg-[#262162] px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="rounded-2xl bg-[#111111] px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-white/50">Making transfers for</p>
           <p className="text-white font-bold text-base">{nextMatchLabel ?? 'Next Match'}</p>
@@ -271,7 +271,7 @@ export default function TransferHub({
           <div className="text-center">
             <p className={cn(
               'text-2xl font-black tabular-nums leading-none',
-              warnOverLimit ? 'text-[#ff6b6b]' : 'text-[#fbf927]',
+              warnOverLimit ? 'text-[#ff6b6b]' : 'text-[#C9A84C]',
             )}>
               {pendingChanges}
             </p>
@@ -279,7 +279,7 @@ export default function TransferHub({
               pending
             </p>
           </div>
-          <div className="w-px h-8 bg-white/20" />
+          <div className="w-px h-8 bg-[#111111]/20" />
           <div className="text-center">
             <p className="text-2xl font-black tabular-nums text-white/80 leading-none">{transfersLeft}</p>
             <p className="text-[10px] font-bold uppercase tracking-widest text-white/50">remaining</p>
@@ -299,11 +299,11 @@ export default function TransferHub({
       )}
 
       {/* Budget bar */}
-      <div className="rounded-2xl bg-white border border-gray-200 px-5 py-3 flex items-center gap-4">
+      <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] px-5 py-3 flex items-center gap-4">
         <div className="flex-1">
           <div className="flex justify-between text-xs font-bold mb-1.5">
             <span className="text-gray-500">Budget used</span>
-            <span className={budgetLeft < 0 ? 'text-red-600' : 'text-gray-700'}>
+            <span className={budgetLeft < 0 ? 'text-red-600' : 'text-[#aaaaaa]'}>
               {budgetUsed.toFixed(1)} / {budget} cr
               {outId && inId && (
                 <span className={cn(
@@ -315,18 +315,18 @@ export default function TransferHub({
               )}
             </span>
           </div>
-          <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-2.5 bg-[#141414] rounded-full overflow-hidden">
             <div
               className={cn(
                 'h-full rounded-full transition-all duration-300',
-                budgetLeft < 0 ? 'bg-red-500' : budgetLeft < budget * 0.1 ? 'bg-orange-400' : 'bg-[#262162]',
+                budgetLeft < 0 ? 'bg-red-500' : budgetLeft < budget * 0.1 ? 'bg-orange-400' : 'bg-[#111111]',
               )}
               style={{ width: `${Math.min(100, (budgetUsed / budget) * 100)}%` }}
             />
           </div>
         </div>
         <div className="text-right flex-shrink-0">
-          <p className={cn('text-lg font-black tabular-nums', budgetLeft < 0 ? 'text-red-600' : 'text-[#262162]')}>
+          <p className={cn('text-lg font-black tabular-nums', budgetLeft < 0 ? 'text-red-600' : 'text-[#C9A84C]')}>
             {budgetLeft.toFixed(1)}
           </p>
           <p className="text-[10px] uppercase tracking-wide text-gray-400">cr left</p>
@@ -337,17 +337,17 @@ export default function TransferHub({
       <div className="grid md:grid-cols-2 gap-4">
 
         {/* ── Left: Your Squad ──────────────────────────────────────────── */}
-        <div className="rounded-2xl bg-white border border-gray-200 overflow-hidden flex flex-col">
+        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] overflow-hidden flex flex-col">
           {/* Panel header */}
-          <div className="bg-[#262162] px-4 py-3 flex items-center justify-between">
+          <div className="bg-[#111111] px-4 py-3 flex items-center justify-between">
             <p className="text-white font-bold text-sm">Your Squad</p>
-            <span className="text-[#fbf927] font-black text-sm tabular-nums">
+            <span className="text-[#C9A84C] font-black text-sm tabular-nums">
               {squadPlayers.length}/{MAX_SQUAD}
             </span>
           </div>
 
           {outId && (
-            <div className="px-4 py-2 bg-[#fefde8] border-b border-[#fbf927]/40 text-xs font-semibold text-[#262162]">
+            <div className="px-4 py-2 bg-[#1a1500] border-b border-[#C9A84C]/40 text-xs font-semibold text-[#C9A84C]">
               🟡 {playerMap.get(outId)?.name} selected — pick a replacement →
             </div>
           )}
@@ -376,8 +376,8 @@ export default function TransferHub({
                     className={cn(
                       'cursor-pointer transition-all',
                       isOut
-                        ? 'ring-2 ring-inset ring-[#fbf927] bg-[#fefde8]'
-                        : 'hover:bg-gray-50',
+                        ? 'ring-2 ring-inset ring-[#C9A84C] bg-[#1a1500]'
+                        : 'hover:bg-[#0f0f0f]',
                     )}
                   >
                     <div className="relative">
@@ -405,10 +405,10 @@ export default function TransferHub({
         </div>
 
         {/* ── Right: Available Players ───────────────────────────────────── */}
-        <div className="rounded-2xl bg-white border border-gray-200 overflow-hidden flex flex-col">
+        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] overflow-hidden flex flex-col">
           {/* Panel header */}
-          <div className="bg-gray-50 border-b border-gray-200 px-4 py-3">
-            <p className="text-gray-800 font-bold text-sm mb-2">
+          <div className="bg-[#0f0f0f] border-b border-[#2a2a2a] px-4 py-3">
+            <p className="text-[#d4d4d4] font-bold text-sm mb-2">
               Available Players
               {!outId && (
                 <span className="ml-1.5 text-xs font-normal text-gray-400">
@@ -426,8 +426,8 @@ export default function TransferHub({
                   className={cn(
                     'px-2.5 py-1 rounded-lg text-xs font-bold border transition-all',
                     roleFilter === role
-                      ? 'bg-[#262162] text-white border-[#262162]'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-[#262162]/40',
+                      ? 'bg-[#111111] text-white border-[#C9A84C]'
+                      : 'bg-[#111111] text-gray-600 border-[#2a2a2a] hover:border-[#C9A84C]/40',
                   )}
                 >
                   {role === 'all' ? 'ALL' : ROLE_SHORT[role]}
@@ -442,8 +442,8 @@ export default function TransferHub({
                     className={cn(
                       'px-2 py-1 rounded text-[10px] font-bold border transition-all capitalize',
                       sortBy === s
-                        ? 'bg-[#262162] text-white border-[#262162]'
-                        : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400',
+                        ? 'bg-[#111111] text-white border-[#C9A84C]'
+                        : 'bg-[#111111] text-gray-500 border-[#2a2a2a] hover:border-gray-400',
                     )}
                   >
                     {s === 'points' ? 'Pts' : s === 'price' ? 'Cr' : 'Form'}
@@ -463,7 +463,7 @@ export default function TransferHub({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search players…"
-                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-gray-200 bg-white text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-[#262162] focus:ring-1 focus:ring-[#262162]/20 transition-colors"
+                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-[#2a2a2a] bg-[#111111] text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
               />
             </div>
           </div>
@@ -513,8 +513,8 @@ export default function TransferHub({
                         isIn
                           ? 'bg-green-500 border-green-500 text-white'
                           : canAdd
-                          ? 'border-[#262162] text-[#262162] hover:bg-[#262162] hover:text-white'
-                          : 'border-gray-200 text-gray-300 cursor-not-allowed',
+                          ? 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#111111] hover:text-white'
+                          : 'border-[#2a2a2a] text-gray-300 cursor-not-allowed',
                       )}
                       title={
                         !outId ? 'Select a squad player to swap out first'
@@ -538,7 +538,7 @@ export default function TransferHub({
       {outId && inId && (
         <div className={cn(
           'sticky bottom-4 z-30 rounded-2xl px-5 py-4 shadow-xl border flex flex-col sm:flex-row items-start sm:items-center gap-3',
-          swapAffordable ? 'bg-[#262162] border-[#1a1748]' : 'bg-red-700 border-red-800',
+          swapAffordable ? 'bg-[#111111] border-[#1a1a1a]' : 'bg-red-700 border-red-800',
         )}>
           <div className="flex-1 min-w-0">
             <p className="text-white font-bold text-sm truncate">
@@ -559,7 +559,7 @@ export default function TransferHub({
           <div className="flex gap-2 flex-shrink-0">
             <button
               onClick={cancelSwap}
-              className="px-4 py-2 rounded-xl border border-white/30 text-white text-sm font-bold hover:bg-white/10 transition-colors"
+              className="px-4 py-2 rounded-xl border border-white/30 text-white text-sm font-bold hover:bg-[#111111]/10 transition-colors"
             >
               Cancel
             </button>
@@ -569,8 +569,8 @@ export default function TransferHub({
               className={cn(
                 'px-5 py-2 rounded-xl font-black text-sm transition-all',
                 swapAffordable
-                  ? 'bg-[#fbf927] text-[#262162] hover:bg-yellow-300'
-                  : 'bg-white/20 text-white/40 cursor-not-allowed',
+                  ? 'bg-[#C9A84C] text-[#C9A84C] hover:bg-yellow-300'
+                  : 'bg-[#111111]/20 text-white/40 cursor-not-allowed',
               )}
             >
               Confirm Swap
@@ -581,9 +581,9 @@ export default function TransferHub({
 
       {/* ── Save button (when swaps are pending) ──────────────────────────── */}
       {pendingChanges > 0 && !(outId && inId) && (
-        <div className="rounded-2xl bg-white border border-gray-200 px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <p className="font-bold text-sm text-gray-800">
+            <p className="font-bold text-sm text-[#d4d4d4]">
               {pendingChanges} change{pendingChanges !== 1 ? 's' : ''} pending
             </p>
             <p className="text-xs text-gray-500 mt-0.5">
@@ -603,7 +603,7 @@ export default function TransferHub({
                 setOutId(null); setInId(null)
                 setSaved(false); setError(null)
               }}
-              className="px-4 py-2 rounded-xl border border-gray-300 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 rounded-xl border border-gray-300 text-gray-600 text-sm font-semibold hover:bg-[#0f0f0f] transition-colors"
             >
               Reset
             </button>
@@ -614,7 +614,7 @@ export default function TransferHub({
                 'px-6 py-2 rounded-xl font-black text-sm transition-all',
                 saved
                   ? 'bg-green-500 text-white cursor-default'
-                  : 'bg-[#262162] text-white hover:bg-[#1a1748]',
+                  : 'bg-[#111111] text-white hover:bg-[#0a0a0a]',
               )}
             >
               {saving ? 'Saving…' : saved ? '✓ Saved!' : 'Save Transfers'}

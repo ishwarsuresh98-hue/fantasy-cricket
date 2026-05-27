@@ -73,7 +73,7 @@ function StepIllustration({ step }: { step: Step }) {
   if (step.id === 1) {
     return (
       <div className="flex flex-col items-center gap-3 mb-2">
-        <div className="relative w-24 h-24 rounded-full overflow-hidden bg-white shadow-lg border-4 border-[#fbf927]">
+        <div className="relative w-24 h-24 rounded-full overflow-hidden bg-[#111111] shadow-lg border-4 border-[#C9A84C]">
           <Image
             src="/slough-cc-crest.png"
             alt="Slough CC"
@@ -184,12 +184,12 @@ export default function OnboardingTour({ userId }: Props) {
     >
       {/* Card */}
       <div
-        className={`relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ${
+        className={`relative w-full max-w-md bg-[#111111] rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ${
           visible && !exiting ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
         }`}
       >
         {/* Navy header bar */}
-        <div className="bg-[#262162] px-6 pt-6 pb-4">
+        <div className="bg-[#111111] px-6 pt-6 pb-4">
           {/* Progress dots */}
           <div className="flex items-center justify-center gap-1.5 mb-5">
             {STEPS.map((_, i) => (
@@ -197,10 +197,10 @@ export default function OnboardingTour({ userId }: Props) {
                 key={i}
                 className={`rounded-full transition-all duration-300 ${
                   i === step
-                    ? 'w-5 h-2 bg-[#fbf927]'
+                    ? 'w-5 h-2 bg-[#C9A84C]'
                     : i < step
-                    ? 'w-2 h-2 bg-[#fbf927]/40'
-                    : 'w-2 h-2 bg-white/20'
+                    ? 'w-2 h-2 bg-[#C9A84C]/40'
+                    : 'w-2 h-2 bg-[#111111]/20'
                 }`}
               />
             ))}
@@ -225,7 +225,7 @@ export default function OnboardingTour({ userId }: Props) {
         >
           <StepIllustration step={current} />
 
-          <h2 className="text-xl font-extrabold text-[#262162] mt-3 mb-2 leading-snug">
+          <h2 className="text-xl font-extrabold text-[#C9A84C] mt-3 mb-2 leading-snug">
             {current.title}
           </h2>
           <p className="text-sm text-gray-600 leading-relaxed max-w-xs mx-auto">
@@ -240,7 +240,7 @@ export default function OnboardingTour({ userId }: Props) {
             {step > 0 && (
               <button
                 onClick={back}
-                className="flex-1 py-2.5 rounded-xl border-2 border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
+                className="flex-1 py-2.5 rounded-xl border-2 border-[#2a2a2a] text-sm font-semibold text-gray-500 hover:bg-[#0f0f0f] transition-colors"
               >
                 ← Back
               </button>
@@ -250,7 +250,7 @@ export default function OnboardingTour({ userId }: Props) {
                 if (current.ctaHref) { dismiss(current.ctaHref) }
                 else advance()
               }}
-              className="flex-1 py-2.5 rounded-xl bg-[#262162] text-white text-sm font-bold hover:bg-[#1a1748] active:scale-95 transition-all"
+              className="flex-1 py-2.5 rounded-xl bg-[#111111] text-white text-sm font-bold hover:bg-[#0a0a0a] active:scale-95 transition-all"
             >
               {current.cta ?? (step === TOTAL - 1 ? '✓ Done' : 'Next →')}
             </button>
@@ -267,7 +267,7 @@ export default function OnboardingTour({ userId }: Props) {
 
         {/* Keyboard hint — desktop only */}
         <p className="hidden sm:block text-center text-[10px] text-gray-300 pb-3">
-          Press <kbd className="bg-gray-100 text-gray-500 rounded px-1 font-mono text-[10px]">→</kbd> to advance, <kbd className="bg-gray-100 text-gray-500 rounded px-1 font-mono text-[10px]">Esc</kbd> to skip
+          Press <kbd className="bg-[#141414] text-gray-500 rounded px-1 font-mono text-[10px]">→</kbd> to advance, <kbd className="bg-[#141414] text-gray-500 rounded px-1 font-mono text-[10px]">Esc</kbd> to skip
         </p>
       </div>
     </div>

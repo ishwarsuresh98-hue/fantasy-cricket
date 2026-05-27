@@ -57,7 +57,7 @@ export default function CheckoutForm({ entryFee, returnUrl, onCancel }: Checkout
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Stripe's hosted Payment Element — renders card / wallet / BNPL as appropriate */}
-      <div className="rounded-xl border border-gray-200 p-4 bg-white">
+      <div className="rounded-xl border border-[#2a2a2a] p-4 bg-[#111111]">
         <PaymentElement
           options={{
             layout: 'tabs',
@@ -85,7 +85,7 @@ export default function CheckoutForm({ entryFee, returnUrl, onCancel }: Checkout
         )}
         <Button
           type="submit"
-          className="flex-1 bg-[#262162] hover:bg-[#1a1648] text-white font-bold"
+          className="flex-1 bg-[#111111] hover:bg-[#0a0a0a] text-white font-bold"
           disabled={!stripe || !elements || loading}
         >
           {loading ? (

@@ -20,24 +20,24 @@ function LeaderboardRow({
   movement: number | null; gameweeks: Gameweek[]; gwPoints: (gw: Gameweek) => number
   isEven: boolean; forceHighlight?: boolean
 }) {
-  const rowBg = forceHighlight || isMe ? 'bg-[#eeedf8]' : isEven ? 'bg-gray-50/60' : 'bg-white'
+  const rowBg = forceHighlight || isMe ? 'bg-[#1c1c1c]' : isEven ? 'bg-[#0f0f0f]/60' : 'bg-[#111111]'
   const rankBadge = rank === 1 ? <span className="text-xl">🥇</span> : rank === 2 ? <span className="text-xl">🥈</span> : rank === 3 ? <span className="text-xl">🥉</span> :
-    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-xs font-bold">{rank}</span>
+    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#141414] text-gray-600 text-xs font-bold">{rank}</span>
   const movementEl = movement === null || movement === 0 ? <span className="text-gray-300 text-xs">→</span>
     : movement > 0 ? <span className="text-green-600 text-[11px] font-bold">↑{movement}</span>
     : <span className="text-red-500 text-[11px] font-bold">↓{Math.abs(movement)}</span>
-  const avatarCls = rank === 1 ? 'bg-[#fbf927] text-[#262162]' : rank === 2 ? 'bg-gray-200 text-gray-600' : rank === 3 ? 'bg-orange-100 text-orange-700' : isMe ? 'bg-[#262162] text-white' : 'bg-gray-100 text-gray-500'
+  const avatarCls = rank === 1 ? 'bg-[#C9A84C] text-[#C9A84C]' : rank === 2 ? 'bg-gray-200 text-gray-600' : rank === 3 ? 'bg-orange-100 text-orange-700' : isMe ? 'bg-[#111111] text-white' : 'bg-[#141414] text-gray-500'
 
   return (
-    <tr className={cn('border-b border-gray-100 last:border-0 hover:brightness-[0.97] transition-colors', rowBg)}>
+    <tr className={cn('border-b border-[#1e1e1e] last:border-0 hover:brightness-[0.97] transition-colors', rowBg)}>
       <td className="px-4 py-3"><div className="flex flex-col items-center gap-0.5">{rankBadge}{movementEl}</div></td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-2.5">
           <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0', avatarCls)}>{initials(owner)}</div>
           <div className="min-w-0">
-            <p className="font-semibold text-sm text-gray-900 truncate flex items-center gap-1.5">
+            <p className="font-semibold text-sm text-[#ebebeb] truncate flex items-center gap-1.5">
               {teamName}
-              {isMe && <span className="text-[9px] font-black px-1.5 py-0 rounded bg-[#fbf927] text-[#262162]">YOU</span>}
+              {isMe && <span className="text-[9px] font-black px-1.5 py-0 rounded bg-[#C9A84C] text-[#C9A84C]">YOU</span>}
             </p>
             <p className="text-xs text-gray-400 truncate">{owner}</p>
           </div>
@@ -47,13 +47,13 @@ function LeaderboardRow({
         const pts = gwPoints(gw)
         return (
           <td key={gw.dateStr} className="px-3 py-3 text-center">
-            {pts > 0 ? <span className={cn('font-semibold text-sm tabular-nums', isMe ? 'text-[#262162]' : 'text-gray-700')}>{fmtPts(pts)}</span>
+            {pts > 0 ? <span className={cn('font-semibold text-sm tabular-nums', isMe ? 'text-[#C9A84C]' : 'text-[#aaaaaa]')}>{fmtPts(pts)}</span>
               : <span className="text-gray-300 text-xs">—</span>}
           </td>
         )
       })}
       <td className="px-4 py-3 text-right">
-        <span className={cn('font-black tabular-nums text-base', isMe ? 'text-[#262162]' : 'text-gray-700')}>{fmtPts(totalPoints)}</span>
+        <span className={cn('font-black tabular-nums text-base', isMe ? 'text-[#C9A84C]' : 'text-[#aaaaaa]')}>{fmtPts(totalPoints)}</span>
       </td>
     </tr>
   )
@@ -130,16 +130,16 @@ export default async function ClubContestDetailPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 text-sm text-gray-400">
-        <Link href={`${base}/contests`} className="hover:text-[#262162] hover:underline">Contests</Link>
+        <Link href={`${base}/contests`} className="hover:text-[#C9A84C] hover:underline">Contests</Link>
         <span>/</span>
-        <span className="text-gray-800 font-medium truncate">{c.name}</span>
+        <span className="text-[#d4d4d4] font-medium truncate">{c.name}</span>
       </div>
 
-      <div className="rounded-2xl bg-[#262162] px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="rounded-2xl bg-[#111111] px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full',
-              c.type === 'private' ? 'bg-[#fbf927] text-[#262162]' : 'bg-white/20 text-white')}>
+              c.type === 'private' ? 'bg-[#C9A84C] text-[#C9A84C]' : 'bg-[#111111]/20 text-white')}>
               {c.type === 'private' ? '🔒 Private League' : '🌐 Public Contest'}
             </span>
           </div>
@@ -148,7 +148,7 @@ export default async function ClubContestDetailPage({
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
           <div className="text-center">
-            <p className="text-[#fbf927] font-black text-xl tabular-nums">{(teams ?? []).length}</p>
+            <p className="text-[#C9A84C] font-black text-xl tabular-nums">{(teams ?? []).length}</p>
             <p className="text-white/50 text-xs">/ {c.max_teams} teams</p>
           </div>
           {isMember && c.type === 'private' && c.entry_code && <ShareCodeButton code={c.entry_code} />}
@@ -156,29 +156,29 @@ export default async function ClubContestDetailPage({
       </div>
 
       {c.prize_description && (
-        <div className="rounded-2xl bg-[#fefde8] border-2 border-[#fbf927]/60 px-5 py-4 flex items-start gap-3">
+        <div className="rounded-2xl bg-[#1a1500] border-2 border-[#C9A84C]/60 px-5 py-4 flex items-start gap-3">
           <span className="text-2xl flex-shrink-0">🏆</span>
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-[#262162]/60 mb-0.5">Prize Pool</p>
-            <p className="text-sm text-gray-800 leading-relaxed">{c.prize_description}</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-[#C9A84C]/60 mb-0.5">Prize Pool</p>
+            <p className="text-sm text-[#d4d4d4] leading-relaxed">{c.prize_description}</p>
           </div>
         </div>
       )}
 
       {(teams ?? []).length === 0 ? (
-        <div className="rounded-2xl bg-white border border-gray-200 p-16 text-center">
+        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] p-16 text-center">
           <div className="text-4xl mb-3">👥</div>
           <p className="text-gray-500">No teams have joined yet.</p>
           {c.type === 'private' && c.entry_code && (
-            <p className="text-xs text-gray-400 mt-2">Share invite code <span className="font-black tracking-[0.2em] font-mono text-[#262162]">{c.entry_code}</span> to get started.</p>
+            <p className="text-xs text-gray-400 mt-2">Share invite code <span className="font-black tracking-[0.2em] font-mono text-[#C9A84C]">{c.entry_code}</span> to get started.</p>
           )}
         </div>
       ) : (
-        <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm bg-white">
+        <div className="rounded-2xl overflow-hidden border border-[#2a2a2a] shadow-sm bg-[#111111]">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#262162]">
+                <tr className="bg-[#111111]">
                   <th className="text-left text-[10px] font-bold uppercase tracking-widest text-white/50 px-4 py-3 w-16">Rank</th>
                   <th className="text-left text-[10px] font-bold uppercase tracking-widest text-white/50 px-4 py-3 min-w-[180px]">Team</th>
                   {gameweeks.map((gw) => (
@@ -212,10 +212,10 @@ export default async function ClubContestDetailPage({
             const mvmt    = prevRnk != null ? prevRnk - (myIdx + 1) : null
             return (
               <div>
-                <div className="flex items-center gap-2 px-4 py-1.5 bg-[#eeedf8]">
-                  <div className="h-px flex-1 border-t-2 border-dashed border-[#262162]/25" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#262162]/50">Your position</span>
-                  <div className="h-px flex-1 border-t-2 border-dashed border-[#262162]/25" />
+                <div className="flex items-center gap-2 px-4 py-1.5 bg-[#1c1c1c]">
+                  <div className="h-px flex-1 border-t-2 border-dashed border-[#C9A84C]/25" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#C9A84C]/50">Your position</span>
+                  <div className="h-px flex-1 border-t-2 border-dashed border-[#C9A84C]/25" />
                 </div>
                 <table className="w-full text-sm">
                   <tbody>
@@ -229,7 +229,7 @@ export default async function ClubContestDetailPage({
           })()}
 
           {gameweeks.length > 0 && (
-            <div className="border-t border-gray-100 px-4 py-3 flex flex-wrap gap-x-4 gap-y-1">
+            <div className="border-t border-[#1e1e1e] px-4 py-3 flex flex-wrap gap-x-4 gap-y-1">
               {gameweeks.map((gw) => (
                 <span key={gw.dateStr} className="text-xs text-gray-400">
                   <span className="font-semibold text-gray-600">GW{gw.gw}</span> = {gw.label}

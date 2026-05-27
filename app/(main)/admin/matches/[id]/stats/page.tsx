@@ -50,7 +50,7 @@ export default async function StatsEntryPage({ params }: { params: Promise<{ id:
           <span>/</span>
           <span>Match {match.match_number} Stats</span>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-[#ebebeb]">
           Match {match.match_number} — {match.opponent}
         </h2>
         <p className="text-muted-foreground">
@@ -65,7 +65,7 @@ export default async function StatsEntryPage({ params }: { params: Promise<{ id:
           {/* Playing XI */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base text-[#262162] flex items-center gap-2">
+              <CardTitle className="text-base text-[#C9A84C] flex items-center gap-2">
                 🟢 Playing XI
                 <span className="text-xs font-normal text-muted-foreground">
                   — Confirm who is playing so members can see before they pick their team

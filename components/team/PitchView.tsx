@@ -58,11 +58,11 @@ function CaptainModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-xs bg-white rounded-2xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-xs bg-[#111111] rounded-2xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-[#262162] px-5 py-4">
+        <div className="bg-[#111111] px-5 py-4">
           <p className="text-white font-bold text-base truncate">{player.name}</p>
           <p className="text-white/60 text-xs">{player.price} cr</p>
         </div>
@@ -75,12 +75,12 @@ function CaptainModal({
             className={cn(
               'w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all',
               isCaptain
-                ? 'bg-[#fbf927] border-[#fbf927] text-[#262162]'
-                : 'border-gray-200 text-gray-700 hover:border-[#fbf927] hover:bg-[#fefde8]',
+                ? 'bg-[#C9A84C] border-[#C9A84C] text-[#C9A84C]'
+                : 'border-[#2a2a2a] text-[#aaaaaa] hover:border-[#C9A84C] hover:bg-[#1a1500]',
               isLocked && 'opacity-50 cursor-not-allowed',
             )}
           >
-            <span className="w-8 h-8 rounded-full bg-[#fbf927] text-[#262162] font-black text-sm flex items-center justify-center flex-shrink-0">
+            <span className="w-8 h-8 rounded-full bg-[#C9A84C] text-[#C9A84C] font-black text-sm flex items-center justify-center flex-shrink-0">
               C
             </span>
             <span>{isCaptain ? '★ Captain (tap to unset)' : 'Make Captain (2× points)'}</span>
@@ -93,8 +93,8 @@ function CaptainModal({
             className={cn(
               'w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all',
               isViceCaptain
-                ? 'bg-gray-200 border-gray-300 text-gray-700'
-                : 'border-gray-200 text-gray-700 hover:border-gray-400 hover:bg-gray-50',
+                ? 'bg-gray-200 border-gray-300 text-[#aaaaaa]'
+                : 'border-[#2a2a2a] text-[#aaaaaa] hover:border-gray-400 hover:bg-[#0f0f0f]',
               isLocked && 'opacity-50 cursor-not-allowed',
             )}
           >
@@ -122,7 +122,7 @@ function CaptainModal({
 
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white text-sm transition-colors"
+          className="absolute top-3 right-3 w-7 h-7 rounded-full bg-[#111111]/20 hover:bg-[#111111]/30 flex items-center justify-center text-white text-sm transition-colors"
         >
           ✕
         </button>
@@ -221,9 +221,9 @@ export default function PitchView({
         {/* Locked overlay */}
         {isLocked && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px] rounded-2xl">
-            <div className="bg-white/90 rounded-xl px-5 py-3 text-center shadow-lg">
+            <div className="bg-[#111111]/90 rounded-xl px-5 py-3 text-center shadow-lg">
               <p className="text-2xl mb-1">🏏</p>
-              <p className="text-sm font-bold text-[#262162]">Match In Progress</p>
+              <p className="text-sm font-bold text-[#C9A84C]">Match In Progress</p>
               <p className="text-xs text-gray-500">Team locked while playing</p>
             </div>
           </div>
@@ -264,10 +264,10 @@ function PitchLines() {
       {/* Centre strip */}
       <div className="absolute left-1/2 top-[15%] bottom-[15%] w-[14%] -translate-x-1/2 bg-[#c8a84b]/15 rounded-sm" />
       {/* Crease lines */}
-      <div className="absolute left-[10%] right-[10%] top-[22%] h-px bg-white/10" />
-      <div className="absolute left-[10%] right-[10%] bottom-[22%] h-px bg-white/10" />
+      <div className="absolute left-[10%] right-[10%] top-[22%] h-px bg-[#111111]/10" />
+      <div className="absolute left-[10%] right-[10%] bottom-[22%] h-px bg-[#111111]/10" />
       {/* Faint horizontal dividers between rows */}
-      <div className="absolute left-0 right-0 top-1/2 h-px bg-white/5" />
+      <div className="absolute left-0 right-0 top-1/2 h-px bg-[#111111]/5" />
     </div>
   )
 }

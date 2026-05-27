@@ -86,10 +86,10 @@ export default function NavCountdown() {
     <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md border ${
       urgent
         ? 'bg-orange-500/20 border-orange-400/40'
-        : 'bg-white/10 border-white/20'
+        : 'bg-[#111111]/10 border-white/20'
     }`}>
       <span className="text-xs text-white/60 font-medium whitespace-nowrap">Locks in</span>
-      <span className={`text-sm font-bold tabular-nums whitespace-nowrap ${urgent ? 'text-orange-300' : 'text-[#fbf927]'}`}>
+      <span className={`text-sm font-bold tabular-nums whitespace-nowrap ${urgent ? 'text-orange-300' : 'text-[#C9A84C]'}`}>
         {cd}
       </span>
     </div>

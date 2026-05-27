@@ -35,13 +35,13 @@ function PodiumCard({
   const medal    = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'
   const ringCls  =
     rank === 1
-      ? 'ring-4 ring-[#fbf927] shadow-[0_0_24px_rgba(251,249,39,0.35)]'
+      ? 'ring-4 ring-[#C9A84C] shadow-[0_0_24px_rgba(251,249,39,0.35)]'
       : rank === 2
       ? 'ring-2 ring-gray-300 shadow-md'
       : 'ring-2 ring-orange-300 shadow-md'
   const avatarCls =
     rank === 1
-      ? 'bg-[#fbf927] text-[#262162]'
+      ? 'bg-[#C9A84C] text-[#C9A84C]'
       : rank === 2
       ? 'bg-gray-200 text-gray-600'
       : 'bg-orange-100 text-orange-700'
@@ -49,13 +49,13 @@ function PodiumCard({
   return (
     <div
       className={cn(
-        'relative flex flex-col items-center gap-2 rounded-2xl bg-white border-2 px-4 py-5 text-center transition-all',
+        'relative flex flex-col items-center gap-2 rounded-2xl bg-[#111111] border-2 px-4 py-5 text-center transition-all',
         rank === 1
-          ? 'border-[#fbf927] z-10 scale-105 shadow-xl'
+          ? 'border-[#C9A84C] z-10 scale-105 shadow-xl'
           : rank === 2
-          ? 'border-gray-200'
+          ? 'border-[#2a2a2a]'
           : 'border-orange-200',
-        isMe && 'outline outline-2 outline-offset-2 outline-[#262162]',
+        isMe && 'outline outline-2 outline-offset-2 outline-[#C9A84C]',
       )}
     >
       {/* Medal */}
@@ -74,10 +74,10 @@ function PodiumCard({
 
       {/* Names */}
       <div className="min-w-0 w-full">
-        <p className="font-bold text-sm text-gray-900 truncate leading-tight">
+        <p className="font-bold text-sm text-[#ebebeb] truncate leading-tight">
           {teamName}
           {isMe && (
-            <span className="ml-1 text-[10px] font-black px-1.5 py-0.5 rounded bg-[#fbf927] text-[#262162]">
+            <span className="ml-1 text-[10px] font-black px-1.5 py-0.5 rounded bg-[#C9A84C] text-[#C9A84C]">
               YOU
             </span>
           )}
@@ -89,7 +89,7 @@ function PodiumCard({
       <p
         className={cn(
           'font-black tabular-nums leading-none',
-          rank === 1 ? 'text-2xl text-[#262162]' : 'text-xl text-gray-700',
+          rank === 1 ? 'text-2xl text-[#C9A84C]' : 'text-xl text-[#aaaaaa]',
         )}
       >
         {fmtPts(totalPoints)}
@@ -115,7 +115,7 @@ export default async function LeaderboardPage() {
     return (
       <div className="text-center py-24">
         <div className="text-5xl mb-4">🏆</div>
-        <h2 className="text-2xl font-bold text-gray-800">No Active Season</h2>
+        <h2 className="text-2xl font-bold text-[#d4d4d4]">No Active Season</h2>
         <p className="text-gray-500 mt-2">The leaderboard will appear once a season is active.</p>
       </div>
     )
@@ -174,8 +174,8 @@ export default async function LeaderboardPage() {
   if (!teams || teams.length === 0) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-[#262162]">Leaderboard</h1>
-        <div className="rounded-2xl bg-white border border-gray-200 p-16 text-center">
+        <h1 className="text-3xl font-bold text-[#C9A84C]">Leaderboard</h1>
+        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] p-16 text-center">
           <div className="text-4xl mb-3">📋</div>
           <p className="text-gray-500">No teams have been created yet. Be the first!</p>
         </div>
@@ -202,13 +202,13 @@ export default async function LeaderboardPage() {
     <div className="space-y-6">
 
       {/* ── Page header ─────────────────────────────────────────────────── */}
-      <div className="rounded-2xl bg-[#262162] px-6 py-5 flex items-center justify-between">
+      <div className="rounded-2xl bg-[#111111] px-6 py-5 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-white">Leaderboard</h1>
           <p className="text-white/50 text-sm mt-0.5">{season.name}</p>
         </div>
         <div className="text-right">
-          <p className="text-[#fbf927] font-black text-lg">{teams.length}</p>
+          <p className="text-[#C9A84C] font-black text-lg">{teams.length}</p>
           <p className="text-white/50 text-xs">teams</p>
         </div>
       </div>
@@ -240,13 +240,13 @@ export default async function LeaderboardPage() {
       )}
 
       {/* ── Full table ──────────────────────────────────────────────────── */}
-      <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm bg-white">
+      <div className="rounded-2xl overflow-hidden border border-[#2a2a2a] shadow-sm bg-[#111111]">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
 
             {/* Header */}
             <thead>
-              <tr className="bg-[#262162]">
+              <tr className="bg-[#111111]">
                 <th className="text-left text-[10px] font-bold uppercase tracking-widest text-white/50 px-4 py-3 w-16">
                   Rank
                 </th>
@@ -304,12 +304,12 @@ export default async function LeaderboardPage() {
           return (
             <div>
               {/* Separator */}
-              <div className="flex items-center gap-2 px-4 py-1.5 bg-[#eeedf8]">
-                <div className="h-px flex-1 border-t-2 border-dashed border-[#262162]/25" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#262162]/50">
+              <div className="flex items-center gap-2 px-4 py-1.5 bg-[#1c1c1c]">
+                <div className="h-px flex-1 border-t-2 border-dashed border-[#C9A84C]/25" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#C9A84C]/50">
                   Your position
                 </span>
-                <div className="h-px flex-1 border-t-2 border-dashed border-[#262162]/25" />
+                <div className="h-px flex-1 border-t-2 border-dashed border-[#C9A84C]/25" />
               </div>
               <table className="w-full text-sm">
                 <tbody>
@@ -333,7 +333,7 @@ export default async function LeaderboardPage() {
 
         {/* GW date key */}
         {gameweeks.length > 0 && (
-          <div className="border-t border-gray-100 px-4 py-3 flex flex-wrap gap-x-4 gap-y-1">
+          <div className="border-t border-[#1e1e1e] px-4 py-3 flex flex-wrap gap-x-4 gap-y-1">
             {gameweeks.map((gw) => (
               <span key={gw.dateStr} className="text-xs text-gray-400">
                 <span className="font-semibold text-gray-600">GW{gw.gw}</span> = {gw.label}
@@ -373,17 +373,17 @@ function TableRow({
 }) {
   const rowBg =
     forceHighlight || isMe
-      ? 'bg-[#eeedf8]'
+      ? 'bg-[#1c1c1c]'
       : isEven
-      ? 'bg-gray-50/60'
-      : 'bg-white'
+      ? 'bg-[#0f0f0f]/60'
+      : 'bg-[#111111]'
 
   const rankBadge = (() => {
     if (rank === 1) return <span className="text-xl leading-none">🥇</span>
     if (rank === 2) return <span className="text-xl leading-none">🥈</span>
     if (rank === 3) return <span className="text-xl leading-none">🥉</span>
     return (
-      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-xs font-bold">
+      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#141414] text-gray-600 text-xs font-bold">
         {rank}
       </span>
     )
@@ -410,7 +410,7 @@ function TableRow({
   const ownInitials = initials(owner)
 
   return (
-    <tr className={cn('border-b border-gray-100 last:border-0 transition-colors hover:brightness-[0.97]', rowBg)}>
+    <tr className={cn('border-b border-[#1e1e1e] last:border-0 transition-colors hover:brightness-[0.97]', rowBg)}>
 
       {/* Rank + movement */}
       <td className="px-4 py-3">
@@ -428,14 +428,14 @@ function TableRow({
             className={cn(
               'w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0',
               rank === 1
-                ? 'bg-[#fbf927] text-[#262162]'
+                ? 'bg-[#C9A84C] text-[#C9A84C]'
                 : rank === 2
                 ? 'bg-gray-200 text-gray-600'
                 : rank === 3
                 ? 'bg-orange-100 text-orange-700'
                 : isMe
-                ? 'bg-[#262162] text-white'
-                : 'bg-gray-100 text-gray-500',
+                ? 'bg-[#111111] text-white'
+                : 'bg-[#141414] text-gray-500',
             )}
           >
             {ownInitials}
@@ -443,10 +443,10 @@ function TableRow({
 
           {/* Names */}
           <div className="min-w-0">
-            <p className="font-semibold text-sm text-gray-900 truncate flex items-center gap-1.5">
+            <p className="font-semibold text-sm text-[#ebebeb] truncate flex items-center gap-1.5">
               {teamName}
               {isMe && (
-                <span className="inline-flex items-center px-1.5 py-0 rounded text-[9px] font-black bg-[#fbf927] text-[#262162]">
+                <span className="inline-flex items-center px-1.5 py-0 rounded text-[9px] font-black bg-[#C9A84C] text-[#C9A84C]">
                   YOU
                 </span>
               )}
@@ -462,7 +462,7 @@ function TableRow({
         return (
           <td key={gw.dateStr} className="px-3 py-3 text-center">
             {pts > 0 ? (
-              <span className={cn('font-semibold text-sm tabular-nums', isMe ? 'text-[#262162]' : 'text-gray-700')}>
+              <span className={cn('font-semibold text-sm tabular-nums', isMe ? 'text-[#C9A84C]' : 'text-[#aaaaaa]')}>
                 {fmtPts(pts)}
               </span>
             ) : (
@@ -477,7 +477,7 @@ function TableRow({
         <span
           className={cn(
             'font-black tabular-nums text-base',
-            rank === 1 ? 'text-[#262162]' : isMe ? 'text-[#262162]' : 'text-gray-700',
+            rank === 1 ? 'text-[#C9A84C]' : isMe ? 'text-[#C9A84C]' : 'text-[#aaaaaa]',
           )}
         >
           {fmtPts(totalPoints)}

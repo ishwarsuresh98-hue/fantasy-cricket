@@ -38,27 +38,27 @@ export default async function ClubAdminPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-[#262162]">Admin Panel — {club.name}</h1>
+      <h1 className="text-2xl font-bold text-[#C9A84C]">Admin Panel — {club.name}</h1>
 
       {season ? (
-        <Card className="border-[#262162] border-2">
-          <CardHeader className="bg-[#262162] rounded-t-xl pb-3">
-            <CardTitle className="text-sm text-[#fbf927] font-semibold uppercase tracking-wide">Active Season</CardTitle>
+        <Card className="border-[#C9A84C] border-2">
+          <CardHeader className="bg-[#111111] rounded-t-xl pb-3">
+            <CardTitle className="text-sm text-[#C9A84C] font-semibold uppercase tracking-wide">Active Season</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
-            <p className="text-xl font-bold text-[#262162]">{season.name}</p>
+            <p className="text-xl font-bold text-[#C9A84C]">{season.name}</p>
             <div className="grid grid-cols-3 gap-4 mt-4">
-              <div className="text-center p-3 bg-[#eeedf8] rounded-lg">
-                <p className="text-2xl font-bold text-[#262162]">{playerCount ?? 0}</p>
-                <p className="text-xs text-[#262162]/70 mt-0.5">Players</p>
+              <div className="text-center p-3 bg-[#1c1c1c] rounded-lg">
+                <p className="text-2xl font-bold text-[#C9A84C]">{playerCount ?? 0}</p>
+                <p className="text-xs text-[#C9A84C]/70 mt-0.5">Players</p>
               </div>
-              <div className="text-center p-3 bg-[#eeedf8] rounded-lg">
-                <p className="text-2xl font-bold text-[#262162]">{matchCount ?? 0}</p>
-                <p className="text-xs text-[#262162]/70 mt-0.5">Matches</p>
+              <div className="text-center p-3 bg-[#1c1c1c] rounded-lg">
+                <p className="text-2xl font-bold text-[#C9A84C]">{matchCount ?? 0}</p>
+                <p className="text-xs text-[#C9A84C]/70 mt-0.5">Matches</p>
               </div>
-              <div className="text-center p-3 bg-[#eeedf8] rounded-lg">
-                <p className="text-2xl font-bold text-[#262162]">{teamCount ?? 0}</p>
-                <p className="text-xs text-[#262162]/70 mt-0.5">Fantasy Teams</p>
+              <div className="text-center p-3 bg-[#1c1c1c] rounded-lg">
+                <p className="text-2xl font-bold text-[#C9A84C]">{teamCount ?? 0}</p>
+                <p className="text-xs text-[#C9A84C]/70 mt-0.5">Fantasy Teams</p>
               </div>
             </div>
           </CardContent>
@@ -93,8 +93,8 @@ export default async function ClubAdminPage({
       )}
 
       {season && (
-        <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3">
-          <p className="text-sm font-bold text-[#262162]">Utilities</p>
+        <div className="rounded-xl border border-[#2a2a2a] bg-[#111111] p-5 space-y-3">
+          <p className="text-sm font-bold text-[#C9A84C]">Utilities</p>
           <RecalculatePointsButton />
         </div>
       )}

@@ -22,7 +22,7 @@ export default async function MatchImportPage() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Import Matches</h2>
+        <h2 className="text-2xl font-bold text-[#ebebeb]">Import Matches</h2>
         <p className="text-muted-foreground mt-0.5">
           {season.name} — upload an Excel file to bulk-add fixtures
         </p>

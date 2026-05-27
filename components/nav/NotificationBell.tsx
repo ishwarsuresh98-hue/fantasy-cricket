@@ -69,7 +69,7 @@ export default function NotificationBell() {
       <DropdownMenuTrigger
         render={
           <button
-            className="relative flex items-center justify-center w-9 h-9 rounded-md hover:bg-white/10 transition-colors"
+            className="relative flex items-center justify-center w-9 h-9 rounded-md hover:bg-[#111111]/10 transition-colors"
             title={pushState === 'subscribed' ? 'Notifications on' : pushState === 'denied' ? 'Notifications blocked' : 'Notifications off'}
           />
         }
@@ -83,7 +83,7 @@ export default function NotificationBell() {
         )}
         {/* Push-status dot when no unread: green = on, grey = off */}
         {unreadCount === 0 && pushState !== 'loading' && pushState !== 'unsupported' && (
-          <span className={`absolute bottom-0.5 right-0.5 w-2 h-2 rounded-full border border-[#262162] ${
+          <span className={`absolute bottom-0.5 right-0.5 w-2 h-2 rounded-full border border-[#C9A84C] ${
             pushState === 'subscribed' ? 'bg-green-400' :
             pushState === 'denied'    ? 'bg-gray-400'  : 'bg-gray-500'
           }`} />
@@ -92,10 +92,10 @@ export default function NotificationBell() {
 
       <DropdownMenuContent align="end" className="w-80 max-h-[460px] overflow-y-auto p-0">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between">
-          <p className="font-semibold text-sm text-[#262162]">Notifications</p>
+        <div className="sticky top-0 bg-[#111111] border-b px-4 py-3 flex items-center justify-between">
+          <p className="font-semibold text-sm text-[#C9A84C]">Notifications</p>
           {unreadCount > 0 && (
-            <button onClick={markAllRead} className="text-xs text-[#262162] hover:underline">
+            <button onClick={markAllRead} className="text-xs text-[#C9A84C] hover:underline">
               Mark all read
             </button>
           )}
@@ -103,16 +103,16 @@ export default function NotificationBell() {
 
         {/* Push opt-in banner — only when unsubscribed */}
         {(pushState === 'unsubscribed') && (
-          <div className="border-b bg-[#eeedf8] px-4 py-3 flex items-center gap-2.5">
+          <div className="border-b bg-[#1c1c1c] px-4 py-3 flex items-center gap-2.5">
             <span className="text-lg">🔔</span>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-[#262162]">Enable push notifications</p>
-              <p className="text-[10px] text-[#262162]/60">Get score alerts &amp; deadline reminders.</p>
+              <p className="text-xs font-semibold text-[#C9A84C]">Enable push notifications</p>
+              <p className="text-[10px] text-[#C9A84C]/60">Get score alerts &amp; deadline reminders.</p>
             </div>
             <button
               onClick={handleEnablePush}
               disabled={subscribing}
-              className="flex-shrink-0 text-[11px] font-bold bg-[#262162] text-white px-2.5 py-1.5 rounded-lg hover:bg-[#1a1748] disabled:opacity-50 transition-colors"
+              className="flex-shrink-0 text-[11px] font-bold bg-[#111111] text-white px-2.5 py-1.5 rounded-lg hover:bg-[#0a0a0a] disabled:opacity-50 transition-colors"
             >
               {subscribing ? '…' : 'Enable'}
             </button>
@@ -121,9 +121,9 @@ export default function NotificationBell() {
 
         {/* Denied notice */}
         {pushState === 'denied' && (
-          <div className="border-b bg-amber-50 px-4 py-2.5 flex items-center gap-2">
+          <div className="border-b bg-[#1a1500] px-4 py-2.5 flex items-center gap-2">
             <span className="text-base">🔕</span>
-            <p className="text-xs text-amber-700">Notifications blocked in browser settings.</p>
+            <p className="text-xs text-[#C9A84C]">Notifications blocked in browser settings.</p>
           </div>
         )}
 
@@ -135,7 +135,7 @@ export default function NotificationBell() {
         ) : (
           <div className="divide-y">
             {notifications.map((n) => (
-              <div key={n.id} className={`px-4 py-3 ${n.is_read ? 'bg-white' : 'bg-[#eeedf8]'}`}>
+              <div key={n.id} className={`px-4 py-3 ${n.is_read ? 'bg-[#111111]' : 'bg-[#1c1c1c]'}`}>
                 <div className="flex items-start gap-2">
                   <span className="text-base shrink-0 mt-0.5">
                     {n.type === 'rank_change'
@@ -143,14 +143,14 @@ export default function NotificationBell() {
                       : '⭐'}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className={`text-sm font-medium leading-snug ${n.is_read ? 'text-gray-800' : 'text-[#262162]'}`}>
+                    <p className={`text-sm font-medium leading-snug ${n.is_read ? 'text-[#d4d4d4]' : 'text-[#C9A84C]'}`}>
                       {n.title}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{n.body}</p>
                     <p className="text-xs text-muted-foreground/70 mt-1">{relativeTime(n.created_at)}</p>
                   </div>
                   {!n.is_read && (
-                    <div className="w-2 h-2 bg-[#262162] rounded-full mt-1.5 shrink-0" />
+                    <div className="w-2 h-2 bg-[#111111] rounded-full mt-1.5 shrink-0" />
                   )}
                 </div>
               </div>

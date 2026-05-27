@@ -31,7 +31,7 @@ export default async function RootPage() {
           Welcome to
         </p>
         <h1 className="text-5xl font-black text-white tracking-tight">
-          The <span className="text-[#fbf927]">XI</span>
+          The <span className="text-[#C9A84C]">XI</span>
         </h1>
         <p className="text-white/50 mt-2 text-sm">
           Fantasy cricket. One platform. Every club.
@@ -51,7 +51,7 @@ export default async function RootPage() {
               <Link
                 key={club.id}
                 href={`/clubs/${club.slug}/dashboard`}
-                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 transition-all hover:border-[#fbf927]/40 hover:bg-white/10 hover:shadow-xl hover:shadow-[#fbf927]/5 active:scale-[0.98]"
+                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#111111]/5 p-6 transition-all hover:border-[#C9A84C]/40 hover:bg-[#111111]/10 hover:shadow-xl hover:shadow-[#C9A84C]/10 active:scale-[0.98]"
               >
                 {/* Subtle gradient */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
@@ -59,7 +59,7 @@ export default async function RootPage() {
                 <div className="relative z-10 flex flex-col items-center text-center gap-4">
                   {/* Logo or placeholder */}
                   {club.logo_url ? (
-                    <div className="w-20 h-20 rounded-full overflow-hidden bg-white p-1 shadow-lg">
+                    <div className="w-20 h-20 rounded-full overflow-hidden bg-[#111111] p-1 shadow-lg">
                       <Image
                         src={club.logo_url}
                         alt={`${club.name} crest`}
@@ -69,13 +69,13 @@ export default async function RootPage() {
                       />
                     </div>
                   ) : (
-                    <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-3xl">
+                    <div className="w-20 h-20 rounded-full bg-[#111111]/10 flex items-center justify-center text-3xl">
                       🏏
                     </div>
                   )}
 
                   <div>
-                    <h2 className="text-white font-bold text-lg leading-tight group-hover:text-[#fbf927] transition-colors">
+                    <h2 className="text-white font-bold text-lg leading-tight group-hover:text-[#C9A84C] transition-colors">
                       {club.name}
                     </h2>
                     {club.location && (
@@ -83,7 +83,7 @@ export default async function RootPage() {
                     )}
                   </div>
 
-                  <span className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/10 text-white/80 text-sm font-semibold group-hover:bg-[#fbf927] group-hover:text-[#262162] transition-all">
+                  <span className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#111111]/10 text-white/80 text-sm font-semibold group-hover:bg-[#C9A84C] group-hover:text-[#C9A84C] transition-all">
                     Play →
                   </span>
                 </div>

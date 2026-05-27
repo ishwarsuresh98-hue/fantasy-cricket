@@ -31,7 +31,7 @@ export default async function ClubTeamPage({
     return (
       <div className="text-center py-24">
         <div className="text-5xl mb-4">🏏</div>
-        <h2 className="text-2xl font-bold text-gray-800">No Active Season</h2>
+        <h2 className="text-2xl font-bold text-[#d4d4d4]">No Active Season</h2>
         <p className="text-muted-foreground mt-2">An admin needs to activate a season first.</p>
       </div>
     )
@@ -96,7 +96,7 @@ export default async function ClubTeamPage({
   if (!nextMatch) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">My Team</h1>
+        <h1 className="text-3xl font-bold text-[#ebebeb]">My Team</h1>
         <Card>
           <CardContent className="py-16 text-center">
             <div className="text-4xl mb-3">📅</div>
@@ -113,7 +113,7 @@ export default async function ClubTeamPage({
   if (!players || players.length === 0) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">My Team</h1>
+        <h1 className="text-3xl font-bold text-[#ebebeb]">My Team</h1>
         <Card>
           <CardContent className="py-16 text-center">
             <div className="text-4xl mb-3">👤</div>

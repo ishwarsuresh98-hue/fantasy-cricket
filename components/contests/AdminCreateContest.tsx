@@ -66,7 +66,7 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="px-4 py-2 rounded-xl bg-[#262162] text-white text-sm font-bold hover:bg-[#1a1748] transition-colors"
+        className="px-4 py-2 rounded-xl bg-[#111111] text-white text-sm font-bold hover:bg-[#0a0a0a] transition-colors"
       >
         + Create Contest
       </button>
@@ -77,10 +77,10 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
           onClick={handleClose}
         >
           <div
-            className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+            className="w-full max-w-md bg-[#111111] rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-[#262162] px-6 py-4">
+            <div className="bg-[#111111] px-6 py-4">
               <h2 className="text-white font-black text-lg">Create Contest</h2>
               <p className="text-white/60 text-sm">Admin — create a public or private contest</p>
             </div>
@@ -96,7 +96,7 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="e.g. Season Champions League"
                       maxLength={60}
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-[#262162] focus:ring-1 focus:ring-[#262162]/20 transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#2a2a2a] text-sm text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
                     />
                   </div>
 
@@ -109,8 +109,8 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
                           onClick={() => setType(t)}
                           className={`flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-all capitalize ${
                             type === t
-                              ? 'bg-[#262162] border-[#262162] text-white'
-                              : 'bg-white border-gray-200 text-gray-600 hover:border-[#262162]/40'
+                              ? 'bg-[#111111] border-[#C9A84C] text-white'
+                              : 'bg-[#111111] border-[#2a2a2a] text-gray-600 hover:border-[#C9A84C]/40'
                           }`}
                         >
                           {t}
@@ -127,7 +127,7 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
                     <select
                       value={maxTeams}
                       onChange={(e) => setMaxTeams(Number(e.target.value))}
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 bg-white focus:outline-none focus:border-[#262162] transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#2a2a2a] text-sm text-[#d4d4d4] bg-[#111111] focus:outline-none focus:border-[#C9A84C] transition-colors"
                     >
                       {[10, 20, 50, 100, 200, 500].map((n) => (
                         <option key={n} value={n}>{n} teams</option>
@@ -145,20 +145,20 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
                       placeholder="e.g. Trophy + £50 bar tab for the winner"
                       rows={2}
                       maxLength={200}
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-[#262162] transition-colors resize-none"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#2a2a2a] text-sm text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] transition-colors resize-none"
                     />
                   </div>
 
                   {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
 
                   <div className="flex gap-2 pt-1">
-                    <button onClick={handleClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors">
+                    <button onClick={handleClose} className="flex-1 py-2.5 rounded-xl border border-[#2a2a2a] text-gray-600 text-sm font-semibold hover:bg-[#0f0f0f] transition-colors">
                       Cancel
                     </button>
                     <button
                       onClick={handleCreate}
                       disabled={saving}
-                      className="flex-1 py-2.5 rounded-xl bg-[#262162] text-white text-sm font-black hover:bg-[#1a1748] disabled:opacity-60 transition-colors"
+                      className="flex-1 py-2.5 rounded-xl bg-[#111111] text-white text-sm font-black hover:bg-[#0a0a0a] disabled:opacity-60 transition-colors"
                     >
                       {saving ? 'Creating…' : 'Create'}
                     </button>
@@ -167,14 +167,14 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
               ) : (
                 <div className="text-center space-y-4">
                   <div className="text-4xl">✅</div>
-                  <p className="font-bold text-gray-800">{name} created!</p>
+                  <p className="font-bold text-[#d4d4d4]">{name} created!</p>
                   {type === 'private' && (
-                    <div className="bg-[#eeedf8] rounded-xl p-4">
-                      <p className="text-xs font-bold uppercase tracking-widest text-[#262162]/60 mb-1">Invite Code</p>
-                      <p className="text-3xl font-black tracking-[0.3em] text-[#262162] font-mono">{done}</p>
+                    <div className="bg-[#1c1c1c] rounded-xl p-4">
+                      <p className="text-xs font-bold uppercase tracking-widest text-[#C9A84C]/60 mb-1">Invite Code</p>
+                      <p className="text-3xl font-black tracking-[0.3em] text-[#C9A84C] font-mono">{done}</p>
                     </div>
                   )}
-                  <button onClick={handleClose} className="w-full py-2.5 rounded-xl bg-[#262162] text-white text-sm font-bold hover:bg-[#1a1748] transition-colors">
+                  <button onClick={handleClose} className="w-full py-2.5 rounded-xl bg-[#111111] text-white text-sm font-bold hover:bg-[#0a0a0a] transition-colors">
                     Done
                   </button>
                 </div>

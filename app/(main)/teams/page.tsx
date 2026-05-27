@@ -24,7 +24,7 @@ export default async function TeamsPage() {
     return (
       <div className="text-center py-24">
         <div className="text-5xl mb-4">🏏</div>
-        <h2 className="text-2xl font-bold text-gray-800">No Active Season</h2>
+        <h2 className="text-2xl font-bold text-[#d4d4d4]">No Active Season</h2>
         <p className="text-muted-foreground mt-2">Teams will appear once a season is active.</p>
       </div>
     )
@@ -217,7 +217,7 @@ export default async function TeamsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-[#262162]">All Teams</h1>
+        <h1 className="text-3xl font-bold text-[#C9A84C]">All Teams</h1>
         <p className="text-muted-foreground mt-1">
           {season.name}
           {refLabel && (
@@ -227,7 +227,7 @@ export default async function TeamsPage() {
           )}
         </p>
         {hiddenBehindDeadline && (
-          <p className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 inline-flex items-center gap-1.5">
+          <p className="mt-2 text-sm text-[#C9A84C] bg-[#1a1500] border border-[#C9A84C]/30 rounded-lg px-3 py-2 inline-flex items-center gap-1.5">
             🔒 Transfer changes for{' '}
             <span className="font-medium">
               Match {nextMatch!.match_number} vs {nextMatch!.opponent}
@@ -259,19 +259,19 @@ export default async function TeamsPage() {
                 key={team.id}
                 className={cn(
                   'flex flex-col transition-shadow hover:shadow-md',
-                  isMe && 'ring-2 ring-[#262162]',
+                  isMe && 'ring-2 ring-[#C9A84C]',
                 )}
               >
                 {/* Team header */}
-                <CardHeader className="pb-3 bg-[#262162] rounded-t-xl">
+                <CardHeader className="pb-3 bg-[#111111] rounded-t-xl">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span className={cn(
                         'flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold',
-                        rank === 1 ? 'bg-[#fbf927] text-[#262162]' :
-                        rank === 2 ? 'bg-gray-300 text-gray-700'   :
+                        rank === 1 ? 'bg-[#C9A84C] text-[#C9A84C]' :
+                        rank === 2 ? 'bg-gray-300 text-[#aaaaaa]'   :
                         rank === 3 ? 'bg-orange-200 text-orange-800' :
-                        'bg-white/20 text-white'
+                        'bg-[#111111]/20 text-white'
                       )}>
                         {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}
                       </span>
@@ -279,14 +279,14 @@ export default async function TeamsPage() {
                         <CardTitle className="text-white text-sm font-semibold truncate flex items-center gap-1.5">
                           {team.team_name}
                           {isMe && (
-                            <Badge className="text-[10px] px-1.5 py-0 bg-[#fbf927] text-[#262162] hover:bg-[#fbf927] font-bold flex-shrink-0">
+                            <Badge className="text-[10px] px-1.5 py-0 bg-[#C9A84C] text-[#C9A84C] hover:bg-[#C9A84C] font-bold flex-shrink-0">
                               You
                             </Badge>
                           )}
                         </CardTitle>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <Avatar className="h-4 w-4">
-                            <AvatarFallback className="text-[8px] bg-white/20 text-white font-bold">
+                            <AvatarFallback className="text-[8px] bg-[#111111]/20 text-white font-bold">
                               {owner.slice(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
@@ -295,7 +295,7 @@ export default async function TeamsPage() {
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-[#fbf927] font-bold text-lg leading-none">
+                      <p className="text-[#C9A84C] font-bold text-lg leading-none">
                         {Number(team.total_points).toFixed(1)}
                       </p>
                       <p className="text-white/60 text-[10px] mt-0.5">pts</p>
@@ -329,10 +329,10 @@ export default async function TeamsPage() {
                 </CardContent>
 
                 {/* View history button */}
-                <div className="px-4 py-3 border-t border-gray-100">
+                <div className="px-4 py-3 border-t border-[#1e1e1e]">
                   <Link
                     href={`/teams/${team.id}`}
-                    className="flex items-center justify-center w-full px-4 py-2 rounded-lg bg-[#262162] text-white text-sm font-semibold hover:bg-[#1a1748] transition-colors"
+                    className="flex items-center justify-center w-full px-4 py-2 rounded-lg bg-[#111111] text-white text-sm font-semibold hover:bg-[#0a0a0a] transition-colors"
                   >
                     View History
                   </Link>

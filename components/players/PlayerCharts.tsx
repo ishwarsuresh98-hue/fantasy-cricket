@@ -35,7 +35,7 @@ export default function PlayerCharts({ pointsData, statsData, creditData, avgPoi
       {/* Points per match */}
       {pointsData.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-[#262162] mb-3">Points per Match</h3>
+          <h3 className="text-sm font-semibold text-[#C9A84C] mb-3">Points per Match</h3>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={pointsData} margin={{ top: 4, right: 16, left: -16, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -51,16 +51,16 @@ export default function PlayerCharts({ pointsData, statsData, creditData, avgPoi
               />
               <ReferenceLine
                 y={avgPoints}
-                stroke="#fbf927"
+                stroke="#C9A84C"
                 strokeDasharray="4 4"
                 label={{ value: 'Avg', position: 'right', fontSize: 10, fill: '#888' }}
               />
               <Line
                 type="monotone"
                 dataKey="points"
-                stroke="#262162"
+                stroke="#C9A84C"
                 strokeWidth={2}
-                dot={{ r: 3, fill: '#262162' }}
+                dot={{ r: 3, fill: '#C9A84C' }}
                 activeDot={{ r: 5 }}
               />
             </LineChart>
@@ -71,7 +71,7 @@ export default function PlayerCharts({ pointsData, statsData, creditData, avgPoi
       {/* Runs / Wickets / Catches bar chart */}
       {statsData.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-[#262162] mb-3">Match Stats</h3>
+          <h3 className="text-sm font-semibold text-[#C9A84C] mb-3">Match Stats</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={statsData} margin={{ top: 4, right: 16, left: -16, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -83,9 +83,9 @@ export default function PlayerCharts({ pointsData, statsData, creditData, avgPoi
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip labelFormatter={(l) => `Match ${l}`} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="runs" name="Runs" fill="#262162" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="runs" name="Runs" fill="#C9A84C" radius={[2, 2, 0, 0]} />
               <Bar dataKey="wickets" name="Wickets" fill="#b5211e" radius={[2, 2, 0, 0]} />
-              <Bar dataKey="catches" name="Catches" fill="#fbf927" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="catches" name="Catches" fill="#C9A84C" radius={[2, 2, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -94,7 +94,7 @@ export default function PlayerCharts({ pointsData, statsData, creditData, avgPoi
       {/* Credit history */}
       {creditData.length > 1 && (
         <div>
-          <h3 className="text-sm font-semibold text-[#262162] mb-3">Credit History</h3>
+          <h3 className="text-sm font-semibold text-[#C9A84C] mb-3">Credit History</h3>
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={creditData} margin={{ top: 4, right: 16, left: -16, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />

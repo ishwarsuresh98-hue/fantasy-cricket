@@ -9,15 +9,15 @@ import type { PlayerRole } from '@/types'
 const ROLE_BADGE: Record<PlayerRole, string> = {
   batsman:       'bg-blue-100 text-blue-700',
   bowler:        'bg-[#fceaea] text-[#b5211e]',
-  all_rounder:   'bg-[#eeedf8] text-[#262162]',
-  wicket_keeper: 'bg-[#fefde8] text-[#a16207]',
+  all_rounder:   'bg-[#1c1c1c] text-[#C9A84C]',
+  wicket_keeper: 'bg-[#1a1500] text-[#a16207]',
 }
 
 // Avatar background per role (darker shade for contrast against white initials)
 const ROLE_AVATAR: Record<PlayerRole, string> = {
   batsman:       'bg-blue-600',
   bowler:        'bg-[#b5211e]',
-  all_rounder:   'bg-[#262162]',
+  all_rounder:   'bg-[#111111]',
   wicket_keeper: 'bg-[#a16207]',
 }
 
@@ -49,7 +49,7 @@ function Sparkline({ points }: { points: (number | null)[] }) {
             : v >= max * 0.8
             ? 'bg-green-500'
             : v >= max * 0.4
-            ? 'bg-[#fbf927]'
+            ? 'bg-[#C9A84C]'
             : 'bg-orange-400'
         return (
           <div
@@ -137,14 +137,14 @@ export default function PlayerCard({
         onKeyDown={onClick ? (e) => e.key === 'Enter' && onClick() : undefined}
         className={cn(
           'flex items-center gap-2.5 px-3 py-2 transition-colors',
-          onClick && 'cursor-pointer hover:bg-[#eeedf8]',
+          onClick && 'cursor-pointer hover:bg-[#1c1c1c]',
           isSelected && 'bg-green-50',
           className,
         )}
       >
         {/* C / VC badge OR avatar */}
         {isCaptain ? (
-          <span className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#fbf927] text-[#262162] text-[11px] font-black">
+          <span className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#C9A84C] text-[#C9A84C] text-[11px] font-black">
             C
           </span>
         ) : isViceCaptain ? (
@@ -167,7 +167,7 @@ export default function PlayerCard({
           <div className="flex items-center gap-1.5 min-w-0">
             <span className={cn(
               'text-sm font-semibold truncate',
-              isSelected ? 'text-green-800' : 'text-gray-800',
+              isSelected ? 'text-green-800' : 'text-[#d4d4d4]',
             )}>
               {name}
             </span>
@@ -200,7 +200,7 @@ export default function PlayerCard({
         {gwPoints !== undefined && (
           <span className={cn(
             'flex-shrink-0 w-9 text-right text-sm font-bold',
-            gwPoints > 0 ? 'text-[#262162]' : 'text-gray-300',
+            gwPoints > 0 ? 'text-[#C9A84C]' : 'text-gray-300',
           )}>
             {gwPoints > 0
               ? gwPoints % 1 === 0 ? gwPoints : gwPoints.toFixed(1)
@@ -223,7 +223,7 @@ export default function PlayerCard({
         'relative flex flex-col items-center gap-2 p-3 rounded-2xl border-2 text-center transition-all duration-150 select-none',
         isSelected
           ? 'bg-green-50 border-green-400 shadow-md shadow-green-100'
-          : 'bg-white border-gray-200 hover:border-[#262162]/40 hover:bg-[#eeedf8]',
+          : 'bg-[#111111] border-[#2a2a2a] hover:border-[#C9A84C]/40 hover:bg-[#1c1c1c]',
         onClick && 'cursor-pointer',
         className,
       )}
@@ -231,7 +231,7 @@ export default function PlayerCard({
       {/* C / VC ring around avatar */}
       <div className={cn(
         'relative w-12 h-12 rounded-full ring-2 ring-offset-1',
-        isCaptain      ? 'ring-[#fbf927]' :
+        isCaptain      ? 'ring-[#C9A84C]' :
         isViceCaptain  ? 'ring-gray-300'  :
         isSelected     ? 'ring-green-400' :
                          'ring-transparent',
@@ -247,7 +247,7 @@ export default function PlayerCard({
         {(isCaptain || isViceCaptain) && (
           <span className={cn(
             'absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black border-2 border-white',
-            isCaptain ? 'bg-[#fbf927] text-[#262162]' : 'bg-gray-200 text-gray-600',
+            isCaptain ? 'bg-[#C9A84C] text-[#C9A84C]' : 'bg-gray-200 text-gray-600',
           )}>
             {isCaptain ? 'C' : 'V'}
           </span>
@@ -258,7 +258,7 @@ export default function PlayerCard({
       <div className="w-full min-w-0">
         <p className={cn(
           'text-xs font-semibold leading-tight line-clamp-2',
-          isSelected ? 'text-green-800' : 'text-gray-800',
+          isSelected ? 'text-green-800' : 'text-[#d4d4d4]',
         )}>
           {name}
         </p>
@@ -271,7 +271,7 @@ export default function PlayerCard({
 
       {/* Credit + trend */}
       <div className="flex items-center gap-0.5 text-xs text-gray-500">
-        <span className="font-semibold text-gray-700">{Number(price).toFixed(1)}</span>
+        <span className="font-semibold text-[#aaaaaa]">{Number(price).toFixed(1)}</span>
         <span className="text-[10px]">cr</span>
         {creditTrend === 'up'   && <span className="text-green-600 font-bold text-[11px]">↑</span>}
         {creditTrend === 'down' && <span className="text-red-500  font-bold text-[11px]">↓</span>}

@@ -27,11 +27,11 @@ export default function PushPermissionButton() {
 
   if (state === 'denied') {
     return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
+      <div className="rounded-xl border border-[#C9A84C]/30 bg-[#1a1500] px-4 py-3 flex items-start gap-3">
         <span className="text-xl flex-shrink-0">🔕</span>
         <div>
-          <p className="text-sm font-semibold text-amber-800">Notifications blocked</p>
-          <p className="text-xs text-amber-700 mt-0.5">
+          <p className="text-sm font-semibold text-[#a8892e]">Notifications blocked</p>
+          <p className="text-xs text-[#C9A84C] mt-0.5">
             Allow notifications in your browser / device settings to get score alerts.
           </p>
         </div>
@@ -65,7 +65,7 @@ export default function PushPermissionButton() {
     <button
       onClick={handleToggle}
       disabled={busy}
-      className="w-full rounded-xl bg-[#262162] text-white px-4 py-3 flex items-center gap-3 hover:bg-[#1a1748] transition-colors disabled:opacity-60"
+      className="w-full rounded-xl bg-[#111111] text-white px-4 py-3 flex items-center gap-3 hover:bg-[#0a0a0a] transition-colors disabled:opacity-60"
     >
       <span className="text-xl flex-shrink-0">{busy ? '⏳' : '🔔'}</span>
       <div className="text-left min-w-0">

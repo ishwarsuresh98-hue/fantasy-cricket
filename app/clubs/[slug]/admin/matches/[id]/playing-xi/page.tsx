@@ -46,16 +46,16 @@ export default async function ClubAdminPlayingXIPage({
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href={`${base}/matches`} className="hover:underline hover:text-[#262162]">Matches</Link>
+        <Link href={`${base}/matches`} className="hover:underline hover:text-[#C9A84C]">Matches</Link>
         <span>/</span>
         <span>Match {match.match_number} — {match.opponent}</span>
         <span>/</span>
-        <span className="font-medium text-[#262162]">Playing XI</span>
+        <span className="font-medium text-[#C9A84C]">Playing XI</span>
       </div>
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Set Playing XI</h2>
+          <h2 className="text-2xl font-bold text-[#ebebeb]">Set Playing XI</h2>
           <p className="text-muted-foreground mt-0.5">
             Match {match.match_number} — {match.opponent} &bull; {matchDate}
           </p>
@@ -67,7 +67,7 @@ export default async function ClubAdminPlayingXIPage({
         </div>
         <Link
           href={`${base}/matches/${id}/stats`}
-          className="text-sm text-[#262162] hover:underline shrink-0"
+          className="text-sm text-[#C9A84C] hover:underline shrink-0"
         >
           → Stats entry
         </Link>

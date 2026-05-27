@@ -101,7 +101,7 @@ export default function BoosterPanel({
   return (
     <div className="space-y-3">
       <div>
-        <h2 className="text-lg font-semibold text-[#262162]">Boosters</h2>
+        <h2 className="text-lg font-semibold text-[#C9A84C]">Boosters</h2>
         <p className="text-sm text-muted-foreground">
           One booster per match. Activate before the match starts.
         </p>
@@ -129,20 +129,20 @@ export default function BoosterPanel({
               key={booster.type}
               className={`relative flex flex-col gap-2 rounded-xl border p-3 transition-all ${
                 isActiveThisMatch
-                  ? 'border-[#fbf927] bg-[#fefde8] shadow-md'
+                  ? 'border-[#C9A84C] bg-[#1a1500] shadow-md'
                   : isExhausted
-                  ? 'border-gray-200 bg-gray-50 opacity-60'
-                  : 'border-gray-200 bg-white hover:border-[#262162]/30 hover:shadow-sm'
+                  ? 'border-[#2a2a2a] bg-[#0f0f0f] opacity-60'
+                  : 'border-[#2a2a2a] bg-[#111111] hover:border-[#C9A84C]/30 hover:shadow-sm'
               }`}
             >
               <div className="text-2xl text-center">{booster.icon}</div>
               <div className="flex-1 space-y-1 text-center">
-                <p className="text-xs font-semibold text-[#262162] leading-tight">{booster.name}</p>
+                <p className="text-xs font-semibold text-[#C9A84C] leading-tight">{booster.name}</p>
                 <p className="text-[11px] text-muted-foreground leading-tight">{booster.description}</p>
               </div>
 
               {isActiveThisMatch ? (
-                <Badge className="bg-[#fbf927] text-[#262162] hover:bg-[#fbf927] text-[11px] justify-center font-bold">
+                <Badge className="bg-[#C9A84C] text-[#C9A84C] hover:bg-[#C9A84C] text-[11px] justify-center font-bold">
                   Active ✓
                 </Badge>
               ) : isExhausted ? (
@@ -150,7 +150,7 @@ export default function BoosterPanel({
                   Used
                 </Badge>
               ) : (
-                <Badge className="bg-[#eeedf8] text-[#262162] hover:bg-[#eeedf8] text-[11px] justify-center">
+                <Badge className="bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#1c1c1c] text-[11px] justify-center">
                   {remaining}/{booster.maxUses} left
                 </Badge>
               )}
@@ -233,7 +233,7 @@ function SimpleBoosterDialog({
         render={
           <button
             disabled={isPending}
-            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#262162] text-white hover:bg-[#1a1748] transition-colors disabled:opacity-50"
+            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#111111] text-white hover:bg-[#0a0a0a] transition-colors disabled:opacity-50"
           />
         }
       >
@@ -254,7 +254,7 @@ function SimpleBoosterDialog({
           <Button
             onClick={handleActivate}
             disabled={loading}
-            className="bg-[#262162] hover:bg-[#1a1748]"
+            className="bg-[#111111] hover:bg-[#0a0a0a]"
           >
             {loading ? 'Activating…' : 'Confirm'}
           </Button>
@@ -288,7 +288,7 @@ function FreeHitDialog({
         render={
           <button
             disabled={isPending}
-            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#262162] text-white hover:bg-[#1a1748] transition-colors disabled:opacity-50"
+            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#111111] text-white hover:bg-[#0a0a0a] transition-colors disabled:opacity-50"
           />
         }
       >
@@ -301,7 +301,7 @@ function FreeHitDialog({
             For this match only, your budget cap is removed — pick any 11 players!
           </DialogDescription>
         </DialogHeader>
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-md px-3 py-2">
+        <div className="bg-[#1a1500] border border-[#C9A84C]/30 text-[#a8892e] text-sm rounded-md px-3 py-2">
           ⚠️ <strong>Note:</strong> Your squad will revert to its pre-Free Hit state for the next match.
         </div>
         <DialogFooter>
@@ -309,7 +309,7 @@ function FreeHitDialog({
           <Button
             onClick={handleActivate}
             disabled={loading}
-            className="bg-[#262162] hover:bg-[#1a1748]"
+            className="bg-[#111111] hover:bg-[#0a0a0a]"
           >
             {loading ? 'Activating…' : 'Activate Free Hit'}
           </Button>
@@ -345,7 +345,7 @@ function ScoreFreezeDialog({
         render={
           <button
             disabled={isPending}
-            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#262162] text-white hover:bg-[#1a1748] transition-colors disabled:opacity-50"
+            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#111111] text-white hover:bg-[#0a0a0a] transition-colors disabled:opacity-50"
           />
         }
       >
@@ -356,11 +356,11 @@ function ScoreFreezeDialog({
           <DialogTitle>🧊 Activate Score Freeze?</DialogTitle>
           <DialogDescription>
             Your current season total of{' '}
-            <span className="font-bold text-[#262162]">{currentTeamPoints.toFixed(1)} pts</span>{' '}
+            <span className="font-bold text-[#C9A84C]">{currentTeamPoints.toFixed(1)} pts</span>{' '}
             becomes your floor for this matchday.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-2 text-sm text-gray-700">
+        <div className="space-y-2 text-sm text-[#aaaaaa]">
           <div className="bg-blue-50 border border-blue-200 rounded-md px-3 py-2 space-y-1">
             <p>🧊 <strong>If you score less</strong> than your usual matchday average, your season total is protected — the shortfall is topped up automatically.</p>
             <p>📈 <strong>If you score more</strong> than the frozen floor, you get the higher actual score.</p>
@@ -374,7 +374,7 @@ function ScoreFreezeDialog({
           <Button
             onClick={handleActivate}
             disabled={loading}
-            className="bg-[#262162] hover:bg-[#1a1748]"
+            className="bg-[#111111] hover:bg-[#0a0a0a]"
           >
             {loading ? 'Activating…' : 'Freeze Score'}
           </Button>
@@ -422,7 +422,7 @@ function TripleCaptainDialog({
         render={
           <button
             disabled={isPending || currentSelections.length === 0}
-            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#262162] text-white hover:bg-[#1a1748] transition-colors disabled:opacity-50"
+            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#111111] text-white hover:bg-[#0a0a0a] transition-colors disabled:opacity-50"
           />
         }
       >
@@ -447,8 +447,8 @@ function TripleCaptainDialog({
                 onClick={() => setChosenId(p.id)}
                 className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors ${
                   chosenId === p.id
-                    ? 'bg-[#eeedf8] text-[#262162]'
-                    : 'hover:bg-gray-50'
+                    ? 'bg-[#1c1c1c] text-[#C9A84C]'
+                    : 'hover:bg-[#0f0f0f]'
                 }`}
               >
                 <div>
@@ -456,7 +456,7 @@ function TripleCaptainDialog({
                   <p className="text-xs text-muted-foreground capitalize">{p.role.replace('_', ' ')}</p>
                 </div>
                 {chosenId === p.id && (
-                  <span className="text-[#262162] font-bold text-sm">✓</span>
+                  <span className="text-[#C9A84C] font-bold text-sm">✓</span>
                 )}
               </button>
             ))}
@@ -467,7 +467,7 @@ function TripleCaptainDialog({
           <Button
             onClick={handleActivate}
             disabled={!chosenId || loading}
-            className="bg-[#262162] hover:bg-[#1a1748]"
+            className="bg-[#111111] hover:bg-[#0a0a0a]"
           >
             {loading ? 'Activating…' : 'Confirm'}
           </Button>

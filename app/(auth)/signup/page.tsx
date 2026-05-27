@@ -52,10 +52,10 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#262162] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#111111] p-4">
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: 'repeating-linear-gradient(45deg, #fbf927 0, #fbf927 1px, transparent 0, transparent 50%)',
+        backgroundImage: 'repeating-linear-gradient(45deg, #C9A84C 0, #C9A84C 1px, transparent 0, transparent 50%)',
         backgroundSize: '20px 20px'
       }} />
 
@@ -68,19 +68,19 @@ export default function SignupPage() {
               alt="Slough Cricket Club"
               width={96}
               height={96}
-              className="rounded-full bg-white p-1 shadow-lg"
+              className="rounded-full bg-[#111111] p-1 shadow-lg"
               priority
             />
           </div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight">SLOUGH CC</h1>
-          <p className="text-[#fbf927] font-semibold mt-0.5">Fantasy League</p>
+          <p className="text-[#C9A84C] font-semibold mt-0.5">Fantasy League</p>
         </div>
 
         <Card className="shadow-2xl border-0">
           {checkEmail ? (
             <CardContent className="pt-8 pb-8 text-center space-y-3">
               <div className="text-5xl">📧</div>
-              <h2 className="text-lg font-bold text-[#262162]">Check your email</h2>
+              <h2 className="text-lg font-bold text-[#C9A84C]">Check your email</h2>
               <p className="text-sm text-muted-foreground">
                 We sent a confirmation link to <span className="font-semibold">{email}</span>.
                 Click it to activate your account, then come back to sign in.
@@ -92,7 +92,7 @@ export default function SignupPage() {
           ) : (
             <>
               <CardHeader className="text-center pb-2">
-                <CardTitle className="text-xl text-[#262162]">Create Account</CardTitle>
+                <CardTitle className="text-xl text-[#C9A84C]">Create Account</CardTitle>
               </CardHeader>
               <form onSubmit={handleSignup}>
                 <CardContent className="space-y-4">
@@ -150,14 +150,14 @@ export default function SignupPage() {
                 <CardFooter className="flex flex-col gap-3">
                   <Button
                     type="submit"
-                    className="w-full bg-[#262162] hover:bg-[#1a1748] text-white font-semibold"
+                    className="w-full bg-[#111111] hover:bg-[#0a0a0a] text-white font-semibold"
                     disabled={loading}
                   >
                     {loading ? 'Creating account...' : 'Create Account'}
                   </Button>
                   <p className="text-sm text-muted-foreground text-center">
                     Already have an account?{' '}
-                    <Link href="/login" className="text-[#262162] hover:underline font-semibold">
+                    <Link href="/login" className="text-[#C9A84C] hover:underline font-semibold">
                       Sign in
                     </Link>
                   </p>

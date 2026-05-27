@@ -37,13 +37,13 @@ export default async function AdminPlayersPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Players</h2>
+          <h2 className="text-2xl font-bold text-[#ebebeb]">Players</h2>
           <p className="text-muted-foreground">{season.name} • {allPlayers.length} players</p>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href="/admin/players/import"
-            className={cn(buttonVariants({ variant: 'outline' }), 'border-[#262162] text-[#262162] hover:bg-[#eeedf8]')}
+            className={cn(buttonVariants({ variant: 'outline' }), 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#1c1c1c]')}
           >
             Import Players
           </Link>

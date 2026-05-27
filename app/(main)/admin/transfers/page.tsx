@@ -63,7 +63,7 @@ export default async function AdminTransfersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Transfer Management</h2>
+        <h2 className="text-2xl font-bold text-[#ebebeb]">Transfer Management</h2>
         <p className="text-muted-foreground">View and adjust transfer balances for all teams.</p>
       </div>
 
@@ -74,7 +74,7 @@ export default async function AdminTransfersPage() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-[#0f0f0f] border-b">
                 <tr>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground uppercase text-xs tracking-wide">Team</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground uppercase text-xs tracking-wide">Manager</th>
@@ -92,10 +92,10 @@ export default async function AdminTransfersPage() {
                   const limit = team.transfer_limit ?? 300
                   const remaining = limit - confirmed
                   return (
-                    <tr key={team.id} className="hover:bg-gray-50">
+                    <tr key={team.id} className="hover:bg-[#0f0f0f]">
                       <td className="px-4 py-3 font-medium">{team.team_name}</td>
                       <td className="px-4 py-3 text-muted-foreground">{team.profiles?.display_name ?? '—'}</td>
-                      <td className="px-4 py-3 text-center font-semibold text-[#262162]">{confirmed}</td>
+                      <td className="px-4 py-3 text-center font-semibold text-[#C9A84C]">{confirmed}</td>
                       <td className="px-4 py-3 text-center text-yellow-700">{pending > 0 ? `+${pending}` : '—'}</td>
                       <td className="px-4 py-3 text-center text-muted-foreground">{limit}</td>
                       <td className="px-4 py-3 text-center">

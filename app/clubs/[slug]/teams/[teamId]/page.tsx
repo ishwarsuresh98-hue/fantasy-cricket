@@ -11,8 +11,8 @@ import { buildGameweeks } from '@/lib/gameweeks'
 const ROLE_BADGE: Record<string, string> = {
   batsman:       'bg-blue-100 text-blue-700',
   bowler:        'bg-[#fceaea] text-[#b5211e]',
-  all_rounder:   'bg-[#eeedf8] text-[#262162]',
-  wicket_keeper: 'bg-[#fefde8] text-[#262162]',
+  all_rounder:   'bg-[#1c1c1c] text-[#C9A84C]',
+  wicket_keeper: 'bg-[#1a1500] text-[#C9A84C]',
 }
 
 type MatchMeta = { id: string; match_number: number; opponent: string; match_date: string; status: string; result: string | null }
@@ -116,14 +116,14 @@ export default async function ClubTeamDetailPage({
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
-          <Link href={`${base}/teams`} className="hover:text-[#262162] hover:underline">Teams</Link>
+          <Link href={`${base}/teams`} className="hover:text-[#C9A84C] hover:underline">Teams</Link>
           <span>/</span>
-          <span className="text-gray-900 font-medium">{team.team_name}</span>
+          <span className="text-[#ebebeb] font-medium">{team.team_name}</span>
         </div>
-        <h1 className="text-3xl font-bold text-[#262162]">{team.team_name}</h1>
+        <h1 className="text-3xl font-bold text-[#C9A84C]">{team.team_name}</h1>
         <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
           <span>{owner}</span><span>·</span>
-          <span className="font-semibold text-[#262162]">{Number(team.total_points).toFixed(1)} pts</span>
+          <span className="font-semibold text-[#C9A84C]">{Number(team.total_points).toFixed(1)} pts</span>
         </div>
       </div>
 
@@ -142,13 +142,13 @@ export default async function ClubTeamDetailPage({
             return (
               <div key={gw.dateStr}>
                 <div className="flex items-center gap-3 mb-1 px-1">
-                  <div className="h-px flex-1 bg-[#262162]/20" />
+                  <div className="h-px flex-1 bg-[#111111]/20" />
                   <div className="shrink-0 flex items-center gap-2">
-                    <span className="text-sm font-semibold text-[#262162]">Gameweek {gw.gw}</span>
-                    <span className="text-sm text-[#262162]/60">— {gw.label}</span>
-                    <Badge className="bg-[#262162] text-white text-xs font-bold hover:bg-[#262162]">{fmtPts(gwTotal)} pts</Badge>
+                    <span className="text-sm font-semibold text-[#C9A84C]">Gameweek {gw.gw}</span>
+                    <span className="text-sm text-[#C9A84C]/60">— {gw.label}</span>
+                    <Badge className="bg-[#111111] text-white text-xs font-bold hover:bg-[#111111]">{fmtPts(gwTotal)} pts</Badge>
                   </div>
-                  <div className="h-px flex-1 bg-[#262162]/20" />
+                  <div className="h-px flex-1 bg-[#111111]/20" />
                 </div>
                 <p className="text-xs text-muted-foreground text-center mb-4 px-1">{opponentLine}</p>
 
@@ -156,7 +156,7 @@ export default async function ClubTeamDetailPage({
                   <CardContent className="p-0">
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
-                        <thead className="bg-gray-50 border-b">
+                        <thead className="bg-[#0f0f0f] border-b">
                           <tr>
                             <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3 min-w-[160px]">Player</th>
                             <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">Role</th>
@@ -171,21 +171,21 @@ export default async function ClubTeamDetailPage({
                           {rows.map((row) => {
                             const bonus = row.totalEarned - row.totalBasePoints
                             return (
-                              <tr key={row.playerId} className="hover:bg-[#eeedf8] transition-colors">
+                              <tr key={row.playerId} className="hover:bg-[#1c1c1c] transition-colors">
                                 <td className="px-4 py-2.5">
                                   <div className="flex items-center gap-1.5">
                                     {row.isCaptain ? (
-                                      <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#fbf927] text-[#262162] text-[10px] font-black">C</span>
+                                      <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#C9A84C] text-[#C9A84C] text-[10px] font-black">C</span>
                                     ) : row.isViceCaptain ? (
                                       <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-[10px] font-black">V</span>
                                     ) : (
                                       <span className="flex-shrink-0 w-5" />
                                     )}
-                                    <Link href={`${base}/players/${row.playerId}`} className="font-medium hover:text-[#262162] hover:underline">{row.playerName}</Link>
+                                    <Link href={`${base}/players/${row.playerId}`} className="font-medium hover:text-[#C9A84C] hover:underline">{row.playerName}</Link>
                                   </div>
                                 </td>
                                 <td className="px-3 py-2.5">
-                                  <Badge className={cn('text-xs font-normal', ROLE_BADGE[row.playerRole] ?? 'bg-gray-100 text-gray-600')}>
+                                  <Badge className={cn('text-xs font-normal', ROLE_BADGE[row.playerRole] ?? 'bg-[#141414] text-gray-600')}>
                                     {PLAYER_ROLE_LABELS[row.playerRole] ?? row.playerRole}
                                   </Badge>
                                 </td>
@@ -193,15 +193,15 @@ export default async function ClubTeamDetailPage({
                                 <td className="px-3 py-2.5 text-center">{row.totalWickets > 0 ? <span className="font-medium">{row.totalWickets}</span> : <span className="text-muted-foreground">—</span>}</td>
                                 <td className="px-3 py-2.5 text-center text-muted-foreground">{row.totalBasePoints > 0 ? fmtPts(row.totalBasePoints) : '—'}</td>
                                 <td className="px-3 py-2.5 text-center">{fmtBonus(bonus)}</td>
-                                <td className="px-4 py-2.5 text-right font-bold text-[#262162]">{row.totalEarned > 0 ? fmtPts(row.totalEarned) : <span className="text-muted-foreground font-normal">—</span>}</td>
+                                <td className="px-4 py-2.5 text-right font-bold text-[#C9A84C]">{row.totalEarned > 0 ? fmtPts(row.totalEarned) : <span className="text-muted-foreground font-normal">—</span>}</td>
                               </tr>
                             )
                           })}
                         </tbody>
                         <tfoot>
-                          <tr className="bg-[#262162]">
+                          <tr className="bg-[#111111]">
                             <td colSpan={6} className="px-4 py-2.5 text-xs font-semibold text-white/70 uppercase tracking-wide">Gameweek {gw.gw} total</td>
-                            <td className="px-4 py-2.5 text-right font-bold text-[#fbf927] text-base">{fmtPts(gwTotal)}</td>
+                            <td className="px-4 py-2.5 text-right font-bold text-[#C9A84C] text-base">{fmtPts(gwTotal)}</td>
                           </tr>
                         </tfoot>
                       </table>

@@ -355,11 +355,11 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Your <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">.xlsx</code> file must contain these columns (exact names, case-insensitive):
+            Your <code className="bg-[#141414] px-1 py-0.5 rounded text-xs">.xlsx</code> file must contain these columns (exact names, case-insensitive):
           </p>
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full text-xs">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-[#0f0f0f] border-b">
                 <tr>
                   {['Date', 'Home_Team', 'Away_Team', 'Start_Time', 'Ground', 'Fixture_Type', 'Division_or_Cup', 'Fixture_ID'].map((h) => (
                     <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground whitespace-nowrap">{h}</th>
@@ -382,7 +382,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
           </div>
           <div className="grid sm:grid-cols-2 gap-3 text-xs text-muted-foreground">
             <div>
-              <p className="font-semibold text-gray-700 mb-1">Required columns</p>
+              <p className="font-semibold text-[#aaaaaa] mb-1">Required columns</p>
               <ul className="space-y-0.5">
                 <li><strong>Date</strong> — match date (any Excel date format)</li>
                 <li><strong>Home_Team</strong> — home team name</li>
@@ -390,7 +390,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-gray-700 mb-1">Optional columns</p>
+              <p className="font-semibold text-[#aaaaaa] mb-1">Optional columns</p>
               <ul className="space-y-0.5">
                 <li><strong>Start_Time</strong> — e.g. 14:00 or 2:00 PM</li>
                 <li><strong>Ground</strong> — stored as venue</li>
@@ -398,7 +398,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
               </ul>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground bg-[#eeedf8] rounded-lg px-3 py-2">
+          <p className="text-xs text-muted-foreground bg-[#1c1c1c] rounded-lg px-3 py-2">
             💡 <strong>Opponent auto-detection:</strong> if one team name contains "Slough" the other team is used as the opponent.
             Otherwise both names are stored as "<em>Home vs Away</em>" so you can edit afterwards.
           </p>
@@ -423,7 +423,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
                 <div className="flex gap-2 mt-3">
                   <Button
                     size="sm"
-                    className="bg-[#262162] hover:bg-[#1a1748]"
+                    className="bg-[#111111] hover:bg-[#0a0a0a]"
                     onClick={() => router.push('/admin/matches')}
                   >
                     View Matches
@@ -447,10 +447,10 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
           <CardContent className="space-y-4">
             <label
               htmlFor="match-xlsx-upload"
-              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-[#262162] hover:bg-[#eeedf8]/30 transition-colors"
+              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-[#C9A84C] hover:bg-[#1c1c1c]/30 transition-colors"
             >
               <span className="text-3xl mb-2">📂</span>
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-[#aaaaaa]">
                 {fileName ?? 'Click to choose an .xlsx file'}
               </span>
               <span className="text-xs text-muted-foreground mt-0.5">Excel files only</span>
@@ -497,7 +497,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
           <CardContent className="p-0">
             <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b sticky top-0 z-10">
+                <thead className="bg-[#0f0f0f] border-b sticky top-0 z-10">
                   <tr>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">#</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Date &amp; Time</th>
@@ -509,7 +509,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
                 </thead>
                 <tbody className="divide-y">
                   {parsed.map((m, i) => (
-                    <tr key={m.rowIndex} className={m.error ? 'bg-red-50' : 'hover:bg-gray-50'}>
+                    <tr key={m.rowIndex} className={m.error ? 'bg-red-50' : 'hover:bg-[#0f0f0f]'}>
                       <td className="px-4 py-2.5 text-xs text-muted-foreground">{m.rowIndex}</td>
                       <td className="px-4 py-2.5 whitespace-nowrap">
                         {m.matchDate
@@ -545,7 +545,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
             </div>
 
             {invalidRows.length > 0 && (
-              <div className="px-4 py-3 border-t bg-amber-50 text-xs text-amber-800">
+              <div className="px-4 py-3 border-t bg-[#1a1500] text-xs text-[#a8892e]">
                 ⚠ Rows with errors will be <strong>skipped</strong>. Fix them in your spreadsheet and re-upload, or proceed to import the {validRows.length} valid rows.
               </div>
             )}
@@ -555,7 +555,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
               <Button
                 onClick={handleImport}
                 disabled={validRows.length === 0 || importing}
-                className="bg-[#262162] hover:bg-[#1a1748]"
+                className="bg-[#111111] hover:bg-[#0a0a0a]"
               >
                 {importing
                   ? 'Importing…'

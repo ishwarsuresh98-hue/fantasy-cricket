@@ -65,13 +65,13 @@ export default async function ClubAdminMatchesPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#262162]">Matches</h2>
+          <h2 className="text-2xl font-bold text-[#C9A84C]">Matches</h2>
           <p className="text-muted-foreground">{season.name} • {matches?.length ?? 0} matches</p>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href={`${base}/matches/import`}
-            className={cn(buttonVariants({ variant: 'outline' }), 'border-[#262162] text-[#262162] hover:bg-[#eeedf8]')}
+            className={cn(buttonVariants({ variant: 'outline' }), 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#1c1c1c]')}
           >
             Import Matches
           </Link>
@@ -91,9 +91,9 @@ export default async function ClubAdminMatchesPage({
           <CardContent className="p-0">
             <div className="divide-y">
               {matches.map((match: Match) => (
-                <div key={match.id} className="flex items-center justify-between px-6 py-4 hover:bg-[#eeedf8] transition-colors">
+                <div key={match.id} className="flex items-center justify-between px-6 py-4 hover:bg-[#1c1c1c] transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="text-center min-w-[3rem] bg-[#262162] text-white rounded-lg py-1.5">
+                    <div className="text-center min-w-[3rem] bg-[#111111] text-white rounded-lg py-1.5">
                       <p className="text-xs opacity-70">Match</p>
                       <p className="font-bold text-lg leading-none">{match.match_number}</p>
                     </div>
@@ -111,8 +111,8 @@ export default async function ClubAdminMatchesPage({
                   <div className="flex items-center gap-2 flex-wrap justify-end">
                     <Badge className={
                       match.status === 'completed'
-                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-100'
-                        : 'bg-[#fefde8] text-[#262162] border border-[#fbf927] hover:bg-[#fefde8]'
+                        ? 'bg-[#141414] text-[#aaaaaa] hover:bg-[#141414]'
+                        : 'bg-[#1a1500] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#1a1500]'
                     }>
                       {match.status === 'completed' ? 'Completed' : 'Upcoming'}
                     </Badge>
@@ -129,8 +129,8 @@ export default async function ClubAdminMatchesPage({
                             xiComplete
                               ? 'border-green-500 text-green-700 hover:bg-green-50'
                               : xiCount > 0
-                              ? 'border-amber-400 text-amber-700 hover:bg-amber-50'
-                              : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                              ? 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#1a1500]'
+                              : 'border-gray-300 text-gray-600 hover:bg-[#0f0f0f]'
                           )}
                         >
                           {xiComplete ? (
@@ -146,7 +146,7 @@ export default async function ClubAdminMatchesPage({
 
                     <Link
                       href={`${base}/matches/${match.id}/stats`}
-                      className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'border-[#262162] text-[#262162] hover:bg-[#eeedf8]')}
+                      className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#1c1c1c]')}
                     >
                       {match.status === 'completed' ? 'Edit Stats' : 'Enter Stats'}
                     </Link>

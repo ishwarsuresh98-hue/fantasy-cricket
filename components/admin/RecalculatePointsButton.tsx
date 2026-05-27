@@ -41,7 +41,7 @@ export default function RecalculatePointsButton() {
         disabled={state === 'loading'}
         variant="outline"
         size="sm"
-        className="border-[#262162]/30 text-[#262162] hover:bg-[#eeedf8]"
+        className="border-[#C9A84C]/30 text-[#C9A84C] hover:bg-[#1c1c1c]"
       >
         {state === 'loading' ? 'Recalculating…' : '🔄 Recalculate All Points'}
       </Button>

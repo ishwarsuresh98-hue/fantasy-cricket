@@ -41,8 +41,8 @@ interface TeamBuilderProps {
 const ROLE_COLORS: Record<string, string> = {
   batsman: 'bg-blue-100 text-blue-700',
   bowler: 'bg-[#fceaea] text-[#b5211e]',
-  all_rounder: 'bg-[#eeedf8] text-[#262162]',
-  wicket_keeper: 'bg-[#fefde8] text-[#262162]',
+  all_rounder: 'bg-[#1c1c1c] text-[#C9A84C]',
+  wicket_keeper: 'bg-[#1a1500] text-[#C9A84C]',
 }
 
 const ROLE_CONSTRAINTS: Record<string, { min: number; max: number; label: string }> = {
@@ -245,7 +245,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-[#262162]">My Team</h1>
+        <h1 className="text-3xl font-bold text-[#C9A84C]">My Team</h1>
         <p className="text-muted-foreground mt-1">
           Picking for Match {nextMatch.match_number} — {nextMatch.opponent} •{' '}
           {new Date(nextMatch.match_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -265,10 +265,10 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
       )}
 
       {freeHitActive && !isLocked && (
-        <div className="flex items-center gap-2 bg-[#fefde8] border border-[#fbf927] rounded-lg px-4 py-3">
+        <div className="flex items-center gap-2 bg-[#1a1500] border border-[#C9A84C] rounded-lg px-4 py-3">
           <span className="text-xl">🆓</span>
           <div>
-            <p className="text-sm font-semibold text-[#262162]">Free Hit Active — No Budget Limit!</p>
+            <p className="text-sm font-semibold text-[#C9A84C]">Free Hit Active — No Budget Limit!</p>
             <p className="text-xs text-muted-foreground">Pick any players this match. Your squad reverts next match.</p>
           </div>
         </div>
@@ -283,10 +283,10 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
             ? 'bg-orange-50 border-orange-200'
             : transfersRemaining <= 50
             ? 'bg-yellow-50 border-yellow-100'
-            : 'bg-[#eeedf8] border-[#262162]/20'
+            : 'bg-[#1c1c1c] border-[#C9A84C]/20'
         }`}>
           <div>
-            <p className={`text-sm font-semibold ${wouldExceedLimit ? 'text-red-700' : 'text-[#262162]'}`}>
+            <p className={`text-sm font-semibold ${wouldExceedLimit ? 'text-red-700' : 'text-[#C9A84C]'}`}>
               {deadlinePassed
                 ? '📋 Next gameweek open — changes will use transfers when deadline passes'
                 : '🔄 Changes are free until deadline — transfers only count once deadline passes'
@@ -308,7 +308,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
             </p>
           </div>
           <div className="text-right shrink-0">
-            <p className={`text-lg font-bold ${transfersRemaining <= 10 ? 'text-[#b5211e]' : 'text-[#262162]'}`}>
+            <p className={`text-lg font-bold ${transfersRemaining <= 10 ? 'text-[#b5211e]' : 'text-[#C9A84C]'}`}>
               {transfersRemaining}
             </p>
             <p className="text-xs text-muted-foreground whitespace-nowrap">/ {transferLimit} left</p>
@@ -332,14 +332,14 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Budget</p>
-              <p className={`text-2xl font-bold ${budgetRemaining < 0 ? 'text-[#b5211e]' : 'text-[#262162]'}`}>
+              <p className={`text-2xl font-bold ${budgetRemaining < 0 ? 'text-[#b5211e]' : 'text-[#C9A84C]'}`}>
                 {budgetRemaining} <span className="text-sm font-normal">remaining</span>
               </p>
               <p className="text-xs text-muted-foreground">{budgetUsed} / {budget} used</p>
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Players</p>
-              <p className={`text-2xl font-bold ${selectedIds.size === maxPlayers ? 'text-[#262162]' : 'text-gray-700'}`}>
+              <p className={`text-2xl font-bold ${selectedIds.size === maxPlayers ? 'text-[#C9A84C]' : 'text-[#aaaaaa]'}`}>
                 {selectedIds.size} / {maxPlayers}
               </p>
             </div>
@@ -368,10 +368,10 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                         isActive
                           ? belowMin || aboveMax
                             ? 'bg-red-600 text-white'
-                            : 'bg-[#262162] text-white'
+                            : 'bg-[#111111] text-white'
                           : belowMin || aboveMax
                           ? 'bg-red-50 text-red-600 ring-1 ring-red-300'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          : 'bg-[#141414] text-gray-600 hover:bg-gray-200'
                       }`}
                     >
                       {SHORT_LABELS[r]} {roleSelectedCount}/{min}–{max}
@@ -390,7 +390,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                       key={opt}
                       onClick={() => setSortBy(opt)}
                       className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
-                        sortBy === opt ? 'bg-[#262162] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                        sortBy === opt ? 'bg-[#111111] text-white' : 'bg-[#141414] text-gray-500 hover:bg-gray-200'
                       }`}
                     >
                       {opt === 'price' ? 'Price' : 'Ownership %'}
@@ -403,7 +403,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                     className={`flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium border transition-colors ${
                       showOnlyPlaying
                         ? 'bg-green-600 text-white border-green-600'
-                        : 'bg-white border-green-400 text-green-700 hover:bg-green-50'
+                        : 'bg-[#111111] border-green-400 text-green-700 hover:bg-green-50'
                     }`}
                   >
                     🟢 {showOnlyPlaying ? 'All Players' : 'Playing Only'}
@@ -430,12 +430,12 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                       key={player.id}
                       onClick={() => !disabled && togglePlayer(player)}
                       className={`flex items-center justify-between px-4 py-3 transition-colors ${
-                        isSelected ? 'bg-[#eeedf8]' : disabled ? 'opacity-50' : 'hover:bg-gray-50 cursor-pointer'
+                        isSelected ? 'bg-[#1c1c1c]' : disabled ? 'opacity-50' : 'hover:bg-[#0f0f0f] cursor-pointer'
                       } ${!disabled ? 'cursor-pointer' : 'cursor-not-allowed'}`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                          isSelected ? 'bg-[#262162] border-[#262162]' : 'border-gray-300'
+                          isSelected ? 'bg-[#111111] border-[#C9A84C]' : 'border-gray-300'
                         }`}>
                           {isSelected && <span className="text-white text-xs">✓</span>}
                         </div>
@@ -444,7 +444,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                             <Link
                               href={`/players/${player.id}`}
                               onClick={(e) => e.stopPropagation()}
-                              className="text-sm font-medium hover:underline hover:text-[#262162]"
+                              className="text-sm font-medium hover:underline hover:text-[#C9A84C]"
                             >
                               {player.name}
                             </Link>
@@ -458,7 +458,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                                   Not Playing
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-400 border border-gray-200">
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#141414] text-gray-400 border border-[#2a2a2a]">
                                   Unconfirmed
                                 </span>
                               )
@@ -496,7 +496,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                           </>
                         )}
                         <div className="flex items-center gap-0.5">
-                          <span className="text-sm font-semibold text-[#262162] w-8 text-right">
+                          <span className="text-sm font-semibold text-[#C9A84C] w-8 text-right">
                             {Number(player.price).toFixed(1)}
                           </span>
                           {creditTrends[player.id] === 'up'   && <span className="text-green-600 text-xs font-bold">↑</span>}
@@ -519,10 +519,10 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
               {selectedIds.size}/{maxPlayers} players
             </span>
             {!captainId && selectedIds.size > 0 && (
-              <span className="text-amber-600 text-xs font-semibold">⚠ Pick a captain</span>
+              <span className="text-[#C9A84C] text-xs font-semibold">⚠ Pick a captain</span>
             )}
             {captainId && !vcId && (
-              <span className="text-amber-600 text-xs font-semibold">⚠ Pick a vice captain</span>
+              <span className="text-[#C9A84C] text-xs font-semibold">⚠ Pick a vice captain</span>
             )}
             {captainId && vcId && (
               <span className="text-green-600 text-xs font-semibold">✓ C &amp; VC set</span>
@@ -551,7 +551,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
             </div>
           )}
           {success && (
-            <div className="bg-[#eeedf8] border border-[#262162]/20 text-[#262162] text-sm px-3 py-2 rounded-md">
+            <div className="bg-[#1c1c1c] border border-[#C9A84C]/20 text-[#C9A84C] text-sm px-3 py-2 rounded-md">
               Team saved successfully!
             </div>
           )}
@@ -559,7 +559,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
           <Button
             onClick={handleSave}
             disabled={isPending || isLocked}
-            className="w-full bg-[#262162] hover:bg-[#1a1748] text-white font-bold"
+            className="w-full bg-[#111111] hover:bg-[#0a0a0a] text-white font-bold"
           >
             {isLocked ? '🏏 Match In Progress' : isPending ? 'Saving...' : myTeam ? 'Update Team' : 'Save Team'}
           </Button>

@@ -42,7 +42,7 @@ function LoginForm() {
   return (
     <Card className="shadow-2xl border-0">
       <CardHeader className="text-center pb-2">
-        <CardTitle className="text-xl text-[#262162]">Sign In</CardTitle>
+        <CardTitle className="text-xl text-[#C9A84C]">Sign In</CardTitle>
       </CardHeader>
       <form onSubmit={handleLogin}>
         <CardContent className="space-y-4">
@@ -77,14 +77,14 @@ function LoginForm() {
         <CardFooter className="flex flex-col gap-3">
           <Button
             type="submit"
-            className="w-full bg-[#262162] hover:bg-[#1a1748] text-white font-semibold"
+            className="w-full bg-[#111111] hover:bg-[#0a0a0a] text-white font-semibold"
             disabled={loading}
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
           <p className="text-sm text-muted-foreground text-center">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-[#262162] hover:underline font-semibold">
+            <Link href="/signup" className="text-[#C9A84C] hover:underline font-semibold">
               Sign up
             </Link>
           </p>
@@ -96,10 +96,10 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#262162] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#111111] p-4">
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: 'repeating-linear-gradient(45deg, #fbf927 0, #fbf927 1px, transparent 0, transparent 50%)',
+        backgroundImage: 'repeating-linear-gradient(45deg, #C9A84C 0, #C9A84C 1px, transparent 0, transparent 50%)',
         backgroundSize: '20px 20px'
       }} />
 
@@ -112,12 +112,12 @@ export default function LoginPage() {
               alt="Slough Cricket Club"
               width={96}
               height={96}
-              className="rounded-full bg-white p-1 shadow-lg"
+              className="rounded-full bg-[#111111] p-1 shadow-lg"
               priority
             />
           </div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight">SLOUGH CC</h1>
-          <p className="text-[#fbf927] font-semibold mt-0.5">Fantasy League</p>
+          <p className="text-[#C9A84C] font-semibold mt-0.5">Fantasy League</p>
         </div>
 
         <Suspense fallback={<Card className="shadow-2xl border-0 p-8 text-center text-sm text-muted-foreground">Loading...</Card>}>
