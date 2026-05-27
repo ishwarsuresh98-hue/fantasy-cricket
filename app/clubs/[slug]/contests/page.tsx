@@ -1,22 +1,31 @@
-import { createClient } from '@/lib/supabase/server'
-import { getClubBySlug } from '@/lib/club'
-import { notFound } from 'next/navigation'
-import Link from 'next/link'
-import ContestLobby from '@/components/ContestLobby'
-import { cn } from '@/lib/utils'
+import { createClient }    from '@/lib/supabase/server'
+import { getClubBySlug }  from '@/lib/club'
+import { notFound }       from 'next/navigation'
+import Link               from 'next/link'
 import { netPrizePool, type PrizeSlot } from '@/lib/prizes'
-import type { ContestCategory } from '@/types'
+import type { ContestCategory }  from '@/types'
+import type { LobbyContest }     from '@/components/ContestLobby'
+import ContestPageClient         from '@/components/contests/ContestPageClient'
 
-// Map DB contest type → ContestLobby's ContestCategory
+// Map DB contest type → ContestCategory
 const TYPE_TO_CATEGORY: Record<string, ContestCategory> = {
-  head_to_head:   'h2h',
-  small_league:   'small_league',
-  mega:           'mega',
+  head_to_head:     'h2h',
+  small_league:     'small_league',
+  mega:             'mega',
   winner_takes_all: 'jackpot',
-  practice:       'practice',
-  // legacy public/private
-  public:         'small_league',
-  private:        'small_league',
+  practice:         'practice',
+  public:           'small_league',
+  private:          'small_league',
+}
+
+export interface MatchGroup {
+  matchId:     string
+  matchNumber: number
+  opponent:    string
+  matchDate:   string
+  venue:       string | null
+  isNext:      boolean
+  contests:    LobbyContest[]
 }
 
 export default async function ClubContestsPage({
@@ -58,30 +67,31 @@ export default async function ClubContestsPage({
   const myTeamId      = myTeam?.id ?? null
   const walletBalance = (wallet?.balance ?? 0) as number
 
-  // ── Upcoming matches (for this club, ordered by date) ─────────────────────
+  // ── All upcoming matches ───────────────────────────────────────────────────
   const { data: upcomingMatches } = await supabase
     .from('matches')
     .select('id, match_number, opponent, match_date, venue, status')
     .eq('season_id', season.id)
     .eq('status', 'upcoming')
     .order('match_date', { ascending: true })
-    .limit(5)
+    .limit(10)
 
-  const nextMatch = upcomingMatches?.[0] ?? null
+  const matchList = upcomingMatches ?? []
 
-  // ── Open contests for the next match ──────────────────────────────────────
-  let rawContests: Record<string, unknown>[] = []
-  if (nextMatch) {
+  // ── Open contests for ALL upcoming matches ─────────────────────────────────
+  const upcomingIds = matchList.map((m) => m.id)
+  let allMatchContests: Record<string, unknown>[] = []
+  if (upcomingIds.length > 0) {
     const { data } = await supabase
       .from('contests')
       .select('*')
-      .eq('match_id', nextMatch.id)
-      .or('status.eq.open,status.is.null')   // open or old rows without status
+      .in('match_id', upcomingIds)
+      .or('status.eq.open,status.is.null')
       .order('entry_fee', { ascending: true })
-    rawContests = (data ?? []) as Record<string, unknown>[]
+    allMatchContests = (data ?? []) as Record<string, unknown>[]
   }
 
-  // ── Also fetch old-style season-level public contests ─────────────────────
+  // ── Season-level contests (no match_id) ────────────────────────────────────
   const { data: seasonContests } = await supabase
     .from('contests')
     .select('*')
@@ -89,16 +99,14 @@ export default async function ClubContestsPage({
     .is('match_id', null)
     .or('status.eq.open,status.is.null')
     .order('created_at', { ascending: false })
-  const allContests = [...rawContests, ...((seasonContests ?? []) as Record<string, unknown>[])]
+  const seasonContestList = (seasonContests ?? []) as Record<string, unknown>[]
 
-  const contestIds = allContests.map((c) => c.id as string)
+  const allContests = [...allMatchContests, ...seasonContestList]
+  const contestIds  = allContests.map((c) => c.id as string)
 
-  // ── Entry counts + whether user has joined ─────────────────────────────────
+  // ── Entry counts + my entries ──────────────────────────────────────────────
   const { data: allEntries } = contestIds.length > 0
-    ? await supabase
-        .from('contest_entries')
-        .select('contest_id, fantasy_team_id')
-        .in('contest_id', contestIds)
+    ? await supabase.from('contest_entries').select('contest_id, fantasy_team_id').in('contest_id', contestIds)
     : { data: [] }
 
   const entryCountMap: Record<string, number> = {}
@@ -109,34 +117,30 @@ export default async function ClubContestsPage({
     if (myTeamId && e.fantasy_team_id === myTeamId) myEnteredIds.add(e.contest_id)
   }
 
-  // ── Map to LobbyContest interface ─────────────────────────────────────────
-  const lobbyContests = allContests.map((c) => {
-    const id          = c.id as string
-    const name        = (c.name ?? c.title ?? 'Contest') as string
-    const cType       = (c.type ?? 'public') as string
-    const entryFee    = (c.entry_fee ?? 0) as number
-    const maxTeams    = (c.max_entries ?? c.max_teams ?? 10) as number
-    const platFee     = (c.platform_fee_pct ?? 15) as number
-    const entryCount  = (c.total_entries ?? entryCountMap[id] ?? 0) as number
-    const guaranteed  = ((c.is_guaranteed ?? c.guaranteed_prize ?? false)) as boolean
-    const slots       = (c.prize_structure ?? []) as PrizeSlot[]
-    const prizePool   = guaranteed
-      ? (c.prize_pool ?? netPrizePool(entryFee, maxTeams, platFee)) as number
+  // ── Map raw DB row → LobbyContest ──────────────────────────────────────────
+  function toLobbyCcontest(c: Record<string, unknown>): LobbyContest {
+    const id         = c.id as string
+    const cType      = (c.type ?? 'public') as string
+    const entryFee   = Number(c.entry_fee ?? 0)
+    const maxTeams   = Number(c.max_entries ?? c.max_teams ?? 10)
+    const platFee    = Number(c.platform_fee_pct ?? 15)
+    const entryCount = Number(c.total_entries ?? entryCountMap[id] ?? 0)
+    const guaranteed = Boolean(c.is_guaranteed ?? c.guaranteed_prize ?? false)
+    const slots      = (c.prize_structure ?? []) as PrizeSlot[]
+    const prizePool  = guaranteed
+      ? Number(c.prize_pool ?? netPrizePool(entryFee, maxTeams, platFee))
       : netPrizePool(entryFee, entryCount, platFee)
 
-    // Build prize_description from prize_structure JSONB
     const prizeDesc = slots.length > 0
       ? slots.map((s: PrizeSlot) => {
           const amt = (prizePool * s.prize_pct / 100).toFixed(2)
-          return s.rank_from === s.rank_to
-            ? `${s.rank_from}st: £${amt}`
-            : `${s.rank_from}–${s.rank_to}: £${amt}`
+          return s.rank_from === s.rank_to ? `${s.rank_from}st: £${amt}` : `${s.rank_from}–${s.rank_to}: £${amt}`
         }).join(' • ')
       : (c.prize_description as string | null) ?? null
 
     return {
       id,
-      name,
+      name:              (c.name ?? c.title ?? 'Contest') as string,
       type:              'public' as const,
       contest_category:  TYPE_TO_CATEGORY[cType] ?? 'small_league',
       entry_fee:         entryFee,
@@ -147,8 +151,32 @@ export default async function ClubContestsPage({
       entry_count:       entryCount,
       is_joined:         myEnteredIds.has(id),
     }
-  })
+  }
 
+  // ── Group contests by match ────────────────────────────────────────────────
+  const contestsByMatch: Record<string, LobbyContest[]> = {}
+  for (const c of allMatchContests) {
+    const mid = c.match_id as string
+    if (!contestsByMatch[mid]) contestsByMatch[mid] = []
+    contestsByMatch[mid].push(toLobbyCcontest(c))
+  }
+
+  const matchGroups: MatchGroup[] = matchList
+    .filter((m) => (contestsByMatch[m.id] ?? []).length > 0)
+    .map((m, idx) => ({
+      matchId:     m.id,
+      matchNumber: m.match_number,
+      opponent:    m.opponent,
+      matchDate:   m.match_date,
+      venue:       m.venue ?? null,
+      isNext:      idx === 0,
+      contests:    contestsByMatch[m.id] ?? [],
+    }))
+
+  // Season-level contests go in their own group (no match)
+  const seasonLobby = seasonContestList.map(toLobbyCcontest)
+
+  const nextMatch     = matchList[0] ?? null
   const matchLockTime = nextMatch?.match_date ?? null
 
   return (
@@ -161,72 +189,31 @@ export default async function ClubContestsPage({
         </div>
         <Link
           href={`${base}/wallet`}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#fef9ee] border border-[#C9A84C]/30 text-[#C9A84C] font-bold text-sm hover:bg-[#fef3d0] transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#fef9ee] border border-[#C9A84C]/30 text-[#C9A84C] font-bold text-sm hover:bg-[#fef3d0] transition-colors self-start sm:self-auto"
         >
           💰 Wallet: £{walletBalance.toFixed(2)}
         </Link>
       </div>
 
-      {/* Next match banner */}
-      {nextMatch ? (
-        <div className="rounded-2xl bg-gradient-to-r from-[#C9A84C] to-[#a8892e] px-5 py-4 text-black">
-          <p className="text-xs font-bold uppercase tracking-widest opacity-70">Next Match · GW{nextMatch.match_number}</p>
-          <p className="text-xl font-black mt-0.5">vs {nextMatch.opponent}</p>
-          <p className="text-sm opacity-80 mt-0.5">
-            {new Date(nextMatch.match_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' })}
-            {nextMatch.venue ? ` · ${nextMatch.venue}` : ''}
-          </p>
-        </div>
-      ) : (
-        <div className="rounded-2xl bg-gray-100 border border-gray-200 px-5 py-4 text-center">
-          <p className="text-gray-500 text-sm">No upcoming matches scheduled.</p>
-        </div>
-      )}
-
       {/* No team warning */}
       {!myTeamId && (
         <div className="rounded-xl bg-[#fef9ee] border border-[#C9A84C]/30 px-4 py-3 text-sm text-[#a8892e] font-medium flex items-center justify-between gap-3">
           <span>Create a fantasy team to join contests.</span>
-          <Link href={`${base}/team`} className="bg-[#C9A84C] text-black px-3 py-1.5 rounded-lg text-xs font-black hover:bg-[#a8892e] transition-colors">
+          <Link href={`${base}/team`} className="bg-[#C9A84C] text-black px-3 py-1.5 rounded-lg text-xs font-black hover:bg-[#a8892e] transition-colors flex-shrink-0">
             Create Team
           </Link>
         </div>
       )}
 
-      {/* Contest lobby */}
-      {lobbyContests.length > 0 ? (
-        <ContestLobby
-          initialContests={lobbyContests}
-          walletBalance={walletBalance}
-          fantasyTeamId={myTeamId}
-          matchLockTime={matchLockTime}
-          matchId={nextMatch?.id}
-          clubSlug={slug}
-        />
-      ) : (
-        <div className="rounded-2xl bg-gray-50 border border-gray-200 py-16 text-center">
-          <p className="text-4xl mb-3">🏆</p>
-          <p className="text-gray-500 font-medium">No contests available yet.</p>
-          <p className="text-gray-400 text-sm mt-1">Check back once contests are published for the next match.</p>
-        </div>
-      )}
-
-      {/* Match selector for other upcoming matches */}
-      {(upcomingMatches?.length ?? 0) > 1 && (
-        <div className="space-y-2">
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Other Upcoming Matches</p>
-          <div className="flex flex-wrap gap-2">
-            {upcomingMatches!.slice(1).map((m) => (
-              <div key={m.id} className={cn(
-                'px-3 py-1.5 rounded-full text-xs font-semibold border',
-                'bg-white border-gray-200 text-gray-500',
-              )}>
-                GW{m.match_number} vs {m.opponent}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Client component handles filtering, sorting, and rendering */}
+      <ContestPageClient
+        matchGroups={matchGroups}
+        seasonContests={seasonLobby}
+        walletBalance={walletBalance}
+        fantasyTeamId={myTeamId}
+        matchLockTime={matchLockTime}
+        clubSlug={slug}
+      />
     </div>
   )
 }
