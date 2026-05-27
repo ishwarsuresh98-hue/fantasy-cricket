@@ -322,10 +322,10 @@ export default async function ClubDashboardPage({
             key={label}
             href={href}
             className={cn(
-              'flex flex-col items-center justify-center gap-1.5 rounded-2xl py-4 px-2 text-center font-bold text-sm transition-all active:scale-95 select-none',
+              'flex flex-col items-center justify-center gap-1.5 rounded-2xl py-4 px-2 text-center font-bold text-sm transition-all active:scale-95 select-none text-gray-900',
               primary
-                ? 'bg-[#C9A84C] text-[#0b0b0b] hover:bg-[#a8892e] shadow-lg shadow-[#C9A84C]/25 font-black'
-                : 'bg-[#e8e8e8] border border-[#C9A84C]/30 text-[#0b0b0b] hover:border-[#C9A84C] hover:bg-[#fef9ee]/50',
+                ? 'bg-[#C9A84C] text-black hover:bg-[#a8892e] shadow-lg shadow-[#C9A84C]/25 font-black'
+                : 'bg-[#e8e8e8] border border-[#C9A84C]/30 text-gray-800 hover:border-[#C9A84C] hover:bg-[#fef9ee]/50',
             )}
           >
             <span className="text-2xl">{icon}</span>

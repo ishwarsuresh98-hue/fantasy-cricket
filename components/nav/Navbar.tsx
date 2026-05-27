@@ -106,8 +106,8 @@ export default function Navbar({ profile, club }: NavbarProps) {
                   href={href}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     pathname === href || pathname.startsWith(href + '/')
-                      ? 'bg-[#C9A84C] text-[#0b0b0b] font-semibold'
-                      : 'text-[#0b0b0b]/70 hover:bg-gray-100 hover:text-[#0b0b0b]'
+                      ? 'bg-[#C9A84C] text-black font-semibold'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                   }`}
                 >
                   {label}
@@ -119,7 +119,7 @@ export default function Navbar({ profile, club }: NavbarProps) {
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     pathname.startsWith(adminHref)
                       ? 'bg-[#b5211e] text-white font-semibold'
-                      : 'text-[#0b0b0b]/70 hover:bg-gray-100 hover:text-[#0b0b0b]'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                   }`}
                 >
                   Admin
