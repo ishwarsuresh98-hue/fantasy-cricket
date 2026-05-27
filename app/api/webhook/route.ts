@@ -60,7 +60,11 @@ export async function POST(request: Request) {
   switch (event.type) {
     case 'payment_intent.succeeded': {
       const stripeIntent = event.data.object as Stripe.PaymentIntent
-      await handlePaymentSucceeded(admin, stripeIntent)
+      if (stripeIntent.metadata?.type === 'wallet_topup') {
+        await handleWalletTopup(admin, stripeIntent)
+      } else {
+        await handlePaymentSucceeded(admin, stripeIntent)
+      }
       break
     }
 
@@ -152,6 +156,71 @@ async function handlePaymentSucceeded(
   }
 
   console.log(`[webhook/stripe] Confirmed intent ${intent.id} — contest entry created`)
+}
+
+// ── Handler: wallet top-up ────────────────────────────────────────────────────
+async function handleWalletTopup(
+  admin: ReturnType<typeof createAdminClient>,
+  stripeIntent: Stripe.PaymentIntent,
+) {
+  const { wallet_id, amount: amountStr, user_id } = stripeIntent.metadata ?? {}
+  if (!wallet_id || !amountStr || !user_id) {
+    console.warn('[webhook/stripe] wallet_topup missing metadata fields', stripeIntent.metadata)
+    return
+  }
+
+  const amount = Number(amountStr)
+  if (isNaN(amount) || amount <= 0) {
+    console.warn('[webhook/stripe] wallet_topup invalid amount:', amountStr)
+    return
+  }
+
+  // Idempotency: skip if we've already recorded this Stripe PI as a credit
+  const { data: existing } = await admin
+    .from('wallet_transactions')
+    .select('id')
+    .eq('reference_id', stripeIntent.id)
+    .maybeSingle()
+
+  if (existing) {
+    console.log(`[webhook/stripe] wallet_topup ${stripeIntent.id} already processed — skip`)
+    return
+  }
+
+  // Increment wallet balance atomically
+  const { data: wallet } = await admin
+    .from('wallets')
+    .select('id, balance')
+    .eq('id', wallet_id)
+    .eq('user_id', user_id)
+    .maybeSingle()
+
+  if (!wallet) {
+    console.error('[webhook/stripe] wallet not found:', wallet_id)
+    return
+  }
+
+  const newBalance = Math.round((Number(wallet.balance) + amount) * 100) / 100
+  const { error: updateErr } = await admin
+    .from('wallets')
+    .update({ balance: newBalance, updated_at: new Date().toISOString() })
+    .eq('id', wallet_id)
+
+  if (updateErr) {
+    console.error('[webhook/stripe] wallet balance update error:', updateErr)
+    return
+  }
+
+  // Record the transaction
+  await admin.from('wallet_transactions').insert({
+    wallet_id,
+    type:         'credit',
+    amount,
+    description:  `Wallet top-up via card — £${amount}`,
+    reference_id: stripeIntent.id,
+  })
+
+  console.log(`[webhook/stripe] Credited £${amount} to wallet ${wallet_id} (balance: £${newBalance})`)
 }
 
 // ── Handler: payment failed ───────────────────────────────────────────────────

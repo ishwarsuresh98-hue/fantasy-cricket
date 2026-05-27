@@ -41,7 +41,8 @@ export default async function ClubAdminLayout({
           { href: `${base}/matches`,    label: 'Matches'    },
           { href: `${base}/boosters`,   label: 'Boosters'   },
           { href: `${base}/transfers`,  label: 'Transfers'  },
-          { href: `${base}/contests`,   label: 'Contests'   },
+          { href: `${base}/contests`,           label: 'Contests'          },
+          { href: `${base}/contest-templates`, label: 'Contest Templates' },
         ].map(({ href, label }) => (
           <Link
             key={href}

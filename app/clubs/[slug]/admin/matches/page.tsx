@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import type { Match } from '@/types'
 import MatchForm from '@/components/admin/MatchForm'
 import DeleteMatchButton from '@/components/admin/DeleteMatchButton'
+import GenerateContestsButton from '@/components/admin/GenerateContestsButton'
 
 const MAX_XI = 11
 
@@ -150,6 +151,12 @@ export default async function ClubAdminMatchesPage({
                     >
                       {match.status === 'completed' ? 'Edit Stats' : 'Enter Stats'}
                     </Link>
+                    {match.status === 'upcoming' && (
+                      <GenerateContestsButton
+                        matchId={match.id}
+                        matchLabel={`GW${match.match_number} vs ${match.opponent}`}
+                      />
+                    )}
                     <MatchForm seasonId={season.id} match={match} nextMatchNumber={match.match_number} />
                     <DeleteMatchButton
                       matchId={match.id}

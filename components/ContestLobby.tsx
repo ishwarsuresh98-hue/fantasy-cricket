@@ -3,8 +3,9 @@
 /**
  * ContestLobby — Dream11-style contest browser with real-time entry counts,
  * wallet-balance display, countdown timer, tab + category filters, prize
- * breakdown toggles, and a join flow that checks wallet balance first then
- * falls back to gateway (Flatpay) payment.
+ * breakdown toggles, and a join flow that:
+ *   1. Deducts from wallet if sufficient balance.
+ *   2. Shows Stripe inline checkout if balance is insufficient.
  *
  * Usage (from a server component):
  *   <ContestLobby
@@ -13,13 +14,15 @@
  *     fantasyTeamId={myTeam?.id ?? null}
  *     matchLockTime={nextMatch?.match_date ?? null}
  *     matchId={matchId}
+ *     clubSlug={slug}
  *   />
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { cn }           from '@/lib/utils'
-import type { ContestCategory } from '@/types'
+import { createClient }            from '@/lib/supabase/client'
+import { cn }                      from '@/lib/utils'
+import ContestPaymentWrapper       from '@/components/ContestPaymentWrapper'
+import type { ContestCategory }    from '@/types'
 
 // ── Local types ───────────────────────────────────────────────────────────────
 
@@ -43,6 +46,7 @@ interface ContestLobbyProps {
   fantasyTeamId:   string | null
   matchLockTime:   string | null
   matchId?:        string
+  clubSlug?:       string
 }
 
 type TabFilter  = 'all' | 'paid' | 'free' | 'my'
@@ -67,11 +71,11 @@ const TYPE_FILTERS: { value: TypeFilter; label: string; icon: string }[] = [
 ]
 
 const CATEGORY_COLOURS: Record<ContestCategory, string> = {
-  mega:         'bg-red-500   text-[#0b0b0b]',
-  h2h:          'bg-blue-500  text-[#0b0b0b]',
-  small_league: 'bg-[#f0f0f0] text-[#0b0b0b]',
-  jackpot:      'bg-[#a8892e] text-[#0b0b0b]',
-  practice:     'bg-green-600 text-[#0b0b0b]',
+  mega:         'bg-red-500   text-white',
+  h2h:          'bg-blue-500  text-white',
+  small_league: 'bg-gray-200  text-gray-700',
+  jackpot:      'bg-[#C9A84C] text-black',
+  practice:     'bg-green-600 text-white',
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -108,7 +112,7 @@ function useCountdown(targetIso: string | null): string {
 
   useEffect(() => {
     if (!targetIso) return
-    const target = targetIso   // narrowed to string
+    const target = targetIso
 
     function tick() {
       const ms = new Date(target).getTime() - Date.now()
@@ -134,9 +138,9 @@ function useCountdown(targetIso: string | null): string {
 
 type JoinStage =
   | 'idle'
-  | 'confirm'       // show wallet/gateway choice modal
-  | 'joining'       // API call in flight
-  | 'insufficient'  // wallet balance too low, offer gateway
+  | 'confirm'   // wallet confirm modal
+  | 'joining'   // API call in flight
+  | 'stripe'    // show Stripe checkout inline (insufficient balance or card choice)
 
 interface JoinState {
   contestId: string
@@ -151,7 +155,8 @@ export default function ContestLobby({
   walletBalance:   initialBalance,
   fantasyTeamId,
   matchLockTime,
-  matchId,
+  matchId:         _matchId,
+  clubSlug,
 }: ContestLobbyProps) {
   const countdown = useCountdown(matchLockTime)
   const isLocked  = countdown === 'LOCKED'
@@ -180,9 +185,7 @@ export default function ContestLobby({
           const { contest_id } = payload.new as { contest_id: string }
           setContests((prev) =>
             prev.map((c) =>
-              c.id === contest_id
-                ? { ...c, entry_count: c.entry_count + 1 }
-                : c,
+              c.id === contest_id ? { ...c, entry_count: c.entry_count + 1 } : c,
             ),
           )
         },
@@ -224,7 +227,9 @@ export default function ContestLobby({
       void doJoin(contestId, 'wallet')   // free — skip modal
       return
     }
-    setJoin({ contestId, stage: 'confirm', error: null })
+    // If wallet can cover it → confirm modal, else go straight to Stripe
+    const stage: JoinStage = balance >= entryFee ? 'confirm' : 'stripe'
+    setJoin({ contestId, stage, error: null })
   }
 
   const doJoin = useCallback(async (contestId: string, method: 'wallet' | 'gateway') => {
@@ -249,20 +254,15 @@ export default function ContestLobby({
 
       if (!res.ok) {
         if (res.status === 402) {
-          setJoin((prev) => prev ? { ...prev, stage: 'insufficient', error: null } : null)
+          // Insufficient balance — show Stripe checkout
+          setJoin((prev) => prev ? { ...prev, stage: 'stripe', error: null } : null)
           return
         }
         setJoin((prev) => prev ? { ...prev, stage: 'confirm', error: json.error ?? 'Something went wrong' } : null)
         return
       }
 
-      if (json.redirect_url) {
-        window.location.href = json.redirect_url
-        return
-      }
-
       if (json.joined) {
-        // Optimistically update local state
         if (json.wallet_balance != null) setBalance(json.wallet_balance)
         setContests((prev) =>
           prev.map((c) =>
@@ -284,26 +284,29 @@ export default function ContestLobby({
     })
   }
 
+  // ── The active contest being joined ───────────────────────────────────────
+  const activeContest = join ? contests.find((c) => c.id === join.contestId) : null
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-4">
 
       {/* ── Top bar: wallet + countdown ──────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#f0f0f0] px-5 py-4">
+      <div className="flex items-center justify-between gap-3 rounded-2xl bg-gray-100 border border-gray-200 px-5 py-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#0b0b0b]/40">Wallet</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Wallet</p>
           <p className="text-2xl font-black text-[#C9A84C] tabular-nums">
             £{balance.toFixed(2)}
           </p>
         </div>
-        <div className="h-10 w-px bg-[#f5f5f5]/10" />
+        <div className="h-10 w-px bg-gray-300" />
         <div className="text-right">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#0b0b0b]/40">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
             {isLocked ? 'Status' : 'Transfers close in'}
           </p>
           <p className={cn(
             'text-xl font-black tabular-nums font-mono',
-            isLocked ? 'text-red-400' : 'text-[#0b0b0b]',
+            isLocked ? 'text-red-500' : 'text-gray-900',
           )}>
             {countdown}
           </p>
@@ -311,7 +314,7 @@ export default function ContestLobby({
       </div>
 
       {/* ── Tab filters ──────────────────────────────────────────────────── */}
-      <div className="flex gap-1.5 rounded-xl bg-[#141414] p-1">
+      <div className="flex gap-1.5 rounded-xl bg-gray-100 border border-gray-200 p-1">
         {TABS.map(({ value, label }) => (
           <button
             key={value}
@@ -319,8 +322,8 @@ export default function ContestLobby({
             className={cn(
               'flex-1 py-1.5 rounded-lg text-xs font-bold transition-all',
               tab === value
-                ? 'bg-[#f0f0f0] text-[#C9A84C] shadow-sm'
-                : 'text-gray-500 hover:text-[#aaaaaa]',
+                ? 'bg-white text-[#C9A84C] shadow-sm border border-gray-200'
+                : 'text-gray-500 hover:text-gray-700',
             )}
           >
             {label}
@@ -342,8 +345,8 @@ export default function ContestLobby({
             className={cn(
               'flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all whitespace-nowrap',
               typeFilter === value
-                ? 'bg-[#f0f0f0] border-[#C9A84C] text-[#0b0b0b]'
-                : 'bg-[#f0f0f0] border-[#d8d8d8] text-gray-600 hover:border-[#C9A84C]/40',
+                ? 'bg-white border-[#C9A84C] text-gray-900'
+                : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-[#C9A84C]/40',
             )}
           >
             <span>{icon}</span>
@@ -361,7 +364,7 @@ export default function ContestLobby({
 
       {/* ── Contest cards ────────────────────────────────────────────────── */}
       {filtered.length === 0 ? (
-        <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] py-16 text-center">
+        <div className="rounded-2xl bg-gray-50 border border-gray-200 py-16 text-center">
           <p className="text-4xl mb-3">🏆</p>
           <p className="text-gray-500 text-sm">No contests match this filter.</p>
         </div>
@@ -383,14 +386,16 @@ export default function ContestLobby({
       )}
 
       {/* ── Join modal ───────────────────────────────────────────────────── */}
-      {join && (
+      {join && activeContest && (
         <JoinModal
-          contest={contests.find((c) => c.id === join.contestId)!}
+          contest={activeContest}
           walletBalance={balance}
           stage={join.stage}
           error={join.error}
+          fantasyTeamId={fantasyTeamId ?? ''}
+          clubSlug={clubSlug ?? ''}
           onWallet={() => doJoin(join.contestId, 'wallet')}
-          onGateway={() => doJoin(join.contestId, 'gateway')}
+          onStripe={() => setJoin((prev) => prev ? { ...prev, stage: 'stripe', error: null } : null)}
           onCancel={() => setJoin(null)}
         />
       )}
@@ -401,35 +406,35 @@ export default function ContestLobby({
 // ── ContestCard ───────────────────────────────────────────────────────────────
 
 interface ContestCardProps {
-  contest:       LobbyContest
-  walletBalance: number
-  fantasyTeamId: string | null
-  isLocked:      boolean
-  expanded:      boolean
+  contest:        LobbyContest
+  walletBalance:  number
+  fantasyTeamId:  string | null
+  isLocked:       boolean
+  expanded:       boolean
   onToggleExpand: () => void
-  onJoin:        () => void
+  onJoin:         () => void
 }
 
 function ContestCard({
   contest, walletBalance, fantasyTeamId, isLocked,
   expanded, onToggleExpand, onJoin,
 }: ContestCardProps) {
-  const pct     = contest.max_teams > 0 ? Math.round((contest.entry_count / contest.max_teams) * 100) : 0
-  const isFull  = contest.entry_count >= contest.max_teams
-  const isPaid  = contest.entry_fee > 0
+  const pct      = contest.max_teams > 0 ? Math.round((contest.entry_count / contest.max_teams) * 100) : 0
+  const isFull   = contest.entry_count >= contest.max_teams
+  const isPaid   = contest.entry_fee > 0
   const canAfford = walletBalance >= contest.entry_fee
 
   const payoutSlots = defaultPayoutSlots(contest.max_teams)
   const prizePool   = Number(contest.prize_pool ?? 0)
 
   return (
-    <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] shadow-sm overflow-hidden">
+    <div className="rounded-2xl bg-white border border-gray-200 shadow-sm overflow-hidden">
 
       {/* ── Card header strip ──────────────────────────────────────────── */}
       <div className="flex items-center gap-2 px-4 pt-3 pb-2">
         <span className={cn(
           'text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full',
-          CATEGORY_COLOURS[contest.contest_category] ?? 'bg-gray-200 text-[#aaaaaa]',
+          CATEGORY_COLOURS[contest.contest_category] ?? 'bg-gray-200 text-gray-600',
         )}>
           {contest.contest_category.replace('_', ' ')}
         </span>
@@ -455,14 +460,14 @@ function ContestCard({
           <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mt-0">
             Prize Pool
           </p>
-          <p className="text-sm font-semibold text-[#aaaaaa] mt-1 truncate">{contest.name}</p>
+          <p className="text-sm font-semibold text-gray-500 mt-1 truncate">{contest.name}</p>
         </div>
 
         {/* Right: entry fee + join */}
         <div className="flex flex-col items-end gap-2 flex-shrink-0">
           {isPaid ? (
             <div className="text-right">
-              <p className="text-base font-black text-[#d4d4d4]">{fmt(contest.entry_fee)}</p>
+              <p className="text-base font-black text-gray-800">{fmt(contest.entry_fee)}</p>
               <p className="text-[10px] text-gray-400">Entry Fee</p>
             </div>
           ) : (
@@ -476,15 +481,15 @@ function ContestCard({
               ✓ Joined
             </span>
           ) : isFull ? (
-            <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-[#141414] text-gray-400 text-xs font-black cursor-not-allowed">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-gray-100 text-gray-400 text-xs font-black cursor-not-allowed">
               Full
             </span>
           ) : !fantasyTeamId ? (
-            <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-[#141414] text-gray-400 text-xs font-black">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-gray-100 text-gray-400 text-xs font-black">
               Need a team
             </span>
           ) : isLocked ? (
-            <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-[#141414] text-gray-400 text-xs font-black cursor-not-allowed">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-gray-100 text-gray-400 text-xs font-black cursor-not-allowed">
               Locked
             </span>
           ) : (
@@ -493,11 +498,11 @@ function ContestCard({
               className={cn(
                 'px-4 py-1.5 rounded-xl text-xs font-black transition-all',
                 isPaid && !canAfford
-                  ? 'bg-[#a8892e] text-[#0b0b0b] hover:bg-[#a8892e]'  // needs top-up
-                  : 'bg-[#f0f0f0] text-[#0b0b0b] hover:bg-[#fafafa]',
+                  ? 'bg-[#C9A84C] text-black hover:bg-[#a8892e]'
+                  : 'bg-[#C9A84C] text-black hover:bg-[#a8892e]',
               )}
             >
-              {isPaid && !canAfford ? 'Top Up & Join' : 'Join'}
+              {isPaid && !canAfford ? 'Pay by Card' : 'Join'}
             </button>
           )}
         </div>
@@ -507,18 +512,18 @@ function ContestCard({
       <div className="px-4 pb-3">
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs text-gray-500">
-            <span className="font-bold text-[#aaaaaa]">{contest.entry_count}</span>
+            <span className="font-bold text-gray-700">{contest.entry_count}</span>
             {' '}/ {contest.max_teams} teams
           </span>
           <span className="text-xs text-gray-400">{pct}% full</span>
         </div>
-        <div className="h-1.5 bg-[#141414] rounded-full overflow-hidden">
+        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
           <div
             className={cn(
               'h-full rounded-full transition-all',
               pct >= 100 ? 'bg-red-500' :
               pct >= 80  ? 'bg-orange-400' :
-              pct >= 50  ? 'bg-[#C9A84C]' : 'bg-[#f0f0f0]',
+              pct >= 50  ? 'bg-[#C9A84C]' : 'bg-green-400',
             )}
             style={{ width: `${Math.min(100, pct)}%` }}
           />
@@ -530,14 +535,14 @@ function ContestCard({
         <>
           <button
             onClick={onToggleExpand}
-            className="w-full flex items-center justify-between px-4 py-2.5 border-t border-[#1e1e1e] text-xs font-bold text-[#C9A84C] hover:bg-[#1c1c1c] transition-colors"
+            className="w-full flex items-center justify-between px-4 py-2.5 border-t border-gray-100 text-xs font-bold text-[#C9A84C] hover:bg-gray-50 transition-colors"
           >
             <span>Prize Breakdown</span>
             <span className={cn('transition-transform', expanded ? 'rotate-180' : '')}>▾</span>
           </button>
 
           {expanded && (
-            <div className="px-4 pb-4 border-t border-[#1e1e1e] bg-[#f8f8f8]/60">
+            <div className="px-4 pb-4 border-t border-gray-100 bg-gray-50">
               <div className="pt-3 space-y-2">
                 {payoutSlots.map((slot) => {
                   const prize = Math.round((prizePool * slot.pct / 100) * 100) / 100
@@ -559,7 +564,7 @@ function ContestCard({
                   )
                 })}
                 {contest.prize_description && (
-                  <p className="text-xs text-gray-500 pt-1 border-t border-[#d8d8d8] mt-2">
+                  <p className="text-xs text-gray-500 pt-1 border-t border-gray-200 mt-2">
                     {contest.prize_description}
                   </p>
                 )}
@@ -579,100 +584,125 @@ interface JoinModalProps {
   walletBalance: number
   stage:         JoinStage
   error:         string | null
+  fantasyTeamId: string
+  clubSlug:      string
   onWallet:      () => void
-  onGateway:     () => void
+  onStripe:      () => void
   onCancel:      () => void
 }
 
-function JoinModal({ contest, walletBalance, stage, error, onWallet, onGateway, onCancel }: JoinModalProps) {
-  const canAfford  = walletBalance >= contest.entry_fee
-  const isJoining  = stage === 'joining'
-  const notEnough  = stage === 'insufficient'
+function JoinModal({
+  contest, walletBalance, stage, error,
+  fantasyTeamId, clubSlug,
+  onWallet, onStripe, onCancel,
+}: JoinModalProps) {
+  const canAfford = walletBalance >= contest.entry_fee
+  const isJoining = stage === 'joining'
+  const showStripe = stage === 'stripe'
+
+  // Build absolute return URL for Stripe
+  const returnUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/clubs/${clubSlug}/contests?payment=confirmed`
+    : `/clubs/${clubSlug}/contests?payment=confirmed`
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-      onClick={onCancel}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      onClick={showStripe ? undefined : onCancel}
     >
       <div
-        className="w-full max-w-sm bg-[#f0f0f0] rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="bg-[#f0f0f0] px-5 py-4">
-          <p className="text-xs font-bold uppercase tracking-widest text-[#0b0b0b]/50 mb-0.5">
-            {notEnough ? 'Insufficient Balance' : 'Confirm Entry'}
-          </p>
-          <p className="text-lg font-black text-[#0b0b0b] truncate">{contest.name}</p>
-        </div>
-
-        <div className="px-5 py-5 space-y-4">
-          {/* Summary */}
-          <div className="flex items-center justify-between rounded-xl bg-[#f8f8f8] px-4 py-3">
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-widest font-bold">Entry fee</p>
-              <p className="text-xl font-black text-[#C9A84C]">{fmt(contest.entry_fee)}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-gray-400 uppercase tracking-widest font-bold">Wallet</p>
-              <p className={cn('text-xl font-black', notEnough || !canAfford ? 'text-red-500' : 'text-green-600')}>
-                £{walletBalance.toFixed(2)}
+        {/* ── Stripe checkout ─────────────────────────────────────────── */}
+        {showStripe ? (
+          <>
+            <div className="bg-gray-50 border-b border-gray-200 px-5 py-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-0.5">
+                Pay by Card
+              </p>
+              <p className="text-lg font-black text-gray-900 truncate">{contest.name}</p>
+              <p className="text-sm text-gray-500 mt-0.5">
+                Entry fee: <span className="font-bold text-[#C9A84C]">{fmt(contest.entry_fee)}</span>
               </p>
             </div>
-          </div>
-
-          {/* Insufficient balance message */}
-          {(notEnough || !canAfford) && (
-            <div className="rounded-xl bg-[#fef9ee] border border-[#C9A84C]/30 px-4 py-3">
-              <p className="text-sm font-bold text-[#a8892e]">
-                You need £{(contest.entry_fee - walletBalance).toFixed(2)} more.
-              </p>
-              <p className="text-xs text-[#C9A84C] mt-0.5">
-                Pay by card via Flatpay, or top up your wallet first.
-              </p>
+            <div className="px-5 py-5">
+              <ContestPaymentWrapper
+                contestId={contest.id}
+                fantasyTeamId={fantasyTeamId}
+                entryFee={contest.entry_fee}
+                returnUrl={returnUrl}
+                onCancel={onCancel}
+              />
             </div>
-          )}
+          </>
+        ) : (
+          <>
+            {/* ── Confirm / joining header ────────────────────────────── */}
+            <div className="bg-gray-50 border-b border-gray-200 px-5 py-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-0.5">
+                Confirm Entry
+              </p>
+              <p className="text-lg font-black text-gray-900 truncate">{contest.name}</p>
+            </div>
 
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-              {error}
-            </p>
-          )}
+            <div className="px-5 py-5 space-y-4">
+              {/* Summary row */}
+              <div className="flex items-center justify-between rounded-xl bg-gray-50 border border-gray-200 px-4 py-3">
+                <div>
+                  <p className="text-xs text-gray-400 uppercase tracking-widest font-bold">Entry fee</p>
+                  <p className="text-xl font-black text-[#C9A84C]">{fmt(contest.entry_fee)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-400 uppercase tracking-widest font-bold">Wallet</p>
+                  <p className={cn('text-xl font-black', !canAfford ? 'text-red-500' : 'text-green-600')}>
+                    £{walletBalance.toFixed(2)}
+                  </p>
+                </div>
+              </div>
 
-          {/* Actions */}
-          <div className="space-y-2">
-            {canAfford && !notEnough && (
-              <button
-                onClick={onWallet}
-                disabled={isJoining}
-                className="w-full py-3 rounded-xl bg-[#f0f0f0] text-[#0b0b0b] font-black text-sm hover:bg-[#fafafa] disabled:opacity-60 transition-colors"
-              >
-                {isJoining ? 'Joining…' : `Pay from Wallet · £${walletBalance.toFixed(2)}`}
-              </button>
-            )}
-
-            <button
-              onClick={onGateway}
-              disabled={isJoining}
-              className={cn(
-                'w-full py-3 rounded-xl font-black text-sm transition-colors disabled:opacity-60',
-                canAfford && !notEnough
-                  ? 'border-2 border-[#d8d8d8] text-[#aaaaaa] hover:border-[#C9A84C]/40 hover:text-[#C9A84C]'
-                  : 'bg-[#a8892e] text-[#0b0b0b] hover:bg-[#a8892e]',
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                  {error}
+                </p>
               )}
-            >
-              {isJoining ? 'Redirecting…' : 'Pay by Card (Flatpay)'}
-            </button>
 
-            <button
-              onClick={onCancel}
-              disabled={isJoining}
-              className="w-full py-2.5 rounded-xl text-sm text-gray-500 hover:text-[#aaaaaa] disabled:opacity-50 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+              {/* Actions */}
+              <div className="space-y-2">
+                {canAfford && (
+                  <button
+                    onClick={onWallet}
+                    disabled={isJoining}
+                    className="w-full py-3 rounded-xl bg-[#C9A84C] text-black font-black text-sm hover:bg-[#a8892e] disabled:opacity-60 transition-colors"
+                  >
+                    {isJoining ? 'Joining…' : `Pay from Wallet · £${walletBalance.toFixed(2)}`}
+                  </button>
+                )}
+
+                <button
+                  onClick={onStripe}
+                  disabled={isJoining}
+                  className={cn(
+                    'w-full py-3 rounded-xl font-black text-sm transition-colors disabled:opacity-60',
+                    canAfford
+                      ? 'border-2 border-gray-200 text-gray-600 hover:border-[#C9A84C]/40 hover:text-[#C9A84C]'
+                      : 'bg-[#C9A84C] text-black hover:bg-[#a8892e]',
+                  )}
+                >
+                  {canAfford ? 'Pay by Card instead' : `Top up & Pay · £${contest.entry_fee.toFixed(2)}`}
+                </button>
+
+                <button
+                  onClick={onCancel}
+                  disabled={isJoining}
+                  className="w-full py-2.5 rounded-xl text-sm text-gray-400 hover:text-gray-600 disabled:opacity-50 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

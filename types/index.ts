@@ -158,26 +158,59 @@ export interface MatchPlayingXI {
   created_at: string
 }
 
-export type ContestType     = 'public' | 'private'
-export type ContestCategory = 'mega' | 'h2h' | 'small_league' | 'jackpot' | 'practice'
-export type PaymentGateway  = 'flatpay' | 'stripe'
-export type PaymentStatus   = 'pending' | 'confirmed' | 'failed'
+export type ContestType      = 'public' | 'private'
+export type ContestCategory  = 'mega' | 'h2h' | 'small_league' | 'jackpot' | 'practice'
+export type ContestSlotType  = 'head_to_head' | 'small_league' | 'mega' | 'winner_takes_all' | 'practice'
+export type PaymentGateway   = 'flatpay' | 'stripe'
+export type PaymentStatus    = 'pending' | 'confirmed' | 'failed'
+
+export interface PrizeSlot {
+  rank_from:  number
+  rank_to:    number
+  prize_pct:  number
+}
+
+export interface ContestTemplate {
+  id:                  string
+  club_id:             string
+  name:                string
+  type:                ContestSlotType
+  entry_fee:           number
+  max_entries:         number
+  max_teams_per_user:  number
+  platform_fee_pct:    number
+  prize_structure:     PrizeSlot[]
+  is_guaranteed:       boolean
+  is_active:           boolean
+  auto_create:         boolean
+  max_instances:       number
+  created_at:          string
+}
 
 export interface Contest {
-  id:                string
-  season_id:         string
-  match_id:          string | null
-  name:              string
-  type:              ContestType
-  contest_category:  ContestCategory
-  entry_code:        string | null
-  max_teams:         number
-  entry_fee:         number
-  prize_pool:        number
-  guaranteed_prize:  boolean
-  prize_description: string | null
-  created_by:        string
-  created_at:        string
+  id:                  string
+  season_id?:          string | null
+  match_id:            string | null
+  club_id?:            string | null
+  name:                string
+  title?:              string     // alias used by some DB versions
+  type:                ContestType | ContestSlotType
+  contest_category?:   ContestCategory
+  entry_code:          string | null
+  max_teams:           number
+  max_entries?:        number     // alias for max_teams in new schema
+  max_teams_per_user?: number
+  entry_fee:           number
+  prize_pool:          number
+  prize_structure?:    PrizeSlot[]
+  guaranteed_prize:    boolean
+  is_guaranteed?:      boolean   // alias in new schema
+  prize_description:   string | null
+  platform_fee_pct?:   number
+  status?:             'open' | 'locked' | 'completed'
+  total_entries?:      number    // denormalised count
+  created_by?:         string | null
+  created_at:          string
 }
 
 export interface ContestEntry {
