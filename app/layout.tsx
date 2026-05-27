@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Slough CC Fantasy",
-  description: "Fantasy cricket league for Slough Cricket Club",
+  title: "The XI",
+  description: "Multi-club fantasy cricket platform",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

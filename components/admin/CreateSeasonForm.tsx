@@ -12,10 +12,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { cn } from '@/lib/utils'
 
 interface CreateSeasonFormProps {
-  currentSeason: Season | null
+  currentSeason?: Season | null
+  clubId?: string
 }
 
-export default function CreateSeasonForm({ currentSeason }: CreateSeasonFormProps) {
+export default function CreateSeasonForm({ currentSeason, clubId }: CreateSeasonFormProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
@@ -44,6 +45,7 @@ export default function CreateSeasonForm({ currentSeason }: CreateSeasonFormProp
       start_date: startDate || null,
       end_date: endDate || null,
       is_active: true,
+      ...(clubId ? { club_id: clubId } : {}),
     })
 
     if (err) {

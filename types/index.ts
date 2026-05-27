@@ -1,3 +1,13 @@
+export interface Club {
+  id: string
+  name: string
+  slug: string
+  logo_url: string | null
+  location: string | null
+  primary_color: string | null
+  created_at: string
+}
+
 export type UserRole = 'admin' | 'member'
 export type PlayerRole = 'batsman' | 'bowler' | 'all_rounder' | 'wicket_keeper'
 export type MatchStatus = 'upcoming' | 'completed'

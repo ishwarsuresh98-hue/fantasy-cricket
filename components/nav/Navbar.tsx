@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import type { Profile } from '@/types'
+import type { Profile, Club } from '@/types'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
@@ -18,24 +18,37 @@ import { cn } from '@/lib/utils'
 import NotificationBell from '@/components/nav/NotificationBell'
 import NavCountdown from '@/components/nav/NavCountdown'
 
-const NAV_LINKS = [
-  { href: '/dashboard',  label: 'Dashboard' },
-  { href: '/team',       label: 'My Team' },
-  { href: '/transfers',  label: 'Transfers' },
-  { href: '/leaderboard', label: 'Leaderboard' },
-  { href: '/contests',   label: 'Contests' },
-  { href: '/teams',      label: 'Teams' },
-  { href: '/matches',    label: 'Matches' },
-  { href: '/rules',      label: 'Rules' },
-]
-
 interface NavbarProps {
   profile: Profile
+  club?: Club | null
 }
 
-export default function Navbar({ profile }: NavbarProps) {
+function buildNavLinks(slug: string | null) {
+  if (!slug) {
+    // The XI homepage — no club-scoped links
+    return []
+  }
+  const base = `/clubs/${slug}`
+  return [
+    { href: `${base}/dashboard`,   label: 'Dashboard' },
+    { href: `${base}/team`,        label: 'My Team' },
+    { href: `${base}/transfers`,   label: 'Transfers' },
+    { href: `${base}/leaderboard`, label: 'Leaderboard' },
+    { href: `${base}/contests`,    label: 'Contests' },
+    { href: `${base}/teams`,       label: 'Teams' },
+    { href: `${base}/matches`,     label: 'Matches' },
+    { href: `${base}/rules`,       label: 'Rules' },
+  ]
+}
+
+export default function Navbar({ profile, club }: NavbarProps) {
   const pathname = usePathname()
-  const router = useRouter()
+  const router   = useRouter()
+  const slug     = club?.slug ?? null
+  const navLinks = buildNavLinks(slug)
+
+  const homeHref = slug ? `/clubs/${slug}/dashboard` : '/'
+  const adminHref = slug ? `/clubs/${slug}/admin` : '/admin'
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -48,50 +61,74 @@ export default function Navbar({ profile }: NavbarProps) {
     <nav className="sticky top-0 z-50 bg-[#262162] border-b border-[#1a1748] shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
+
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-2.5 font-bold text-white">
-            <Image
-              src="/slough-cc-crest.png"
-              alt="Slough Cricket Club"
-              width={40}
-              height={40}
-              className="rounded-full object-contain bg-white p-0.5"
-              priority
-            />
+          <Link href={homeHref} className="flex items-center gap-2.5 font-bold text-white">
+            {club?.logo_url ? (
+              <Image
+                src={club.logo_url}
+                alt={`${club.name} crest`}
+                width={40}
+                height={40}
+                className="rounded-full object-contain bg-white p-0.5"
+                priority
+              />
+            ) : club ? (
+              /* Club without logo */
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl">
+                🏏
+              </div>
+            ) : (
+              /* The XI — text-only logo */
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#fbf927]">
+                <span className="text-[#262162] font-black text-sm">XI</span>
+              </div>
+            )}
             <div className="hidden sm:block leading-tight">
-              <span className="text-white font-extrabold tracking-tight">SLOUGH CC</span>
-              <span className="text-[#fbf927] ml-1.5 font-semibold text-sm">Fantasy</span>
+              {club ? (
+                <>
+                  <span className="text-white font-extrabold tracking-tight">{club.name.toUpperCase()}</span>
+                  <span className="text-[#fbf927] ml-1.5 font-semibold text-sm">Fantasy</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-white font-extrabold tracking-tight">THE</span>
+                  <span className="text-[#fbf927] ml-1.5 font-black tracking-tight">XI</span>
+                </>
+              )}
             </div>
           </Link>
 
-          {/* Nav links */}
-          <div className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname === href || pathname.startsWith(href + '/')
-                    ? 'bg-[#fbf927] text-[#262162] font-semibold'
-                    : 'text-white/80 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
-            {profile.role === 'admin' && (
-              <Link
-                href="/admin"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname.startsWith('/admin')
-                    ? 'bg-[#b5211e] text-white font-semibold'
-                    : 'text-white/80 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                Admin
-              </Link>
-            )}
-          </div>
+          {/* Nav links (club-scoped only) */}
+          {navLinks.length > 0 && (
+            <div className="hidden md:flex items-center gap-1">
+              {navLinks.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    pathname === href || pathname.startsWith(href + '/')
+                      ? 'bg-[#fbf927] text-[#262162] font-semibold'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  {label}
+                </Link>
+              ))}
+              {profile.role === 'admin' && (
+                <Link
+                  href={adminHref}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    pathname.startsWith(adminHref)
+                      ? 'bg-[#b5211e] text-white font-semibold'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  Admin
+                </Link>
+              )}
+            </div>
+          )}
 
           {/* Gameweek countdown */}
           <NavCountdown />
@@ -120,23 +157,33 @@ export default function Navbar({ profile }: NavbarProps) {
               </div>
               <DropdownMenuSeparator />
               <div className="md:hidden">
-                {NAV_LINKS.map(({ href, label }) => (
+                {navLinks.map(({ href, label }) => (
                   <DropdownMenuItem key={href} render={<Link href={href} />}>
                     {label}
                   </DropdownMenuItem>
                 ))}
-                {profile.role === 'admin' && (
-                  <DropdownMenuItem render={<Link href="/admin" />}>
+                {profile.role === 'admin' && navLinks.length > 0 && (
+                  <DropdownMenuItem render={<Link href={adminHref} />}>
                     Admin Panel
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
               </div>
+              {/* Back to The XI hub if inside a club */}
+              {club && (
+                <>
+                  <DropdownMenuItem render={<Link href="/" />}>
+                    ← All Clubs
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem onClick={handleSignOut} className="text-red-600 cursor-pointer">
                 Sign Out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
         </div>
       </div>
     </nav>
