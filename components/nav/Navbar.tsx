@@ -24,11 +24,8 @@ interface NavbarProps {
 }
 
 function buildNavLinks(slug: string | null) {
-  if (!slug) {
-    // The XI homepage — no club-scoped links
-    return []
-  }
-  const base = `/clubs/${slug}`
+  // With a club slug use club-scoped routes; without, fall back to (main) routes
+  const base = slug ? `/clubs/${slug}` : ''
   return [
     { href: `${base}/dashboard`,   label: 'Dashboard' },
     { href: `${base}/team`,        label: 'My Team' },
@@ -97,36 +94,34 @@ export default function Navbar({ profile, club }: NavbarProps) {
             </div>
           </Link>
 
-          {/* Nav links (club-scoped only) */}
-          {navLinks.length > 0 && (
-            <div className="hidden md:flex items-center gap-1">
-              {navLinks.map(({ href, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    pathname === href || pathname.startsWith(href + '/')
-                      ? 'bg-[#C9A84C] text-black font-semibold'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
-                >
-                  {label}
-                </Link>
-              ))}
-              {profile.role === 'admin' && (
-                <Link
-                  href={adminHref}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    pathname.startsWith(adminHref)
-                      ? 'bg-[#b5211e] text-white font-semibold'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
-                >
-                  Admin
-                </Link>
-              )}
-            </div>
-          )}
+          {/* Nav links */}
+          <div className="hidden md:flex items-center gap-1">
+            {navLinks.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  pathname === href || pathname.startsWith(href + '/')
+                    ? 'bg-[#C9A84C] text-black font-semibold'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
+            {profile.role === 'admin' && (
+              <Link
+                href={adminHref}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  pathname.startsWith(adminHref)
+                    ? 'bg-[#b5211e] text-white font-semibold'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                }`}
+              >
+                Admin
+              </Link>
+            )}
+          </div>
 
           {/* Gameweek countdown */}
           <NavCountdown />
@@ -160,7 +155,7 @@ export default function Navbar({ profile, club }: NavbarProps) {
                     {label}
                   </DropdownMenuItem>
                 ))}
-                {profile.role === 'admin' && navLinks.length > 0 && (
+                {profile.role === 'admin' && (
                   <DropdownMenuItem render={<Link href={adminHref} />}>
                     Admin Panel
                   </DropdownMenuItem>
