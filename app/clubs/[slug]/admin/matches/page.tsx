@@ -93,7 +93,7 @@ export default async function ClubAdminMatchesPage({
               {matches.map((match: Match) => (
                 <div key={match.id} className="flex items-center justify-between px-6 py-4 hover:bg-[#1c1c1c] transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="text-center min-w-[3rem] bg-[#111111] text-white rounded-lg py-1.5">
+                    <div className="text-center min-w-[3rem] bg-[#f0f0f0] text-[#0b0b0b] rounded-lg py-1.5">
                       <p className="text-xs opacity-70">Match</p>
                       <p className="font-bold text-lg leading-none">{match.match_number}</p>
                     </div>
@@ -112,7 +112,7 @@ export default async function ClubAdminMatchesPage({
                     <Badge className={
                       match.status === 'completed'
                         ? 'bg-[#141414] text-[#aaaaaa] hover:bg-[#141414]'
-                        : 'bg-[#1a1500] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#1a1500]'
+                        : 'bg-[#fef9ee] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#fef9ee]'
                     }>
                       {match.status === 'completed' ? 'Completed' : 'Upcoming'}
                     </Badge>
@@ -129,8 +129,8 @@ export default async function ClubAdminMatchesPage({
                             xiComplete
                               ? 'border-green-500 text-green-700 hover:bg-green-50'
                               : xiCount > 0
-                              ? 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#1a1500]'
-                              : 'border-gray-300 text-gray-600 hover:bg-[#0f0f0f]'
+                              ? 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#fef9ee]'
+                              : 'border-gray-300 text-gray-600 hover:bg-[#f8f8f8]'
                           )}
                         >
                           {xiComplete ? (

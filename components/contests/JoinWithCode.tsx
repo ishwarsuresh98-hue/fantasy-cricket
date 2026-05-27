@@ -77,7 +77,7 @@ export default function JoinWithCode({ myFantasyTeamId }: Props) {
   }
 
   return (
-    <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] px-5 py-4">
+    <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] px-5 py-4">
       <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">
         Join with Invite Code
       </p>
@@ -89,12 +89,12 @@ export default function JoinWithCode({ myFantasyTeamId }: Props) {
           onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
           placeholder="6-character code"
           maxLength={6}
-          className="flex-1 px-3 py-2.5 rounded-xl border border-[#2a2a2a] text-sm font-mono uppercase text-[#d4d4d4] placeholder:text-gray-400 placeholder:normal-case placeholder:font-sans tracking-widest focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
+          className="flex-1 px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm font-mono uppercase text-[#d4d4d4] placeholder:text-gray-400 placeholder:normal-case placeholder:font-sans tracking-widest focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
         />
         <button
           onClick={handleJoin}
           disabled={loading || code.trim().length < 6}
-          className="px-5 py-2.5 rounded-xl bg-[#111111] text-white text-sm font-bold hover:bg-[#0a0a0a] disabled:opacity-50 transition-colors whitespace-nowrap"
+          className="px-5 py-2.5 rounded-xl bg-[#f0f0f0] text-[#0b0b0b] text-sm font-bold hover:bg-[#fafafa] disabled:opacity-50 transition-colors whitespace-nowrap"
         >
           {loading ? 'Joining…' : 'Join League'}
         </button>

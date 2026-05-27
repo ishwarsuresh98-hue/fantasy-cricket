@@ -31,7 +31,7 @@ export default async function AdminPage() {
 
       {season ? (
         <Card className="border-[#C9A84C] border-2">
-          <CardHeader className="bg-[#111111] rounded-t-xl pb-3">
+          <CardHeader className="bg-[#f0f0f0] rounded-t-xl pb-3">
             <CardTitle className="text-sm text-[#C9A84C] font-semibold uppercase tracking-wide">Active Season</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
@@ -67,7 +67,7 @@ export default async function AdminPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-3">Add and manage club players available for selection.</p>
-            <Link href="/admin/players" className={cn(buttonVariants({ size: 'sm' }), 'bg-[#111111] hover:bg-[#0a0a0a]')}>
+            <Link href="/admin/players" className={cn(buttonVariants({ size: 'sm' }), 'bg-[#f0f0f0] hover:bg-[#fafafa]')}>
               Manage Players
             </Link>
           </CardContent>
@@ -78,7 +78,7 @@ export default async function AdminPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-3">Schedule matches and enter stats after each game.</p>
-            <Link href="/admin/matches" className={cn(buttonVariants({ size: 'sm' }), 'bg-[#111111] hover:bg-[#0a0a0a]')}>
+            <Link href="/admin/matches" className={cn(buttonVariants({ size: 'sm' }), 'bg-[#f0f0f0] hover:bg-[#fafafa]')}>
               Manage Matches
             </Link>
           </CardContent>
@@ -92,7 +92,7 @@ export default async function AdminPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-3">Create and manage public contests and private leagues.</p>
-            <Link href="/admin/contests" className={cn(buttonVariants({ size: 'sm' }), 'bg-[#111111] hover:bg-[#0a0a0a]')}>
+            <Link href="/admin/contests" className={cn(buttonVariants({ size: 'sm' }), 'bg-[#f0f0f0] hover:bg-[#fafafa]')}>
               Manage Contests
             </Link>
           </CardContent>

@@ -58,13 +58,13 @@ function CaptainModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-xs bg-[#111111] rounded-2xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-xs bg-[#f0f0f0] rounded-2xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-[#111111] px-5 py-4">
-          <p className="text-white font-bold text-base truncate">{player.name}</p>
-          <p className="text-white/60 text-xs">{player.price} cr</p>
+        <div className="bg-[#f0f0f0] px-5 py-4">
+          <p className="text-[#0b0b0b] font-bold text-base truncate">{player.name}</p>
+          <p className="text-[#0b0b0b]/60 text-xs">{player.price} cr</p>
         </div>
 
         <div className="p-4 space-y-2">
@@ -76,11 +76,11 @@ function CaptainModal({
               'w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all',
               isCaptain
                 ? 'bg-[#C9A84C] border-[#C9A84C] text-[#C9A84C]'
-                : 'border-[#2a2a2a] text-[#aaaaaa] hover:border-[#C9A84C] hover:bg-[#1a1500]',
+                : 'border-[#d8d8d8] text-[#aaaaaa] hover:border-[#C9A84C] hover:bg-[#fef9ee]',
               isLocked && 'opacity-50 cursor-not-allowed',
             )}
           >
-            <span className="w-8 h-8 rounded-full bg-[#C9A84C] text-[#C9A84C] font-black text-sm flex items-center justify-center flex-shrink-0">
+            <span className="w-8 h-8 rounded-full bg-[#C9A84C] text-[#0b0b0b] font-black text-sm flex items-center justify-center flex-shrink-0">
               C
             </span>
             <span>{isCaptain ? '★ Captain (tap to unset)' : 'Make Captain (2× points)'}</span>
@@ -94,7 +94,7 @@ function CaptainModal({
               'w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all',
               isViceCaptain
                 ? 'bg-gray-200 border-gray-300 text-[#aaaaaa]'
-                : 'border-[#2a2a2a] text-[#aaaaaa] hover:border-gray-400 hover:bg-[#0f0f0f]',
+                : 'border-[#d8d8d8] text-[#aaaaaa] hover:border-gray-400 hover:bg-[#f8f8f8]',
               isLocked && 'opacity-50 cursor-not-allowed',
             )}
           >
@@ -122,7 +122,7 @@ function CaptainModal({
 
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 w-7 h-7 rounded-full bg-[#111111]/20 hover:bg-[#111111]/30 flex items-center justify-center text-white text-sm transition-colors"
+          className="absolute top-3 right-3 w-7 h-7 rounded-full bg-[#f5f5f5]/20 hover:bg-[#f5f5f5]/30 flex items-center justify-center text-[#0b0b0b] text-sm transition-colors"
         >
           ✕
         </button>
@@ -160,8 +160,8 @@ export default function PitchView({
       <div className="relative rounded-2xl overflow-hidden bg-[#1a472a] min-h-[440px] flex flex-col items-center justify-center gap-3 p-6">
         <PitchLines />
         <div className="relative z-10 text-center">
-          <p className="text-white/60 text-sm font-medium">No players selected yet</p>
-          <p className="text-white/40 text-xs mt-1">Pick players from the pool on the left</p>
+          <p className="text-[#0b0b0b]/60 text-sm font-medium">No players selected yet</p>
+          <p className="text-[#0b0b0b]/40 text-xs mt-1">Pick players from the pool on the left</p>
         </div>
       </div>
     )
@@ -182,7 +182,7 @@ export default function PitchView({
             return (
               <div key={role} className="flex flex-col items-center gap-1">
                 {/* Role label strip */}
-                <span className="text-[10px] font-bold uppercase tracking-widest text-white/50 leading-none">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#0b0b0b]/50 leading-none">
                   {label}
                 </span>
                 {/* Player cards */}
@@ -221,7 +221,7 @@ export default function PitchView({
         {/* Locked overlay */}
         {isLocked && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px] rounded-2xl">
-            <div className="bg-[#111111]/90 rounded-xl px-5 py-3 text-center shadow-lg">
+            <div className="bg-[#f5f5f5]/90 rounded-xl px-5 py-3 text-center shadow-lg">
               <p className="text-2xl mb-1">🏏</p>
               <p className="text-sm font-bold text-[#C9A84C]">Match In Progress</p>
               <p className="text-xs text-gray-500">Team locked while playing</p>
@@ -264,10 +264,10 @@ function PitchLines() {
       {/* Centre strip */}
       <div className="absolute left-1/2 top-[15%] bottom-[15%] w-[14%] -translate-x-1/2 bg-[#c8a84b]/15 rounded-sm" />
       {/* Crease lines */}
-      <div className="absolute left-[10%] right-[10%] top-[22%] h-px bg-[#111111]/10" />
-      <div className="absolute left-[10%] right-[10%] bottom-[22%] h-px bg-[#111111]/10" />
+      <div className="absolute left-[10%] right-[10%] top-[22%] h-px bg-[#f5f5f5]/10" />
+      <div className="absolute left-[10%] right-[10%] bottom-[22%] h-px bg-[#f5f5f5]/10" />
       {/* Faint horizontal dividers between rows */}
-      <div className="absolute left-0 right-0 top-1/2 h-px bg-[#111111]/5" />
+      <div className="absolute left-0 right-0 top-1/2 h-px bg-[#f5f5f5]/5" />
     </div>
   )
 }

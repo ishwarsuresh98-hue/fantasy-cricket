@@ -7,7 +7,6 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import Image from 'next/image'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function SignupPage() {
@@ -52,28 +51,22 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#111111] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-white p-4">
       {/* Background pattern */}
-      <div className="absolute inset-0 opacity-5" style={{
+      <div className="absolute inset-0 opacity-[0.03]" style={{
         backgroundImage: 'repeating-linear-gradient(45deg, #C9A84C 0, #C9A84C 1px, transparent 0, transparent 50%)',
         backgroundSize: '20px 20px'
       }} />
 
       <div className="relative w-full max-w-md">
-        {/* Club branding */}
+        {/* Branding */}
         <div className="text-center mb-6">
           <div className="flex justify-center mb-3">
-            <Image
-              src="/slough-cc-crest.png"
-              alt="Slough Cricket Club"
-              width={96}
-              height={96}
-              className="rounded-full bg-[#111111] p-1 shadow-lg"
-              priority
-            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/the-xi-logo.svg" alt="The XI" style={{ height: 100 }} />
           </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">SLOUGH CC</h1>
-          <p className="text-[#C9A84C] font-semibold mt-0.5">Fantasy League</p>
+          <h1 className="text-3xl font-extrabold text-[#0b0b0b] tracking-tight">THE XI</h1>
+          <p className="text-[#C9A84C] font-semibold mt-0.5">Fantasy Cricket</p>
         </div>
 
         <Card className="shadow-2xl border-0">
@@ -148,11 +141,7 @@ export default function SignupPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-3">
-                  <Button
-                    type="submit"
-                    className="w-full bg-[#111111] hover:bg-[#0a0a0a] text-white font-semibold"
-                    disabled={loading}
-                  >
+                  <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'Creating account...' : 'Create Account'}
                   </Button>
                   <p className="text-sm text-muted-foreground text-center">

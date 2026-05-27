@@ -42,7 +42,7 @@ const ROLE_COLORS: Record<string, string> = {
   batsman: 'bg-blue-100 text-blue-700',
   bowler: 'bg-[#fceaea] text-[#b5211e]',
   all_rounder: 'bg-[#1c1c1c] text-[#C9A84C]',
-  wicket_keeper: 'bg-[#1a1500] text-[#C9A84C]',
+  wicket_keeper: 'bg-[#fef9ee] text-[#C9A84C]',
 }
 
 const ROLE_CONSTRAINTS: Record<string, { min: number; max: number; label: string }> = {
@@ -265,7 +265,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
       )}
 
       {freeHitActive && !isLocked && (
-        <div className="flex items-center gap-2 bg-[#1a1500] border border-[#C9A84C] rounded-lg px-4 py-3">
+        <div className="flex items-center gap-2 bg-[#fef9ee] border border-[#C9A84C] rounded-lg px-4 py-3">
           <span className="text-xl">🆓</span>
           <div>
             <p className="text-sm font-semibold text-[#C9A84C]">Free Hit Active — No Budget Limit!</p>
@@ -367,8 +367,8 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                         isActive
                           ? belowMin || aboveMax
-                            ? 'bg-red-600 text-white'
-                            : 'bg-[#111111] text-white'
+                            ? 'bg-red-600 text-[#0b0b0b]'
+                            : 'bg-[#f0f0f0] text-[#0b0b0b]'
                           : belowMin || aboveMax
                           ? 'bg-red-50 text-red-600 ring-1 ring-red-300'
                           : 'bg-[#141414] text-gray-600 hover:bg-gray-200'
@@ -390,7 +390,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                       key={opt}
                       onClick={() => setSortBy(opt)}
                       className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
-                        sortBy === opt ? 'bg-[#111111] text-white' : 'bg-[#141414] text-gray-500 hover:bg-gray-200'
+                        sortBy === opt ? 'bg-[#f0f0f0] text-[#0b0b0b]' : 'bg-[#141414] text-gray-500 hover:bg-gray-200'
                       }`}
                     >
                       {opt === 'price' ? 'Price' : 'Ownership %'}
@@ -402,8 +402,8 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                     onClick={() => setShowOnlyPlaying((v) => !v)}
                     className={`flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium border transition-colors ${
                       showOnlyPlaying
-                        ? 'bg-green-600 text-white border-green-600'
-                        : 'bg-[#111111] border-green-400 text-green-700 hover:bg-green-50'
+                        ? 'bg-green-600 text-[#0b0b0b] border-green-600'
+                        : 'bg-[#f0f0f0] border-green-400 text-green-700 hover:bg-green-50'
                     }`}
                   >
                     🟢 {showOnlyPlaying ? 'All Players' : 'Playing Only'}
@@ -430,14 +430,14 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                       key={player.id}
                       onClick={() => !disabled && togglePlayer(player)}
                       className={`flex items-center justify-between px-4 py-3 transition-colors ${
-                        isSelected ? 'bg-[#1c1c1c]' : disabled ? 'opacity-50' : 'hover:bg-[#0f0f0f] cursor-pointer'
+                        isSelected ? 'bg-[#1c1c1c]' : disabled ? 'opacity-50' : 'hover:bg-[#f8f8f8] cursor-pointer'
                       } ${!disabled ? 'cursor-pointer' : 'cursor-not-allowed'}`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                          isSelected ? 'bg-[#111111] border-[#C9A84C]' : 'border-gray-300'
+                          isSelected ? 'bg-[#f0f0f0] border-[#C9A84C]' : 'border-gray-300'
                         }`}>
-                          {isSelected && <span className="text-white text-xs">✓</span>}
+                          {isSelected && <span className="text-[#0b0b0b] text-xs">✓</span>}
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5 flex-wrap">
@@ -458,7 +458,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                                   Not Playing
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#141414] text-gray-400 border border-[#2a2a2a]">
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#141414] text-gray-400 border border-[#d8d8d8]">
                                   Unconfirmed
                                 </span>
                               )
@@ -481,7 +481,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                               onClick={(e) => { e.stopPropagation(); setCaptain(player.id) }}
                               className={`px-2 py-0.5 rounded text-xs font-bold border transition-colors ${
                                 captainId === player.id
-                                  ? 'bg-yellow-400 border-yellow-400 text-white'
+                                  ? 'bg-yellow-400 border-yellow-400 text-[#0b0b0b]'
                                   : 'border-gray-300 text-gray-500 hover:border-yellow-400 hover:text-yellow-600'
                               }`}
                             >C</button>
@@ -489,7 +489,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                               onClick={(e) => { e.stopPropagation(); setVC(player.id) }}
                               className={`px-2 py-0.5 rounded text-xs font-bold border transition-colors ${
                                 vcId === player.id
-                                  ? 'bg-blue-400 border-blue-400 text-white'
+                                  ? 'bg-blue-400 border-blue-400 text-[#0b0b0b]'
                                   : 'border-gray-300 text-gray-500 hover:border-blue-400 hover:text-blue-600'
                               }`}
                             >VC</button>
@@ -559,7 +559,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
           <Button
             onClick={handleSave}
             disabled={isPending || isLocked}
-            className="w-full bg-[#111111] hover:bg-[#0a0a0a] text-white font-bold"
+            className="w-full bg-[#f0f0f0] hover:bg-[#fafafa] text-[#0b0b0b] font-bold"
           >
             {isLocked ? '🏏 Match In Progress' : isPending ? 'Saving...' : myTeam ? 'Update Team' : 'Save Team'}
           </Button>

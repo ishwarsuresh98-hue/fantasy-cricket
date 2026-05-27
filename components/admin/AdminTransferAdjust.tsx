@@ -72,7 +72,7 @@ export default function AdminTransferAdjust({ fantasyTeamId, teamName }: AdminTr
       {error && <p className="text-xs text-red-600">{error}</p>}
       <div className="flex gap-1">
         <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setOpen(false)}>Cancel</Button>
-        <Button size="sm" className="h-7 text-xs bg-[#111111] hover:bg-[#0a0a0a]" onClick={handleSubmit} disabled={saving}>
+        <Button size="sm" className="h-7 text-xs bg-[#f0f0f0] hover:bg-[#fafafa]" onClick={handleSubmit} disabled={saving}>
           {saving ? 'Saving…' : 'Save'}
         </Button>
       </div>

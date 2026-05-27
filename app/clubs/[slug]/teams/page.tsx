@@ -143,7 +143,7 @@ export default async function ClubTeamsPage({
           {refLabel && <span className="ml-2 text-sm">— squads for <span className="font-medium">{refLabel}</span></span>}
         </p>
         {hiddenBehindDeadline && (
-          <p className="mt-2 text-sm text-[#C9A84C] bg-[#1a1500] border border-[#C9A84C]/30 rounded-lg px-3 py-2 inline-flex items-center gap-1.5">
+          <p className="mt-2 text-sm text-[#C9A84C] bg-[#fef9ee] border border-[#C9A84C]/30 rounded-lg px-3 py-2 inline-flex items-center gap-1.5">
             🔒 Transfer changes for{' '}
             <span className="font-medium">Match {nextMatch!.match_number} vs {nextMatch!.opponent}</span>{' '}
             are hidden until the deadline passes. Showing last locked squads.
@@ -168,31 +168,31 @@ export default async function ClubTeamsPage({
 
             return (
               <Card key={team.id} className={cn('flex flex-col transition-shadow hover:shadow-md', isMe && 'ring-2 ring-[#C9A84C]')}>
-                <CardHeader className="pb-3 bg-[#111111] rounded-t-xl">
+                <CardHeader className="pb-3 bg-[#f0f0f0] rounded-t-xl">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span className={cn('flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold',
-                        rank === 1 ? 'bg-[#C9A84C] text-[#C9A84C]' :
+                        rank === 1 ? 'bg-[#C9A84C] text-[#0b0b0b]' :
                         rank === 2 ? 'bg-gray-300 text-[#aaaaaa]'   :
-                        rank === 3 ? 'bg-orange-200 text-orange-800' : 'bg-[#111111]/20 text-white')}>
+                        rank === 3 ? 'bg-orange-200 text-orange-800' : 'bg-[#f5f5f5]/20 text-[#0b0b0b]')}>
                         {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}
                       </span>
                       <div className="min-w-0">
-                        <CardTitle className="text-white text-sm font-semibold truncate flex items-center gap-1.5">
+                        <CardTitle className="text-[#0b0b0b] text-sm font-semibold truncate flex items-center gap-1.5">
                           {team.team_name}
-                          {isMe && <Badge className="text-[10px] px-1.5 py-0 bg-[#C9A84C] text-[#C9A84C] hover:bg-[#C9A84C] font-bold flex-shrink-0">You</Badge>}
+                          {isMe && <Badge className="text-[10px] px-1.5 py-0 bg-[#C9A84C] text-[#0b0b0b] hover:bg-[#C9A84C] font-bold flex-shrink-0">You</Badge>}
                         </CardTitle>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <Avatar className="h-4 w-4">
-                            <AvatarFallback className="text-[8px] bg-[#111111]/20 text-white font-bold">{owner.slice(0, 2).toUpperCase()}</AvatarFallback>
+                            <AvatarFallback className="text-[8px] bg-[#f5f5f5]/20 text-[#0b0b0b] font-bold">{owner.slice(0, 2).toUpperCase()}</AvatarFallback>
                           </Avatar>
-                          <p className="text-white/70 text-xs truncate">{owner}</p>
+                          <p className="text-[#0b0b0b]/70 text-xs truncate">{owner}</p>
                         </div>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="text-[#C9A84C] font-bold text-lg leading-none">{Number(team.total_points).toFixed(1)}</p>
-                      <p className="text-white/60 text-[10px] mt-0.5">pts</p>
+                      <p className="text-[#0b0b0b]/60 text-[10px] mt-0.5">pts</p>
                     </div>
                   </div>
                 </CardHeader>
@@ -214,7 +214,7 @@ export default async function ClubTeamsPage({
                 </CardContent>
 
                 <div className="px-4 py-3 border-t border-[#1e1e1e]">
-                  <Link href={`${base}/teams/${team.id}`} className="flex items-center justify-center w-full px-4 py-2 rounded-lg bg-[#111111] text-white text-sm font-semibold hover:bg-[#0a0a0a] transition-colors">
+                  <Link href={`${base}/teams/${team.id}`} className="flex items-center justify-center w-full px-4 py-2 rounded-lg bg-[#f0f0f0] text-[#0b0b0b] text-sm font-semibold hover:bg-[#fafafa] transition-colors">
                     View History
                   </Link>
                 </div>

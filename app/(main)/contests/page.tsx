@@ -105,7 +105,7 @@ export default async function ContestsPage() {
         </div>
 
         {publicContests.length === 0 ? (
-          <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] p-12 text-center">
+          <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] p-12 text-center">
             <div className="text-3xl mb-2">📭</div>
             <p className="text-gray-500 text-sm">No public contests yet.</p>
             {/* Admin would create them from /admin/contests */}
@@ -201,19 +201,19 @@ function ContestCard({
 
   return (
     <div className={cn(
-      'flex flex-col rounded-2xl border-2 bg-[#111111] overflow-hidden transition-shadow hover:shadow-md',
-      alreadyJoined ? 'border-[#C9A84C]' : 'border-[#2a2a2a]',
+      'flex flex-col rounded-2xl border-2 bg-[#f0f0f0] overflow-hidden transition-shadow hover:shadow-md',
+      alreadyJoined ? 'border-[#C9A84C]' : 'border-[#d8d8d8]',
     )}>
       {/* Card header */}
-      <div className="bg-[#111111] px-4 py-3 flex items-start justify-between gap-2">
+      <div className="bg-[#f0f0f0] px-4 py-3 flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-white font-bold text-sm truncate">{contest.name}</p>
+          <p className="text-[#0b0b0b] font-bold text-sm truncate">{contest.name}</p>
         </div>
         <span className={cn(
           'flex-shrink-0 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full',
           isPrivate
-            ? 'bg-[#C9A84C] text-[#C9A84C]'
-            : 'bg-[#111111]/20 text-white',
+            ? 'bg-[#C9A84C] text-[#0b0b0b]'
+            : 'bg-[#f5f5f5]/20 text-[#0b0b0b]',
         )}>
           {isPrivate ? '🔒 Private' : '🌐 Public'}
         </span>
@@ -222,7 +222,7 @@ function ContestCard({
       <div className="p-4 flex flex-col gap-3 flex-1">
         {/* Prize */}
         {contest.prize_description && (
-          <div className="bg-[#1a1500] border border-[#C9A84C]/40 rounded-xl px-3 py-2">
+          <div className="bg-[#fef9ee] border border-[#C9A84C]/40 rounded-xl px-3 py-2">
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A84C]/60 mb-0.5">🏆 Prize</p>
             <p className="text-xs text-[#aaaaaa] leading-snug">{contest.prize_description}</p>
           </div>
@@ -240,7 +240,7 @@ function ContestCard({
             <div
               className={cn(
                 'h-full rounded-full transition-all',
-                isFull ? 'bg-red-400' : fillPct > 80 ? 'bg-orange-400' : 'bg-[#111111]',
+                isFull ? 'bg-red-400' : fillPct > 80 ? 'bg-orange-400' : 'bg-[#f0f0f0]',
               )}
               style={{ width: `${fillPct}%` }}
             />
@@ -273,7 +273,7 @@ function ContestCard({
               'flex-1 text-center py-1.5 rounded-lg text-xs font-bold border transition-colors',
               alreadyJoined
                 ? 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#1c1c1c]'
-                : 'border-[#2a2a2a] text-gray-500 hover:border-gray-400',
+                : 'border-[#d8d8d8] text-gray-500 hover:border-gray-400',
             )}
           >
             View Leaderboard →

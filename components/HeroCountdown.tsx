@@ -28,12 +28,12 @@ function splitCountdown(ms: number) {
 function DigitBox({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex flex-col items-center">
-      <div className="bg-[#0a0a0a] rounded-xl px-5 py-4 min-w-[72px] sm:min-w-[88px] text-center shadow-inner border border-white/10">
+      <div className="bg-[#fafafa] rounded-xl px-5 py-4 min-w-[72px] sm:min-w-[88px] text-center shadow-inner border border-white/10">
         <span className="text-4xl sm:text-5xl font-black tabular-nums text-[#C9A84C] tracking-tight leading-none">
           {String(value).padStart(2, '0')}
         </span>
       </div>
-      <span className="text-xs font-semibold text-white/50 uppercase tracking-widest mt-2">{label}</span>
+      <span className="text-xs font-semibold text-[#0b0b0b]/50 uppercase tracking-widest mt-2">{label}</span>
     </div>
   )
 }
@@ -48,9 +48,9 @@ export default function HeroCountdown({ deadline, lockUntil, matchLabel, matchDa
   // ── No upcoming matches ─────────────────────────────────────────────────────
   if (!deadline) {
     return (
-      <div className="w-full rounded-2xl bg-[#111111] px-6 py-8 flex flex-col items-center gap-3 text-center shadow-lg">
+      <div className="w-full rounded-2xl bg-[#f0f0f0] px-6 py-8 flex flex-col items-center gap-3 text-center shadow-lg">
         <span className="text-4xl">📅</span>
-        <p className="text-lg font-bold text-white/70 uppercase tracking-wider">Next Gameweek Not Scheduled Yet</p>
+        <p className="text-lg font-bold text-[#0b0b0b]/70 uppercase tracking-wider">Next Gameweek Not Scheduled Yet</p>
       </div>
     )
   }
@@ -61,9 +61,9 @@ export default function HeroCountdown({ deadline, lockUntil, matchLabel, matchDa
   // ── Post lock window — silent (same as "not scheduled") ────────────────────
   if (toDeadline <= 0 && (toLockEnd === null || toLockEnd <= 0)) {
     return (
-      <div className="w-full rounded-2xl bg-[#111111] px-6 py-8 flex flex-col items-center gap-3 text-center shadow-lg">
+      <div className="w-full rounded-2xl bg-[#f0f0f0] px-6 py-8 flex flex-col items-center gap-3 text-center shadow-lg">
         <span className="text-4xl">📅</span>
-        <p className="text-lg font-bold text-white/70 uppercase tracking-wider">Next Gameweek Not Scheduled Yet</p>
+        <p className="text-lg font-bold text-[#0b0b0b]/70 uppercase tracking-wider">Next Gameweek Not Scheduled Yet</p>
       </div>
     )
   }
@@ -72,11 +72,11 @@ export default function HeroCountdown({ deadline, lockUntil, matchLabel, matchDa
   if (toDeadline <= 0 && toLockEnd !== null && toLockEnd > 0) {
     const { h, m, s } = splitCountdown(toLockEnd)
     return (
-      <div className="w-full rounded-2xl bg-[#111111] px-6 py-8 flex flex-col items-center gap-6 shadow-lg">
+      <div className="w-full rounded-2xl bg-[#f0f0f0] px-6 py-8 flex flex-col items-center gap-6 shadow-lg">
         <div className="flex flex-col items-center gap-1">
           <span className="text-3xl">🏏</span>
-          <p className="text-xl sm:text-2xl font-black text-white uppercase tracking-widest">Match In Progress</p>
-          <p className="text-sm text-white/50">Team locked — unlocks when matches finish</p>
+          <p className="text-xl sm:text-2xl font-black text-[#0b0b0b] uppercase tracking-widest">Match In Progress</p>
+          <p className="text-sm text-[#0b0b0b]/50">Team locked — unlocks when matches finish</p>
         </div>
         <div className="flex items-end gap-3 sm:gap-5">
           <DigitBox value={h} label="Hours" />
@@ -96,22 +96,22 @@ export default function HeroCountdown({ deadline, lockUntil, matchLabel, matchDa
 
   return (
     <div className={`w-full rounded-2xl px-6 py-8 flex flex-col items-center gap-6 shadow-lg transition-colors ${
-      urgent ? 'bg-[#3d1a1a]' : 'bg-[#111111]'
+      urgent ? 'bg-[#3d1a1a]' : 'bg-[#f0f0f0]'
     }`}>
       <div className="flex flex-col items-center gap-1 text-center">
-        <p className={`text-xs font-bold uppercase tracking-[0.25em] ${urgent ? 'text-orange-300' : 'text-white/50'}`}>
+        <p className={`text-xs font-bold uppercase tracking-[0.25em] ${urgent ? 'text-orange-300' : 'text-[#0b0b0b]/50'}`}>
           {urgent ? '⚠️ Transfers Closing Soon' : '🏏 Next Match'}
         </p>
         {matchLabel && (
-          <p className="text-xl sm:text-2xl font-black text-white">
+          <p className="text-xl sm:text-2xl font-black text-[#0b0b0b]">
             {matchLabel}
           </p>
         )}
         {matchDate && (
-          <p className="text-sm text-white/50">{matchDate}</p>
+          <p className="text-sm text-[#0b0b0b]/50">{matchDate}</p>
         )}
         {!matchLabel && (
-          <p className="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider">
+          <p className="text-2xl sm:text-3xl font-black text-[#0b0b0b] uppercase tracking-wider">
             Gameweek Locks In
           </p>
         )}
@@ -130,7 +130,7 @@ export default function HeroCountdown({ deadline, lockUntil, matchLabel, matchDa
         </div>
       </div>
 
-      <p className={`text-xs font-semibold uppercase tracking-wider ${urgent ? 'text-orange-300' : 'text-white/40'}`}>
+      <p className={`text-xs font-semibold uppercase tracking-wider ${urgent ? 'text-orange-300' : 'text-[#0b0b0b]/40'}`}>
         Lock your squad before time runs out
       </p>
     </div>

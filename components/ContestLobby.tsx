@@ -67,11 +67,11 @@ const TYPE_FILTERS: { value: TypeFilter; label: string; icon: string }[] = [
 ]
 
 const CATEGORY_COLOURS: Record<ContestCategory, string> = {
-  mega:         'bg-red-500   text-white',
-  h2h:          'bg-blue-500  text-white',
-  small_league: 'bg-[#111111] text-white',
-  jackpot:      'bg-[#a8892e] text-white',
-  practice:     'bg-green-600 text-white',
+  mega:         'bg-red-500   text-[#0b0b0b]',
+  h2h:          'bg-blue-500  text-[#0b0b0b]',
+  small_league: 'bg-[#f0f0f0] text-[#0b0b0b]',
+  jackpot:      'bg-[#a8892e] text-[#0b0b0b]',
+  practice:     'bg-green-600 text-[#0b0b0b]',
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -289,21 +289,21 @@ export default function ContestLobby({
     <div className="space-y-4">
 
       {/* ── Top bar: wallet + countdown ──────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#111111] px-5 py-4">
+      <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#f0f0f0] px-5 py-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Wallet</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#0b0b0b]/40">Wallet</p>
           <p className="text-2xl font-black text-[#C9A84C] tabular-nums">
             £{balance.toFixed(2)}
           </p>
         </div>
-        <div className="h-10 w-px bg-[#111111]/10" />
+        <div className="h-10 w-px bg-[#f5f5f5]/10" />
         <div className="text-right">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#0b0b0b]/40">
             {isLocked ? 'Status' : 'Transfers close in'}
           </p>
           <p className={cn(
             'text-xl font-black tabular-nums font-mono',
-            isLocked ? 'text-red-400' : 'text-white',
+            isLocked ? 'text-red-400' : 'text-[#0b0b0b]',
           )}>
             {countdown}
           </p>
@@ -319,7 +319,7 @@ export default function ContestLobby({
             className={cn(
               'flex-1 py-1.5 rounded-lg text-xs font-bold transition-all',
               tab === value
-                ? 'bg-[#111111] text-[#C9A84C] shadow-sm'
+                ? 'bg-[#f0f0f0] text-[#C9A84C] shadow-sm'
                 : 'text-gray-500 hover:text-[#aaaaaa]',
             )}
           >
@@ -342,8 +342,8 @@ export default function ContestLobby({
             className={cn(
               'flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all whitespace-nowrap',
               typeFilter === value
-                ? 'bg-[#111111] border-[#C9A84C] text-white'
-                : 'bg-[#111111] border-[#2a2a2a] text-gray-600 hover:border-[#C9A84C]/40',
+                ? 'bg-[#f0f0f0] border-[#C9A84C] text-[#0b0b0b]'
+                : 'bg-[#f0f0f0] border-[#d8d8d8] text-gray-600 hover:border-[#C9A84C]/40',
             )}
           >
             <span>{icon}</span>
@@ -354,14 +354,14 @@ export default function ContestLobby({
 
       {/* ── No team warning ──────────────────────────────────────────────── */}
       {!fantasyTeamId && (
-        <div className="rounded-xl bg-[#1a1500] border border-[#C9A84C]/30 px-4 py-3 text-sm text-[#a8892e] font-medium">
+        <div className="rounded-xl bg-[#fef9ee] border border-[#C9A84C]/30 px-4 py-3 text-sm text-[#a8892e] font-medium">
           Create a fantasy team first to join contests.
         </div>
       )}
 
       {/* ── Contest cards ────────────────────────────────────────────────── */}
       {filtered.length === 0 ? (
-        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] py-16 text-center">
+        <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] py-16 text-center">
           <p className="text-4xl mb-3">🏆</p>
           <p className="text-gray-500 text-sm">No contests match this filter.</p>
         </div>
@@ -423,7 +423,7 @@ function ContestCard({
   const prizePool   = Number(contest.prize_pool ?? 0)
 
   return (
-    <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] shadow-sm overflow-hidden">
+    <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] shadow-sm overflow-hidden">
 
       {/* ── Card header strip ──────────────────────────────────────────── */}
       <div className="flex items-center gap-2 px-4 pt-3 pb-2">
@@ -439,7 +439,7 @@ function ContestCard({
           </span>
         )}
         {contest.type === 'private' && (
-          <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#1a1500] text-[#C9A84C]">
+          <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#fef9ee] text-[#C9A84C]">
             🔒 Private
           </span>
         )}
@@ -493,8 +493,8 @@ function ContestCard({
               className={cn(
                 'px-4 py-1.5 rounded-xl text-xs font-black transition-all',
                 isPaid && !canAfford
-                  ? 'bg-[#a8892e] text-white hover:bg-[#a8892e]'  // needs top-up
-                  : 'bg-[#111111] text-white hover:bg-[#0a0a0a]',
+                  ? 'bg-[#a8892e] text-[#0b0b0b] hover:bg-[#a8892e]'  // needs top-up
+                  : 'bg-[#f0f0f0] text-[#0b0b0b] hover:bg-[#fafafa]',
               )}
             >
               {isPaid && !canAfford ? 'Top Up & Join' : 'Join'}
@@ -518,7 +518,7 @@ function ContestCard({
               'h-full rounded-full transition-all',
               pct >= 100 ? 'bg-red-500' :
               pct >= 80  ? 'bg-orange-400' :
-              pct >= 50  ? 'bg-[#C9A84C]' : 'bg-[#111111]',
+              pct >= 50  ? 'bg-[#C9A84C]' : 'bg-[#f0f0f0]',
             )}
             style={{ width: `${Math.min(100, pct)}%` }}
           />
@@ -537,7 +537,7 @@ function ContestCard({
           </button>
 
           {expanded && (
-            <div className="px-4 pb-4 border-t border-[#1e1e1e] bg-[#0f0f0f]/60">
+            <div className="px-4 pb-4 border-t border-[#1e1e1e] bg-[#f8f8f8]/60">
               <div className="pt-3 space-y-2">
                 {payoutSlots.map((slot) => {
                   const prize = Math.round((prizePool * slot.pct / 100) * 100) / 100
@@ -559,7 +559,7 @@ function ContestCard({
                   )
                 })}
                 {contest.prize_description && (
-                  <p className="text-xs text-gray-500 pt-1 border-t border-[#2a2a2a] mt-2">
+                  <p className="text-xs text-gray-500 pt-1 border-t border-[#d8d8d8] mt-2">
                     {contest.prize_description}
                   </p>
                 )}
@@ -595,20 +595,20 @@ function JoinModal({ contest, walletBalance, stage, error, onWallet, onGateway, 
       onClick={onCancel}
     >
       <div
-        className="w-full max-w-sm bg-[#111111] rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-sm bg-[#f0f0f0] rounded-2xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-[#111111] px-5 py-4">
-          <p className="text-xs font-bold uppercase tracking-widest text-white/50 mb-0.5">
+        <div className="bg-[#f0f0f0] px-5 py-4">
+          <p className="text-xs font-bold uppercase tracking-widest text-[#0b0b0b]/50 mb-0.5">
             {notEnough ? 'Insufficient Balance' : 'Confirm Entry'}
           </p>
-          <p className="text-lg font-black text-white truncate">{contest.name}</p>
+          <p className="text-lg font-black text-[#0b0b0b] truncate">{contest.name}</p>
         </div>
 
         <div className="px-5 py-5 space-y-4">
           {/* Summary */}
-          <div className="flex items-center justify-between rounded-xl bg-[#0f0f0f] px-4 py-3">
+          <div className="flex items-center justify-between rounded-xl bg-[#f8f8f8] px-4 py-3">
             <div>
               <p className="text-xs text-gray-400 uppercase tracking-widest font-bold">Entry fee</p>
               <p className="text-xl font-black text-[#C9A84C]">{fmt(contest.entry_fee)}</p>
@@ -623,7 +623,7 @@ function JoinModal({ contest, walletBalance, stage, error, onWallet, onGateway, 
 
           {/* Insufficient balance message */}
           {(notEnough || !canAfford) && (
-            <div className="rounded-xl bg-[#1a1500] border border-[#C9A84C]/30 px-4 py-3">
+            <div className="rounded-xl bg-[#fef9ee] border border-[#C9A84C]/30 px-4 py-3">
               <p className="text-sm font-bold text-[#a8892e]">
                 You need £{(contest.entry_fee - walletBalance).toFixed(2)} more.
               </p>
@@ -645,7 +645,7 @@ function JoinModal({ contest, walletBalance, stage, error, onWallet, onGateway, 
               <button
                 onClick={onWallet}
                 disabled={isJoining}
-                className="w-full py-3 rounded-xl bg-[#111111] text-white font-black text-sm hover:bg-[#0a0a0a] disabled:opacity-60 transition-colors"
+                className="w-full py-3 rounded-xl bg-[#f0f0f0] text-[#0b0b0b] font-black text-sm hover:bg-[#fafafa] disabled:opacity-60 transition-colors"
               >
                 {isJoining ? 'Joining…' : `Pay from Wallet · £${walletBalance.toFixed(2)}`}
               </button>
@@ -657,8 +657,8 @@ function JoinModal({ contest, walletBalance, stage, error, onWallet, onGateway, 
               className={cn(
                 'w-full py-3 rounded-xl font-black text-sm transition-colors disabled:opacity-60',
                 canAfford && !notEnough
-                  ? 'border-2 border-[#2a2a2a] text-[#aaaaaa] hover:border-[#C9A84C]/40 hover:text-[#C9A84C]'
-                  : 'bg-[#a8892e] text-white hover:bg-[#a8892e]',
+                  ? 'border-2 border-[#d8d8d8] text-[#aaaaaa] hover:border-[#C9A84C]/40 hover:text-[#C9A84C]'
+                  : 'bg-[#a8892e] text-[#0b0b0b] hover:bg-[#a8892e]',
               )}
             >
               {isJoining ? 'Redirecting…' : 'Pay by Card (Flatpay)'}

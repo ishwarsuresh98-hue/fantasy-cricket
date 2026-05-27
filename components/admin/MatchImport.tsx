@@ -359,7 +359,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
           </p>
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full text-xs">
-              <thead className="bg-[#0f0f0f] border-b">
+              <thead className="bg-[#f8f8f8] border-b">
                 <tr>
                   {['Date', 'Home_Team', 'Away_Team', 'Start_Time', 'Ground', 'Fixture_Type', 'Division_or_Cup', 'Fixture_ID'].map((h) => (
                     <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground whitespace-nowrap">{h}</th>
@@ -423,7 +423,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
                 <div className="flex gap-2 mt-3">
                   <Button
                     size="sm"
-                    className="bg-[#111111] hover:bg-[#0a0a0a]"
+                    className="bg-[#f0f0f0] hover:bg-[#fafafa]"
                     onClick={() => router.push('/admin/matches')}
                   >
                     View Matches
@@ -497,7 +497,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
           <CardContent className="p-0">
             <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
               <table className="w-full text-sm">
-                <thead className="bg-[#0f0f0f] border-b sticky top-0 z-10">
+                <thead className="bg-[#f8f8f8] border-b sticky top-0 z-10">
                   <tr>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">#</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Date &amp; Time</th>
@@ -509,7 +509,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
                 </thead>
                 <tbody className="divide-y">
                   {parsed.map((m, i) => (
-                    <tr key={m.rowIndex} className={m.error ? 'bg-red-50' : 'hover:bg-[#0f0f0f]'}>
+                    <tr key={m.rowIndex} className={m.error ? 'bg-red-50' : 'hover:bg-[#f8f8f8]'}>
                       <td className="px-4 py-2.5 text-xs text-muted-foreground">{m.rowIndex}</td>
                       <td className="px-4 py-2.5 whitespace-nowrap">
                         {m.matchDate
@@ -545,7 +545,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
             </div>
 
             {invalidRows.length > 0 && (
-              <div className="px-4 py-3 border-t bg-[#1a1500] text-xs text-[#a8892e]">
+              <div className="px-4 py-3 border-t bg-[#fef9ee] text-xs text-[#a8892e]">
                 ⚠ Rows with errors will be <strong>skipped</strong>. Fix them in your spreadsheet and re-upload, or proceed to import the {validRows.length} valid rows.
               </div>
             )}
@@ -555,7 +555,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
               <Button
                 onClick={handleImport}
                 disabled={validRows.length === 0 || importing}
-                className="bg-[#111111] hover:bg-[#0a0a0a]"
+                className="bg-[#f0f0f0] hover:bg-[#fafafa]"
               >
                 {importing
                   ? 'Importing…'

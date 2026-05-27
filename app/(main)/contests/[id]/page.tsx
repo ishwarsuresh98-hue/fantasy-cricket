@@ -124,23 +124,23 @@ export default async function ContestDetailPage({
       </div>
 
       {/* ── Contest header ─────────────────────────────────────────────────── */}
-      <div className="rounded-2xl bg-[#111111] px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="rounded-2xl bg-[#f0f0f0] px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className={cn(
               'text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full',
-              c.type === 'private' ? 'bg-[#C9A84C] text-[#C9A84C]' : 'bg-[#111111]/20 text-white',
+              c.type === 'private' ? 'bg-[#C9A84C] text-[#0b0b0b]' : 'bg-[#f5f5f5]/20 text-[#0b0b0b]',
             )}>
               {c.type === 'private' ? '🔒 Private League' : '🌐 Public Contest'}
             </span>
           </div>
-          <h1 className="text-2xl font-black text-white truncate">{c.name}</h1>
-          {season && <p className="text-white/50 text-sm mt-0.5">{season.name}</p>}
+          <h1 className="text-2xl font-black text-[#0b0b0b] truncate">{c.name}</h1>
+          {season && <p className="text-[#0b0b0b]/50 text-sm mt-0.5">{season.name}</p>}
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
           <div className="text-center">
             <p className="text-[#C9A84C] font-black text-xl tabular-nums">{(teams ?? []).length}</p>
-            <p className="text-white/50 text-xs">/ {c.max_teams} teams</p>
+            <p className="text-[#0b0b0b]/50 text-xs">/ {c.max_teams} teams</p>
           </div>
           {/* Share code — only shown to members */}
           {isMember && c.type === 'private' && c.entry_code && (
@@ -151,7 +151,7 @@ export default async function ContestDetailPage({
 
       {/* ── Prize card ─────────────────────────────────────────────────────── */}
       {c.prize_description && (
-        <div className="rounded-2xl bg-[#1a1500] border-2 border-[#C9A84C]/60 px-5 py-4 flex items-start gap-3">
+        <div className="rounded-2xl bg-[#fef9ee] border-2 border-[#C9A84C]/60 px-5 py-4 flex items-start gap-3">
           <span className="text-2xl flex-shrink-0">🏆</span>
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-[#C9A84C]/60 mb-0.5">Prize Pool</p>
@@ -162,7 +162,7 @@ export default async function ContestDetailPage({
 
       {/* ── No members ─────────────────────────────────────────────────────── */}
       {(teams ?? []).length === 0 ? (
-        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] p-16 text-center">
+        <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] p-16 text-center">
           <div className="text-4xl mb-3">👥</div>
           <p className="text-gray-500">No teams have joined yet.</p>
           {c.type === 'private' && c.entry_code && (
@@ -173,23 +173,23 @@ export default async function ContestDetailPage({
         </div>
       ) : (
         /* ── Leaderboard table ─────────────────────────────────────────────── */
-        <div className="rounded-2xl overflow-hidden border border-[#2a2a2a] shadow-sm bg-[#111111]">
+        <div className="rounded-2xl overflow-hidden border border-[#d8d8d8] shadow-sm bg-[#f0f0f0]">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#111111]">
-                  <th className="text-left text-[10px] font-bold uppercase tracking-widest text-white/50 px-4 py-3 w-16">Rank</th>
-                  <th className="text-left text-[10px] font-bold uppercase tracking-widest text-white/50 px-4 py-3 min-w-[180px]">Team</th>
+                <tr className="bg-[#f0f0f0]">
+                  <th className="text-left text-[10px] font-bold uppercase tracking-widest text-[#0b0b0b]/50 px-4 py-3 w-16">Rank</th>
+                  <th className="text-left text-[10px] font-bold uppercase tracking-widest text-[#0b0b0b]/50 px-4 py-3 min-w-[180px]">Team</th>
                   {gameweeks.map((gw) => (
                     <th
                       key={gw.dateStr}
                       title={gw.label}
-                      className="text-center text-[10px] font-bold uppercase tracking-widest text-white/50 px-3 py-3 min-w-[52px]"
+                      className="text-center text-[10px] font-bold uppercase tracking-widest text-[#0b0b0b]/50 px-3 py-3 min-w-[52px]"
                     >
                       GW{gw.gw}
                     </th>
                   ))}
-                  <th className="text-right text-[10px] font-bold uppercase tracking-widest text-white/50 px-4 py-3">Total</th>
+                  <th className="text-right text-[10px] font-bold uppercase tracking-widest text-[#0b0b0b]/50 px-4 py-3">Total</th>
                 </tr>
               </thead>
 
@@ -285,7 +285,7 @@ function LeaderboardRow({
   isEven:         boolean
   forceHighlight?: boolean
 }) {
-  const rowBg = forceHighlight || isMe ? 'bg-[#1c1c1c]' : isEven ? 'bg-[#0f0f0f]/60' : 'bg-[#111111]'
+  const rowBg = forceHighlight || isMe ? 'bg-[#1c1c1c]' : isEven ? 'bg-[#f8f8f8]/60' : 'bg-[#f0f0f0]'
 
   const rankBadge =
     rank === 1 ? <span className="text-xl">🥇</span> :
@@ -304,10 +304,10 @@ function LeaderboardRow({
       : <span className="text-red-500 text-[11px] font-bold">↓{Math.abs(movement)}</span>
 
   const avatarCls =
-    rank === 1 ? 'bg-[#C9A84C] text-[#C9A84C]' :
+    rank === 1 ? 'bg-[#C9A84C] text-[#0b0b0b]' :
     rank === 2 ? 'bg-gray-200 text-gray-600' :
     rank === 3 ? 'bg-orange-100 text-orange-700' :
-    isMe ? 'bg-[#111111] text-white' : 'bg-[#141414] text-gray-500'
+    isMe ? 'bg-[#f0f0f0] text-[#0b0b0b]' : 'bg-[#141414] text-gray-500'
 
   return (
     <tr className={cn('border-b border-[#1e1e1e] last:border-0 hover:brightness-[0.97] transition-colors', rowBg)}>
@@ -320,9 +320,9 @@ function LeaderboardRow({
             {initials(owner)}
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-sm text-[#ebebeb] truncate flex items-center gap-1.5">
+            <p className="font-semibold text-sm text-[#0b0b0b] truncate flex items-center gap-1.5">
               {teamName}
-              {isMe && <span className="text-[9px] font-black px-1.5 py-0 rounded bg-[#C9A84C] text-[#C9A84C]">YOU</span>}
+              {isMe && <span className="text-[9px] font-black px-1.5 py-0 rounded bg-[#C9A84C] text-[#0b0b0b]">YOU</span>}
             </p>
             <p className="text-xs text-gray-400 truncate">{owner}</p>
           </div>

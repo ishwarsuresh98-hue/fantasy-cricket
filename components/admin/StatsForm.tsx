@@ -342,7 +342,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#C9A84C]/30 text-sm font-medium text-[#C9A84C] bg-[#1c1c1c] hover:bg-[#1a1a1a] transition-colors"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#C9A84C]/30 text-sm font-medium text-[#C9A84C] bg-[#1c1c1c] hover:bg-[#e8e8e8] transition-colors"
       >
         <span>🏏</span> Import from Play-Cricket
       </button>
@@ -361,12 +361,12 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
         </div>
 
         {/* Tab switcher */}
-        <div className="flex gap-1 mt-2 p-1 bg-[#111111] rounded-lg border border-[#C9A84C]/10 w-fit">
+        <div className="flex gap-1 mt-2 p-1 bg-[#f0f0f0] rounded-lg border border-[#C9A84C]/10 w-fit">
           <button
             onClick={() => switchTab('url')}
             className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
               tab === 'url'
-                ? 'bg-[#111111] text-white'
+                ? 'bg-[#f0f0f0] text-[#0b0b0b]'
                 : 'text-muted-foreground hover:text-[#C9A84C]'
             }`}
           >
@@ -376,7 +376,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
             onClick={() => switchTab('pdf')}
             className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
               tab === 'pdf'
-                ? 'bg-[#111111] text-white'
+                ? 'bg-[#f0f0f0] text-[#0b0b0b]'
                 : 'text-muted-foreground hover:text-[#C9A84C]'
             }`}
           >
@@ -398,13 +398,13 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
                 value={url}
                 onChange={e => setUrl(e.target.value)}
                 placeholder="https://slough.play-cricket.com/game/…"
-                className="flex-1 bg-[#111111] text-sm"
+                className="flex-1 bg-[#f0f0f0] text-sm"
                 onKeyDown={e => e.key === 'Enter' && handleFetchUrl()}
               />
               <Button
                 onClick={handleFetchUrl}
                 disabled={busy || !url.trim()}
-                className="bg-[#111111] hover:bg-[#0a0a0a] shrink-0"
+                className="bg-[#f0f0f0] hover:bg-[#fafafa] shrink-0"
                 size="sm"
               >
                 {urlBusy ? 'Fetching…' : 'Fetch'}
@@ -429,7 +429,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
               className={`flex flex-col items-center justify-center gap-2 w-full h-28 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${
                 dragOver
                   ? 'border-[#C9A84C] bg-[#1c1c1c]'
-                  : 'border-[#C9A84C]/30 bg-[#111111] hover:border-[#C9A84C]/60 hover:bg-[#1c1c1c]/40'
+                  : 'border-[#C9A84C]/30 bg-[#f0f0f0] hover:border-[#C9A84C]/60 hover:bg-[#1c1c1c]/40'
               }`}
             >
               <input type="file" accept=".pdf,application/pdf" className="sr-only" onChange={onFileInput} />
@@ -461,7 +461,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
 
         {/* Warnings */}
         {result?.warnings && result.warnings.length > 0 && (
-          <div className="bg-[#1a1500] border border-[#C9A84C]/30 rounded-lg px-3 py-2 space-y-0.5">
+          <div className="bg-[#fef9ee] border border-[#C9A84C]/30 rounded-lg px-3 py-2 space-y-0.5">
             {result.warnings.map((w, i) => (
               <p key={i} className="text-xs text-[#a8892e]">⚠ {w}</p>
             ))}
@@ -477,16 +477,16 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
                 <span className="text-muted-foreground font-normal ml-2 text-xs">— {matchRows.length} players matched</span>
               </p>
               {unmatched.length > 0 && (
-                <Badge className="bg-[#231c00] text-[#C9A84C] hover:bg-[#231c00] text-xs">
+                <Badge className="bg-[#fef3d0] text-[#C9A84C] hover:bg-[#fef3d0] text-xs">
                   {unmatched.length} unmatched
                 </Badge>
               )}
             </div>
 
             {matchRows.length > 0 && (
-              <div className="rounded-lg border bg-[#111111] overflow-hidden">
+              <div className="rounded-lg border bg-[#f0f0f0] overflow-hidden">
                 <table className="w-full text-xs">
-                  <thead className="bg-[#0f0f0f] border-b">
+                  <thead className="bg-[#f8f8f8] border-b">
                     <tr>
                       <th className="text-left px-3 py-2 font-medium text-muted-foreground">Player</th>
                       <th className="text-left px-3 py-2 font-medium text-muted-foreground">Stats to import</th>
@@ -494,7 +494,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
                   </thead>
                   <tbody className="divide-y">
                     {matchRows.map(({ player, sources }) => (
-                      <tr key={player.id} className="hover:bg-[#0f0f0f]">
+                      <tr key={player.id} className="hover:bg-[#f8f8f8]">
                         <td className="px-3 py-2 font-medium">{player.name}</td>
                         <td className="px-3 py-2 text-muted-foreground">{sources.join(' · ') || '—'}</td>
                       </tr>
@@ -505,7 +505,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
             )}
 
             {unmatched.length > 0 && (
-              <div className="rounded-lg border border-[#C9A84C]/30 bg-[#1a1500] px-3 py-2">
+              <div className="rounded-lg border border-[#C9A84C]/30 bg-[#fef9ee] px-3 py-2">
                 <p className="text-xs font-semibold text-[#a8892e] mb-1">
                   Not matched to your player list — enter manually:
                 </p>
@@ -530,7 +530,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
               <Button
                 onClick={handleApply}
                 disabled={matchRows.length === 0 && unmatched.length === 0 || applied || creating}
-                className={applied ? 'bg-green-600' : 'bg-[#111111] hover:bg-[#0a0a0a]'}
+                className={applied ? 'bg-green-600' : 'bg-[#f0f0f0] hover:bg-[#fafafa]'}
                 size="sm"
               >
                 {creating
@@ -709,7 +709,7 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-[#0f0f0f] border-b">
+              <thead className="bg-[#f8f8f8] border-b">
                 <tr>
                   <th className="text-left text-xs font-medium text-muted-foreground uppercase px-4 py-3 min-w-[140px]">Player</th>
                   <th className="text-center text-xs font-medium text-muted-foreground uppercase px-2 py-3">DNB</th>
@@ -731,14 +731,14 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
                   const s = stats[player.id] ?? defaultStats()
                   const pts = previewPoints(s)
                   return (
-                    <tr key={player.id} className="hover:bg-[#0f0f0f]">
+                    <tr key={player.id} className="hover:bg-[#f8f8f8]">
                       <td className="px-4 py-2">
                         <p className="text-sm font-medium">{player.name}</p>
                         <Badge className={`text-xs mt-0.5 ${
                           player.role === 'batsman' ? 'bg-blue-100 text-blue-700 hover:bg-blue-100' :
                           player.role === 'bowler' ? 'bg-[#fceaea] text-[#b5211e] hover:bg-[#fceaea]' :
                           player.role === 'all_rounder' ? 'bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#1c1c1c]' :
-                          'bg-[#1a1500] text-[#C9A84C] hover:bg-[#1a1500]'
+                          'bg-[#fef9ee] text-[#C9A84C] hover:bg-[#fef9ee]'
                         }`}>
                           {PLAYER_ROLE_LABELS[player.role]}
                         </Badge>

@@ -59,7 +59,7 @@ export default async function ClubAdminStatsPage({
           <span>/</span>
           <span>Match {match.match_number} Stats</span>
         </div>
-        <h2 className="text-2xl font-bold text-[#ebebeb]">
+        <h2 className="text-2xl font-bold text-[#0b0b0b]">
           Match {match.match_number} — {match.opponent}
         </h2>
         <p className="text-muted-foreground">

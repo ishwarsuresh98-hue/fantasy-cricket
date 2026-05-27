@@ -40,11 +40,11 @@ export default async function TransfersPage() {
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-bold text-[#C9A84C]">Transfers</h1>
-        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] p-16 text-center space-y-3">
+        <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] p-16 text-center space-y-3">
           <p className="text-gray-500">You don&apos;t have a fantasy team yet.</p>
           <Link
             href="/team"
-            className="inline-flex items-center px-5 py-2.5 rounded-xl bg-[#111111] text-white font-semibold text-sm hover:bg-[#0a0a0a] transition-colors"
+            className="inline-flex items-center px-5 py-2.5 rounded-xl bg-[#f0f0f0] text-[#0b0b0b] font-semibold text-sm hover:bg-[#fafafa] transition-colors"
           >
             Create Team
           </Link>
@@ -251,10 +251,10 @@ export default async function TransfersPage() {
       />
 
       {/* ── Transfer History ─────────────────────────────────────────────── */}
-      <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] overflow-hidden">
+      <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] overflow-hidden">
         {/* Pending */}
         {pendingLog && (
-          <div className="border-b border-[#C9A84C]/60 bg-[#1a1500] px-5 py-4">
+          <div className="border-b border-[#C9A84C]/60 bg-[#fef9ee] px-5 py-4">
             <p className="text-sm font-bold text-[#C9A84C] mb-2">⏳ Pending Changes (not yet confirmed)</p>
             <p className="text-xs text-gray-500 mb-3">
               Saved but transfers won&apos;t be deducted until the deadline passes.
@@ -291,7 +291,7 @@ export default async function TransfersPage() {
         )}
 
         {/* History header */}
-        <div className="px-5 py-3 border-b border-[#1e1e1e] bg-[#0f0f0f]">
+        <div className="px-5 py-3 border-b border-[#1e1e1e] bg-[#f8f8f8]">
           <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Confirmed Transfer History</p>
         </div>
 
@@ -332,14 +332,14 @@ export default async function TransfersPage() {
                       )}
                     </div>
                   </div>
-                  <span className="flex-shrink-0 inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-[#111111] text-white text-xs font-black">
+                  <span className="flex-shrink-0 inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-[#f0f0f0] text-[#0b0b0b] text-xs font-black">
                     −{log.transfers_used}
                   </span>
                 </div>
               )
             })}
             {adminLogs.map((log) => (
-              <div key={log.id} className="px-5 py-3 flex items-start justify-between gap-4 bg-[#0f0f0f]">
+              <div key={log.id} className="px-5 py-3 flex items-start justify-between gap-4 bg-[#f8f8f8]">
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-[#aaaaaa]">Admin Adjustment</p>
                   {log.admin_note && <p className="text-xs text-gray-500 mt-0.5">{log.admin_note}</p>}

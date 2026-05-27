@@ -68,11 +68,11 @@ export default function DeleteMatchButton({ matchId, matchLabel }: Props) {
           />
 
           {/* Panel */}
-          <div className="relative bg-[#111111] rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
+          <div className="relative bg-[#f0f0f0] rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
             <div className="flex items-start gap-3">
               <span className="text-2xl mt-0.5">⚠️</span>
               <div>
-                <h2 id="delete-match-title" className="font-semibold text-[#ebebeb]">
+                <h2 id="delete-match-title" className="font-semibold text-[#0b0b0b]">
                   Delete {matchLabel}?
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -102,7 +102,7 @@ export default function DeleteMatchButton({ matchId, matchLabel }: Props) {
                 size="sm"
                 onClick={handleConfirm}
                 disabled={loading}
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className="bg-red-600 hover:bg-red-700 text-[#0b0b0b]"
               >
                 {loading ? 'Deleting…' : 'Yes, delete match'}
               </Button>

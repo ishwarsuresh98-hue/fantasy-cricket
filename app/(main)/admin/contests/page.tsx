@@ -53,15 +53,15 @@ export default async function AdminContestsPage() {
       </div>
 
       {(!contests || contests.length === 0) ? (
-        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] p-16 text-center">
+        <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] p-16 text-center">
           <div className="text-4xl mb-3">🏆</div>
           <p className="text-gray-500">No contests yet. Create one to get started.</p>
         </div>
       ) : (
-        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] overflow-hidden">
+        <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-[#0f0f0f] border-b border-[#1e1e1e]">
+              <tr className="bg-[#f8f8f8] border-b border-[#1e1e1e]">
                 <th className="text-left text-xs font-bold uppercase tracking-widest text-gray-400 px-5 py-3">Name</th>
                 <th className="text-center text-xs font-bold uppercase tracking-widest text-gray-400 px-4 py-3">Type</th>
                 <th className="text-center text-xs font-bold uppercase tracking-widest text-gray-400 px-4 py-3">Code</th>
@@ -75,7 +75,7 @@ export default async function AdminContestsPage() {
                 const count = countMap[contest.id] ?? 0
                 const pct   = Math.round((count / contest.max_teams) * 100)
                 return (
-                  <tr key={contest.id} className="hover:bg-[#0f0f0f] transition-colors">
+                  <tr key={contest.id} className="hover:bg-[#f8f8f8] transition-colors">
                     <td className="px-5 py-3">
                       <p className="font-semibold text-[#d4d4d4]">{contest.name}</p>
                     </td>
@@ -83,7 +83,7 @@ export default async function AdminContestsPage() {
                       <span className={cn(
                         'text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full',
                         contest.type === 'private'
-                          ? 'bg-[#1a1500] text-[#C9A84C] border border-[#C9A84C]/40'
+                          ? 'bg-[#fef9ee] text-[#C9A84C] border border-[#C9A84C]/40'
                           : 'bg-[#1c1c1c] text-[#C9A84C]',
                       )}>
                         {contest.type}
@@ -104,7 +104,7 @@ export default async function AdminContestsPage() {
                           <div
                             className={cn(
                               'h-full rounded-full',
-                              pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-orange-400' : 'bg-[#111111]',
+                              pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-orange-400' : 'bg-[#f0f0f0]',
                             )}
                             style={{ width: `${Math.min(100, pct)}%` }}
                           />

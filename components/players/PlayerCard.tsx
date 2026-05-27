@@ -10,14 +10,14 @@ const ROLE_BADGE: Record<PlayerRole, string> = {
   batsman:       'bg-blue-100 text-blue-700',
   bowler:        'bg-[#fceaea] text-[#b5211e]',
   all_rounder:   'bg-[#1c1c1c] text-[#C9A84C]',
-  wicket_keeper: 'bg-[#1a1500] text-[#a16207]',
+  wicket_keeper: 'bg-[#fef9ee] text-[#a16207]',
 }
 
 // Avatar background per role (darker shade for contrast against white initials)
 const ROLE_AVATAR: Record<PlayerRole, string> = {
   batsman:       'bg-blue-600',
   bowler:        'bg-[#b5211e]',
-  all_rounder:   'bg-[#111111]',
+  all_rounder:   'bg-[#f0f0f0]',
   wicket_keeper: 'bg-[#a16207]',
 }
 
@@ -144,7 +144,7 @@ export default function PlayerCard({
       >
         {/* C / VC badge OR avatar */}
         {isCaptain ? (
-          <span className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#C9A84C] text-[#C9A84C] text-[11px] font-black">
+          <span className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#C9A84C] text-[#0b0b0b] text-[11px] font-black">
             C
           </span>
         ) : isViceCaptain ? (
@@ -154,7 +154,7 @@ export default function PlayerCard({
         ) : (
           <span
             className={cn(
-              'flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-[11px] font-bold',
+              'flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full text-[#0b0b0b] text-[11px] font-bold',
               ROLE_AVATAR[role],
             )}
           >
@@ -223,7 +223,7 @@ export default function PlayerCard({
         'relative flex flex-col items-center gap-2 p-3 rounded-2xl border-2 text-center transition-all duration-150 select-none',
         isSelected
           ? 'bg-green-50 border-green-400 shadow-md shadow-green-100'
-          : 'bg-[#111111] border-[#2a2a2a] hover:border-[#C9A84C]/40 hover:bg-[#1c1c1c]',
+          : 'bg-[#f0f0f0] border-[#d8d8d8] hover:border-[#C9A84C]/40 hover:bg-[#1c1c1c]',
         onClick && 'cursor-pointer',
         className,
       )}
@@ -237,7 +237,7 @@ export default function PlayerCard({
                          'ring-transparent',
       )}>
         <span className={cn(
-          'flex items-center justify-center w-full h-full rounded-full text-white font-bold text-base',
+          'flex items-center justify-center w-full h-full rounded-full text-[#0b0b0b] font-bold text-base',
           ROLE_AVATAR[role],
         )}>
           {initials}
@@ -247,7 +247,7 @@ export default function PlayerCard({
         {(isCaptain || isViceCaptain) && (
           <span className={cn(
             'absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black border-2 border-white',
-            isCaptain ? 'bg-[#C9A84C] text-[#C9A84C]' : 'bg-gray-200 text-gray-600',
+            isCaptain ? 'bg-[#C9A84C] text-[#0b0b0b]' : 'bg-gray-200 text-gray-600',
           )}>
             {isCaptain ? 'C' : 'V'}
           </span>
@@ -289,7 +289,7 @@ export default function PlayerCard({
 
       {/* Playing XI badge */}
       {isPlaying && (
-        <span className="absolute top-1.5 left-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-green-500 text-white uppercase tracking-wide">
+        <span className="absolute top-1.5 left-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-green-500 text-[#0b0b0b] uppercase tracking-wide">
           ✓ Playing
         </span>
       )}
@@ -297,7 +297,7 @@ export default function PlayerCard({
       {/* Selected tick */}
       {isSelected && !isCaptain && !isViceCaptain && (
         <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
-          <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+          <svg className="w-2.5 h-2.5 text-[#0b0b0b]" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
           </svg>
         </span>

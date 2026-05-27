@@ -58,41 +58,39 @@ export default function Navbar({ profile, club }: NavbarProps) {
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-[#111111] border-b border-[#1a1a1a] shadow-md">
+    <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
 
           {/* Logo */}
-          <Link href={homeHref} className="flex items-center gap-2.5 font-bold text-white">
+          <Link href={homeHref} className="flex items-center gap-2.5 font-bold text-[#0b0b0b]">
             {club?.logo_url ? (
               <Image
                 src={club.logo_url}
                 alt={`${club.name} crest`}
-                width={40}
-                height={40}
-                className="rounded-full object-contain bg-[#111111] p-0.5"
+                width={44}
+                height={44}
+                className="rounded-full object-contain bg-white p-0.5"
                 priority
               />
             ) : club ? (
-              /* Club without logo */
-              <div className="w-10 h-10 rounded-full bg-[#111111]/20 flex items-center justify-center text-xl">
-                🏏
-              </div>
+              /* Club without logo — show XI logo */
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src="/images/the-xi-logo.svg" alt="The XI" style={{ height: 44 }} />
             ) : (
-              /* The XI — text-only logo */
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#C9A84C]">
-                <span className="text-[#C9A84C] font-black text-sm">XI</span>
-              </div>
+              /* The XI hub — SVG logo */
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src="/images/the-xi-logo.svg" alt="The XI" style={{ height: 44 }} />
             )}
             <div className="hidden sm:block leading-tight">
               {club ? (
                 <>
-                  <span className="text-white font-extrabold tracking-tight">{club.name.toUpperCase()}</span>
+                  <span className="text-[#0b0b0b] font-extrabold tracking-tight">{club.name.toUpperCase()}</span>
                   <span className="text-[#C9A84C] ml-1.5 font-semibold text-sm">Fantasy</span>
                 </>
               ) : (
                 <>
-                  <span className="text-white font-extrabold tracking-tight">THE</span>
+                  <span className="text-[#0b0b0b] font-extrabold tracking-tight">THE</span>
                   <span className="text-[#C9A84C] ml-1.5 font-black tracking-tight">XI</span>
                 </>
               )}
@@ -108,8 +106,8 @@ export default function Navbar({ profile, club }: NavbarProps) {
                   href={href}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     pathname === href || pathname.startsWith(href + '/')
-                      ? 'bg-[#C9A84C] text-[#C9A84C] font-semibold'
-                      : 'text-white/80 hover:bg-[#111111]/10 hover:text-white'
+                      ? 'bg-[#C9A84C] text-[#0b0b0b] font-semibold'
+                      : 'text-[#0b0b0b]/70 hover:bg-gray-100 hover:text-[#0b0b0b]'
                   }`}
                 >
                   {label}
@@ -121,7 +119,7 @@ export default function Navbar({ profile, club }: NavbarProps) {
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     pathname.startsWith(adminHref)
                       ? 'bg-[#b5211e] text-white font-semibold'
-                      : 'text-white/80 hover:bg-[#111111]/10 hover:text-white'
+                      : 'text-[#0b0b0b]/70 hover:bg-gray-100 hover:text-[#0b0b0b]'
                   }`}
                 >
                   Admin
@@ -140,15 +138,15 @@ export default function Navbar({ profile, club }: NavbarProps) {
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <button className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-[#111111]/10 transition-colors" />
+                <button className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-100 transition-colors" />
               }
             >
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-[#C9A84C] text-[#C9A84C] text-sm font-bold">
+                <AvatarFallback className="bg-[#C9A84C] text-[#0b0b0b] text-sm font-bold">
                   {profile.display_name.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="hidden sm:block text-sm font-medium text-white">{profile.display_name}</span>
+              <span className="hidden sm:block text-sm font-medium text-[#0b0b0b]">{profile.display_name}</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <div className="px-3 py-2">

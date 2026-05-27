@@ -73,7 +73,7 @@ function StepIllustration({ step }: { step: Step }) {
   if (step.id === 1) {
     return (
       <div className="flex flex-col items-center gap-3 mb-2">
-        <div className="relative w-24 h-24 rounded-full overflow-hidden bg-[#111111] shadow-lg border-4 border-[#C9A84C]">
+        <div className="relative w-24 h-24 rounded-full overflow-hidden bg-[#f0f0f0] shadow-lg border-4 border-[#C9A84C]">
           <Image
             src="/slough-cc-crest.png"
             alt="Slough CC"
@@ -184,12 +184,12 @@ export default function OnboardingTour({ userId }: Props) {
     >
       {/* Card */}
       <div
-        className={`relative w-full max-w-md bg-[#111111] rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ${
+        className={`relative w-full max-w-md bg-[#f0f0f0] rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ${
           visible && !exiting ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
         }`}
       >
         {/* Navy header bar */}
-        <div className="bg-[#111111] px-6 pt-6 pb-4">
+        <div className="bg-[#f0f0f0] px-6 pt-6 pb-4">
           {/* Progress dots */}
           <div className="flex items-center justify-center gap-1.5 mb-5">
             {STEPS.map((_, i) => (
@@ -200,14 +200,14 @@ export default function OnboardingTour({ userId }: Props) {
                     ? 'w-5 h-2 bg-[#C9A84C]'
                     : i < step
                     ? 'w-2 h-2 bg-[#C9A84C]/40'
-                    : 'w-2 h-2 bg-[#111111]/20'
+                    : 'w-2 h-2 bg-[#f5f5f5]/20'
                 }`}
               />
             ))}
           </div>
 
           {/* Step label */}
-          <p className="text-center text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase mb-1">
+          <p className="text-center text-[10px] font-bold tracking-[0.2em] text-[#0b0b0b]/40 uppercase mb-1">
             Step {step + 1} of {TOTAL}
           </p>
         </div>
@@ -240,7 +240,7 @@ export default function OnboardingTour({ userId }: Props) {
             {step > 0 && (
               <button
                 onClick={back}
-                className="flex-1 py-2.5 rounded-xl border-2 border-[#2a2a2a] text-sm font-semibold text-gray-500 hover:bg-[#0f0f0f] transition-colors"
+                className="flex-1 py-2.5 rounded-xl border-2 border-[#d8d8d8] text-sm font-semibold text-gray-500 hover:bg-[#f8f8f8] transition-colors"
               >
                 ← Back
               </button>
@@ -250,7 +250,7 @@ export default function OnboardingTour({ userId }: Props) {
                 if (current.ctaHref) { dismiss(current.ctaHref) }
                 else advance()
               }}
-              className="flex-1 py-2.5 rounded-xl bg-[#111111] text-white text-sm font-bold hover:bg-[#0a0a0a] active:scale-95 transition-all"
+              className="flex-1 py-2.5 rounded-xl bg-[#f0f0f0] text-[#0b0b0b] text-sm font-bold hover:bg-[#fafafa] active:scale-95 transition-all"
             >
               {current.cta ?? (step === TOTAL - 1 ? '✓ Done' : 'Next →')}
             </button>

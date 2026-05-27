@@ -129,10 +129,10 @@ export default function BoosterPanel({
               key={booster.type}
               className={`relative flex flex-col gap-2 rounded-xl border p-3 transition-all ${
                 isActiveThisMatch
-                  ? 'border-[#C9A84C] bg-[#1a1500] shadow-md'
+                  ? 'border-[#C9A84C] bg-[#fef9ee] shadow-md'
                   : isExhausted
-                  ? 'border-[#2a2a2a] bg-[#0f0f0f] opacity-60'
-                  : 'border-[#2a2a2a] bg-[#111111] hover:border-[#C9A84C]/30 hover:shadow-sm'
+                  ? 'border-[#d8d8d8] bg-[#f8f8f8] opacity-60'
+                  : 'border-[#d8d8d8] bg-[#f0f0f0] hover:border-[#C9A84C]/30 hover:shadow-sm'
               }`}
             >
               <div className="text-2xl text-center">{booster.icon}</div>
@@ -142,7 +142,7 @@ export default function BoosterPanel({
               </div>
 
               {isActiveThisMatch ? (
-                <Badge className="bg-[#C9A84C] text-[#C9A84C] hover:bg-[#C9A84C] text-[11px] justify-center font-bold">
+                <Badge className="bg-[#C9A84C] text-[#0b0b0b] hover:bg-[#C9A84C] text-[11px] justify-center font-bold">
                   Active ✓
                 </Badge>
               ) : isExhausted ? (
@@ -233,7 +233,7 @@ function SimpleBoosterDialog({
         render={
           <button
             disabled={isPending}
-            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#111111] text-white hover:bg-[#0a0a0a] transition-colors disabled:opacity-50"
+            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#f0f0f0] text-[#0b0b0b] hover:bg-[#fafafa] transition-colors disabled:opacity-50"
           />
         }
       >
@@ -254,7 +254,7 @@ function SimpleBoosterDialog({
           <Button
             onClick={handleActivate}
             disabled={loading}
-            className="bg-[#111111] hover:bg-[#0a0a0a]"
+            className="bg-[#f0f0f0] hover:bg-[#fafafa]"
           >
             {loading ? 'Activating…' : 'Confirm'}
           </Button>
@@ -288,7 +288,7 @@ function FreeHitDialog({
         render={
           <button
             disabled={isPending}
-            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#111111] text-white hover:bg-[#0a0a0a] transition-colors disabled:opacity-50"
+            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#f0f0f0] text-[#0b0b0b] hover:bg-[#fafafa] transition-colors disabled:opacity-50"
           />
         }
       >
@@ -301,7 +301,7 @@ function FreeHitDialog({
             For this match only, your budget cap is removed — pick any 11 players!
           </DialogDescription>
         </DialogHeader>
-        <div className="bg-[#1a1500] border border-[#C9A84C]/30 text-[#a8892e] text-sm rounded-md px-3 py-2">
+        <div className="bg-[#fef9ee] border border-[#C9A84C]/30 text-[#a8892e] text-sm rounded-md px-3 py-2">
           ⚠️ <strong>Note:</strong> Your squad will revert to its pre-Free Hit state for the next match.
         </div>
         <DialogFooter>
@@ -309,7 +309,7 @@ function FreeHitDialog({
           <Button
             onClick={handleActivate}
             disabled={loading}
-            className="bg-[#111111] hover:bg-[#0a0a0a]"
+            className="bg-[#f0f0f0] hover:bg-[#fafafa]"
           >
             {loading ? 'Activating…' : 'Activate Free Hit'}
           </Button>
@@ -345,7 +345,7 @@ function ScoreFreezeDialog({
         render={
           <button
             disabled={isPending}
-            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#111111] text-white hover:bg-[#0a0a0a] transition-colors disabled:opacity-50"
+            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#f0f0f0] text-[#0b0b0b] hover:bg-[#fafafa] transition-colors disabled:opacity-50"
           />
         }
       >
@@ -374,7 +374,7 @@ function ScoreFreezeDialog({
           <Button
             onClick={handleActivate}
             disabled={loading}
-            className="bg-[#111111] hover:bg-[#0a0a0a]"
+            className="bg-[#f0f0f0] hover:bg-[#fafafa]"
           >
             {loading ? 'Activating…' : 'Freeze Score'}
           </Button>
@@ -422,7 +422,7 @@ function TripleCaptainDialog({
         render={
           <button
             disabled={isPending || currentSelections.length === 0}
-            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#111111] text-white hover:bg-[#0a0a0a] transition-colors disabled:opacity-50"
+            className="w-full py-1 rounded-lg text-xs font-semibold bg-[#f0f0f0] text-[#0b0b0b] hover:bg-[#fafafa] transition-colors disabled:opacity-50"
           />
         }
       >
@@ -448,7 +448,7 @@ function TripleCaptainDialog({
                 className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors ${
                   chosenId === p.id
                     ? 'bg-[#1c1c1c] text-[#C9A84C]'
-                    : 'hover:bg-[#0f0f0f]'
+                    : 'hover:bg-[#f8f8f8]'
                 }`}
               >
                 <div>
@@ -467,7 +467,7 @@ function TripleCaptainDialog({
           <Button
             onClick={handleActivate}
             disabled={!chosenId || loading}
-            className="bg-[#111111] hover:bg-[#0a0a0a]"
+            className="bg-[#f0f0f0] hover:bg-[#fafafa]"
           >
             {loading ? 'Activating…' : 'Confirm'}
           </Button>

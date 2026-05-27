@@ -168,11 +168,11 @@ export default async function PlayerProfilePage({
       </div>
 
       {/* ── Hero card ──────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl bg-[#111111] px-6 py-6 flex items-center gap-5">
+      <div className="rounded-2xl bg-[#f0f0f0] px-6 py-6 flex items-center gap-5">
         {/* Avatar */}
         <div
           className={cn(
-            'w-20 h-20 rounded-full flex items-center justify-center text-2xl font-black text-white flex-shrink-0',
+            'w-20 h-20 rounded-full flex items-center justify-center text-2xl font-black text-[#0b0b0b] flex-shrink-0',
             ROLE_AVATAR[player.role] ?? 'bg-gray-500',
           )}
         >
@@ -181,16 +181,16 @@ export default async function PlayerProfilePage({
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-black text-white truncate">{player.name}</h1>
+          <h1 className="text-2xl font-black text-[#0b0b0b] truncate">{player.name}</h1>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <span className={cn(
               'text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full',
-              ROLE_HERO_BADGE[player.role] ?? 'bg-[#111111]/10 text-white',
+              ROLE_HERO_BADGE[player.role] ?? 'bg-[#f5f5f5]/10 text-[#0b0b0b]',
             )}>
               {PLAYER_ROLE_LABELS[player.role] ?? player.role}
             </span>
             {ownerCount > 0 && (
-              <span className="text-[10px] font-bold text-white/60 bg-[#111111]/10 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-[#0b0b0b]/60 bg-[#f5f5f5]/10 px-2 py-0.5 rounded-full">
                 👥 {ownerCount} of {totalTeams ?? '?'} teams ({ownerPct}%)
               </span>
             )}
@@ -200,27 +200,27 @@ export default async function PlayerProfilePage({
             {totalRuns > 0 && (
               <div>
                 <p className="text-[#C9A84C] font-black text-lg tabular-nums leading-tight">{totalRuns}</p>
-                <p className="text-white/40 text-[10px] uppercase tracking-wide">Runs</p>
+                <p className="text-[#0b0b0b]/40 text-[10px] uppercase tracking-wide">Runs</p>
               </div>
             )}
             {totalWickets > 0 && (
               <div>
                 <p className="text-[#C9A84C] font-black text-lg tabular-nums leading-tight">{totalWickets}</p>
-                <p className="text-white/40 text-[10px] uppercase tracking-wide">Wickets</p>
+                <p className="text-[#0b0b0b]/40 text-[10px] uppercase tracking-wide">Wickets</p>
               </div>
             )}
             <div>
               <p className="text-[#C9A84C] font-black text-lg tabular-nums leading-tight">{Math.round(totalPoints)}</p>
-              <p className="text-white/40 text-[10px] uppercase tracking-wide">Total Pts</p>
+              <p className="text-[#0b0b0b]/40 text-[10px] uppercase tracking-wide">Total Pts</p>
             </div>
           </div>
         </div>
 
         {/* Credits */}
         <div className="text-right flex-shrink-0">
-          <p className="text-white/40 text-xs uppercase tracking-wide mb-0.5">Credits</p>
+          <p className="text-[#0b0b0b]/40 text-xs uppercase tracking-wide mb-0.5">Credits</p>
           <div className="flex items-center gap-1 justify-end">
-            <span className="text-4xl font-black text-white tabular-nums">
+            <span className="text-4xl font-black text-[#0b0b0b] tabular-nums">
               {Number(player.price).toFixed(1)}
             </span>
             {creditTrend === 'up'   && <span className="text-green-400 text-xl font-bold">↑</span>}
@@ -237,7 +237,7 @@ export default async function PlayerProfilePage({
           { label: 'Best Score',   value: Math.round(highScore) },
           { label: 'Matches',      value: matchesPlayed },
         ].map(({ label, value }) => (
-          <div key={label} className="rounded-xl bg-[#111111] border border-[#2a2a2a] p-4 text-center shadow-sm">
+          <div key={label} className="rounded-xl bg-[#f0f0f0] border border-[#d8d8d8] p-4 text-center shadow-sm">
             <p className="text-xl font-black text-[#C9A84C] tabular-nums">{value}</p>
             <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">{label}</p>
           </div>
@@ -246,7 +246,7 @@ export default async function PlayerProfilePage({
 
       {/* ── Form bar chart ─────────────────────────────────────────────────── */}
       {chartData.length > 0 && (
-        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] shadow-sm overflow-hidden">
+        <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] shadow-sm overflow-hidden">
           <div className="px-5 pt-4 pb-2 flex items-center justify-between">
             <p className="text-sm font-bold text-[#C9A84C]">Points per Match</p>
             <div className="flex items-center gap-3 text-[10px] text-gray-400">
@@ -301,14 +301,14 @@ export default async function PlayerProfilePage({
 
       {/* ── Match log table ────────────────────────────────────────────────── */}
       {matches.length > 0 && (
-        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] shadow-sm overflow-hidden">
+        <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-[#1e1e1e]">
             <p className="text-sm font-bold text-[#C9A84C]">Match Log</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#0f0f0f] border-b border-[#1e1e1e]">
+                <tr className="bg-[#f8f8f8] border-b border-[#1e1e1e]">
                   {['#', 'Opponent', 'R', 'B', '4s', '6s', 'W', 'Ct', 'Mdns', 'Pts', 'Cr'].map((h, i) => (
                     <th
                       key={h}
@@ -400,7 +400,7 @@ export default async function PlayerProfilePage({
 
       {/* ── Fantasy ownership panel ────────────────────────────────────────── */}
       {owners.length > 0 && (
-        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] shadow-sm overflow-hidden">
+        <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-[#1e1e1e] flex items-center justify-between">
             <p className="text-sm font-bold text-[#C9A84C]">Fantasy Ownership</p>
             <span className="text-xs font-bold text-[#C9A84C] bg-[#1c1c1c] px-2.5 py-1 rounded-full">
@@ -411,7 +411,7 @@ export default async function PlayerProfilePage({
           <div className="px-5 pt-3 pb-1">
             <div className="h-2 bg-[#141414] rounded-full overflow-hidden">
               <div
-                className="h-full rounded-full bg-[#111111] transition-all"
+                className="h-full rounded-full bg-[#f0f0f0] transition-all"
                 style={{ width: `${Math.min(100, ownerPct)}%` }}
               />
             </div>
@@ -419,7 +419,7 @@ export default async function PlayerProfilePage({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#0f0f0f] border-b border-[#1e1e1e]">
+                <tr className="bg-[#f8f8f8] border-b border-[#1e1e1e]">
                   <th className="text-left text-[10px] font-bold uppercase tracking-widest text-gray-400 px-5 py-3">Team</th>
                   <th className="text-left text-[10px] font-bold uppercase tracking-widest text-gray-400 px-4 py-3">Owner</th>
                   <th className="text-center text-[10px] font-bold uppercase tracking-widest text-gray-400 px-3 py-3">Role</th>
@@ -444,7 +444,7 @@ export default async function PlayerProfilePage({
                       <td className="px-4 py-2.5 text-gray-500 text-sm">{ownerName}</td>
                       <td className="px-3 py-2.5 text-center">
                         {o.is_captain ? (
-                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#C9A84C] text-[#C9A84C] text-[10px] font-black">C</span>
+                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#C9A84C] text-[#0b0b0b] text-[10px] font-black">C</span>
                         ) : o.is_vice_captain ? (
                           <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-200 text-gray-600 text-[10px] font-black">V</span>
                         ) : (
@@ -464,7 +464,7 @@ export default async function PlayerProfilePage({
       )}
 
       {matches.length === 0 && (
-        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] p-16 text-center">
+        <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] p-16 text-center">
           <div className="text-4xl mb-3">🏏</div>
           <p className="text-gray-500">No match data yet — check back after the first game.</p>
         </div>

@@ -22,7 +22,7 @@ const ROLE_COLORS: Record<string, string> = {
   batsman:       'bg-blue-100 text-blue-700 border-blue-200',
   bowler:        'bg-red-100 text-[#b5211e] border-red-200',
   all_rounder:   'bg-[#1c1c1c] text-[#C9A84C] border-[#C9A84C]/20',
-  wicket_keeper: 'bg-[#1a1500] text-[#C9A84C] border-[#C9A84C]/30',
+  wicket_keeper: 'bg-[#fef9ee] text-[#C9A84C] border-[#C9A84C]/30',
 }
 
 const ROLE_ORDER = ['wicket_keeper', 'batsman', 'all_rounder', 'bowler'] as const
@@ -119,7 +119,7 @@ export default function PlayerGrid({ players, seasonId }: Props) {
               onClick={() => handleSortChange(opt.value)}
               className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
                 sortBy === opt.value
-                  ? 'bg-[#111111] text-white'
+                  ? 'bg-[#f0f0f0] text-[#0b0b0b]'
                   : 'bg-[#141414] text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -136,7 +136,7 @@ export default function PlayerGrid({ players, seasonId }: Props) {
           count={roleCounts.all}
           active={roleFilter === 'all'}
           onClick={() => handleFilterChange('all')}
-          color="bg-[#111111] text-white"
+          color="bg-[#f0f0f0] text-[#0b0b0b]"
           inactiveColor="bg-[#141414] text-gray-600 hover:bg-gray-200"
         />
         {ROLE_ORDER.map((role) => (
@@ -147,16 +147,16 @@ export default function PlayerGrid({ players, seasonId }: Props) {
             active={roleFilter === role}
             onClick={() => handleFilterChange(role)}
             color={{
-              batsman:       'bg-blue-600 text-white',
-              bowler:        'bg-[#b5211e] text-white',
-              all_rounder:   'bg-[#111111] text-white',
-              wicket_keeper: 'bg-[#a8892e] text-white',
+              batsman:       'bg-blue-600 text-[#0b0b0b]',
+              bowler:        'bg-[#b5211e] text-[#0b0b0b]',
+              all_rounder:   'bg-[#f0f0f0] text-[#0b0b0b]',
+              wicket_keeper: 'bg-[#a8892e] text-[#0b0b0b]',
             }[role]}
             inactiveColor={{
               batsman:       'bg-blue-50 text-blue-700 hover:bg-blue-100',
               bowler:        'bg-red-50 text-[#b5211e] hover:bg-red-100',
-              all_rounder:   'bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#1a1a1a]',
-              wicket_keeper: 'bg-[#1a1500] text-[#C9A84C] hover:bg-[#231c00]',
+              all_rounder:   'bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#e8e8e8]',
+              wicket_keeper: 'bg-[#fef9ee] text-[#C9A84C] hover:bg-[#fef3d0]',
             }[role]}
           />
         ))}
@@ -224,7 +224,7 @@ function RoleTab({
     >
       {label}
       <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
-        active ? 'bg-[#111111]/25 text-white' : 'bg-black/8 text-current'
+        active ? 'bg-[#f5f5f5]/25 text-[#0b0b0b]' : 'bg-black/8 text-current'
       }`}>
         {count}
       </span>
@@ -234,19 +234,19 @@ function RoleTab({
 
 function PlayerCard({ player, seasonId }: { player: Player; seasonId: string }) {
   return (
-    <div className={`relative flex flex-col gap-2 rounded-xl border p-4 transition-colors hover:bg-[#0f0f0f] ${
-      !player.is_active ? 'opacity-60 bg-[#0f0f0f]' : 'bg-[#111111]'
+    <div className={`relative flex flex-col gap-2 rounded-xl border p-4 transition-colors hover:bg-[#f8f8f8] ${
+      !player.is_active ? 'opacity-60 bg-[#f8f8f8]' : 'bg-[#f0f0f0]'
     }`}>
       {/* Credit pill — top right */}
       <div className="absolute top-3 right-3">
-        <span className="inline-flex items-baseline gap-0.5 bg-[#111111] text-white rounded-lg px-2 py-0.5">
+        <span className="inline-flex items-baseline gap-0.5 bg-[#f0f0f0] text-[#0b0b0b] rounded-lg px-2 py-0.5">
           <span className="text-sm font-black tabular-nums">{Number(player.price).toFixed(1)}</span>
           <span className="text-[9px] font-semibold opacity-70 leading-none">cr</span>
         </span>
       </div>
 
       {/* Name */}
-      <p className="font-semibold text-[#ebebeb] text-sm leading-snug pr-14 min-h-[2.5rem] flex items-start">
+      <p className="font-semibold text-[#0b0b0b] text-sm leading-snug pr-14 min-h-[2.5rem] flex items-start">
         {player.name}
       </p>
 
@@ -256,7 +256,7 @@ function PlayerCard({ player, seasonId }: { player: Player; seasonId: string }) 
           {ROLE_LABELS[player.role]}
         </Badge>
         {!player.is_active && (
-          <Badge variant="outline" className="text-xs text-gray-400 border-[#2a2a2a]">Inactive</Badge>
+          <Badge variant="outline" className="text-xs text-gray-400 border-[#d8d8d8]">Inactive</Badge>
         )}
       </div>
 
@@ -316,7 +316,7 @@ function PageBtn({
       disabled={disabled}
       className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${
         active
-          ? 'bg-[#111111] text-white'
+          ? 'bg-[#f0f0f0] text-[#0b0b0b]'
           : disabled
           ? 'text-gray-300 cursor-not-allowed'
           : 'text-gray-600 hover:bg-[#141414]'

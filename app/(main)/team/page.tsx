@@ -125,7 +125,7 @@ export default async function TeamPage() {
   if (!nextMatch) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-[#ebebeb]">My Team</h1>
+        <h1 className="text-3xl font-bold text-[#0b0b0b]">My Team</h1>
         <Card>
           <CardContent className="py-16 text-center">
             <div className="text-4xl mb-3">📅</div>
@@ -142,7 +142,7 @@ export default async function TeamPage() {
   if (!players || players.length === 0) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-[#ebebeb]">My Team</h1>
+        <h1 className="text-3xl font-bold text-[#0b0b0b]">My Team</h1>
         <Card>
           <CardContent className="py-16 text-center">
             <div className="text-4xl mb-3">👤</div>

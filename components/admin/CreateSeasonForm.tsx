@@ -104,7 +104,7 @@ export default function CreateSeasonForm({ currentSeason, clubId }: CreateSeason
                 </div>
               </div>
               {currentSeason && (
-                <p className="text-xs text-[#C9A84C] bg-[#1a1500] border border-[#C9A84C]/30 px-3 py-2 rounded-md">
+                <p className="text-xs text-[#C9A84C] bg-[#fef9ee] border border-[#C9A84C]/30 px-3 py-2 rounded-md">
                   Creating a new season will deactivate &quot;{currentSeason.name}&quot;.
                 </p>
               )}

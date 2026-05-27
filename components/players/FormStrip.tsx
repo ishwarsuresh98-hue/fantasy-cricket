@@ -11,8 +11,8 @@ interface Props {
 }
 
 const CONFIG = {
-  above: { bg: 'bg-green-500', text: 'text-white', label: 'Above avg' },
-  below: { bg: 'bg-red-400',   text: 'text-white', label: 'Below avg' },
+  above: { bg: 'bg-green-500', text: 'text-[#0b0b0b]', label: 'Above avg' },
+  below: { bg: 'bg-red-400',   text: 'text-[#0b0b0b]', label: 'Below avg' },
   dnp:   { bg: 'bg-gray-200',  text: 'text-gray-500', label: 'Did not play' },
 }
 

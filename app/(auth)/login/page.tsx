@@ -76,7 +76,7 @@ function LoginForm() {
         <CardFooter className="flex flex-col gap-3">
           <Button
             type="submit"
-            className="w-full bg-[#161616] hover:bg-[#0a0a0a] text-white font-semibold"
+            className="w-full"
             disabled={loading}
           >
             {loading ? 'Signing in...' : 'Sign In'}
@@ -95,9 +95,9 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#161616] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-white p-4">
       {/* Background pattern */}
-      <div className="absolute inset-0 opacity-5" style={{
+      <div className="absolute inset-0 opacity-[0.03]" style={{
         backgroundImage: 'repeating-linear-gradient(45deg, #C9A84C 0, #C9A84C 1px, transparent 0, transparent 50%)',
         backgroundSize: '20px 20px'
       }} />
@@ -109,7 +109,7 @@ export default function LoginPage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/images/the-xi-logo.svg" alt="The XI" style={{ height: 100 }} />
           </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">THE XI</h1>
+          <h1 className="text-3xl font-extrabold text-[#0b0b0b] tracking-tight">THE XI</h1>
           <p className="text-[#C9A84C] font-semibold mt-0.5">Fantasy Cricket</p>
         </div>
 

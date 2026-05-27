@@ -43,7 +43,7 @@ export default async function ClubDashboardPage({
         {profile?.role === 'admin' && (
           <Link
             href={`${base}/admin`}
-            className="mt-2 px-5 py-2.5 rounded-lg bg-[#111111] hover:bg-[#0a0a0a] text-white font-semibold text-sm transition-colors"
+            className="mt-2 px-5 py-2.5 rounded-lg bg-[#f0f0f0] hover:bg-[#fafafa] text-[#0b0b0b] font-semibold text-sm transition-colors"
           >
             Go to Admin Panel
           </Link>
@@ -161,11 +161,11 @@ export default async function ClubDashboardPage({
     <div className="space-y-5">
 
       {/* ── Hero card ──────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl bg-[#111111] px-6 py-6 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-[#f0f0f0] px-6 py-6 shadow-xl">
         <div className="pointer-events-none absolute inset-0 opacity-5">
-          <div className="absolute left-1/2 top-0 bottom-0 w-[12%] -translate-x-1/2 bg-[#111111] rounded-sm" />
-          <div className="absolute inset-x-[8%] top-[30%] h-px bg-[#111111]" />
-          <div className="absolute inset-x-[8%] bottom-[30%] h-px bg-[#111111]" />
+          <div className="absolute left-1/2 top-0 bottom-0 w-[12%] -translate-x-1/2 bg-[#f0f0f0] rounded-sm" />
+          <div className="absolute inset-x-[8%] top-[30%] h-px bg-[#f0f0f0]" />
+          <div className="absolute inset-x-[8%] bottom-[30%] h-px bg-[#f0f0f0]" />
         </div>
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -173,20 +173,20 @@ export default async function ClubDashboardPage({
             {myTeam ? (
               <>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-bold uppercase tracking-widest text-white/40">{s.name}</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-[#0b0b0b]/40">{s.name}</span>
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight truncate">
+                <h1 className="text-2xl sm:text-3xl font-black text-[#0b0b0b] leading-tight truncate">
                   {myTeam.team_name}
                 </h1>
-                <p className="text-sm text-white/60 mt-0.5">{profile?.display_name ?? 'You'}</p>
+                <p className="text-sm text-[#0b0b0b]/60 mt-0.5">{profile?.display_name ?? 'You'}</p>
                 {rank !== null && (
                   <div className="mt-3 inline-flex items-center gap-2">
                     <span className={cn(
                       'inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-black',
-                      rank === 1 ? 'bg-[#C9A84C] text-[#C9A84C]' :
+                      rank === 1 ? 'bg-[#C9A84C] text-[#0b0b0b]' :
                       rank === 2 ? 'bg-gray-300 text-[#aaaaaa]' :
                       rank === 3 ? 'bg-orange-300 text-orange-900' :
-                      'bg-[#111111]/20 text-white',
+                      'bg-[#f5f5f5]/20 text-[#0b0b0b]',
                     )}>
                       {rank === 1 ? '🥇 ' : rank === 2 ? '🥈 ' : rank === 3 ? '🥉 ' : ''}
                       #{rank} of {allTeams?.length ?? 1}
@@ -196,8 +196,8 @@ export default async function ClubDashboardPage({
               </>
             ) : (
               <>
-                <h1 className="text-2xl font-black text-white">Welcome!</h1>
-                <p className="text-white/60 text-sm mt-1">You haven't created a team yet.</p>
+                <h1 className="text-2xl font-black text-[#0b0b0b]">Welcome!</h1>
+                <p className="text-[#0b0b0b]/60 text-sm mt-1">You haven't created a team yet.</p>
               </>
             )}
           </div>
@@ -209,21 +209,21 @@ export default async function ClubDashboardPage({
                   <p className="text-5xl sm:text-6xl font-black text-[#C9A84C] tabular-nums leading-none">
                     {fmtPts(myTeam.total_points)}
                   </p>
-                  <p className="text-xs font-bold uppercase tracking-widest text-white/50 mt-1">Total Points</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-[#0b0b0b]/50 mt-1">Total Points</p>
                 </div>
                 {teamValue > 0 && (
                   <div className="text-center sm:text-right">
-                    <p className="text-lg font-bold text-white/80">
-                      {teamValue.toFixed(1)} <span className="text-sm font-normal text-white/50">cr</span>
+                    <p className="text-lg font-bold text-[#0b0b0b]/80">
+                      {teamValue.toFixed(1)} <span className="text-sm font-normal text-[#0b0b0b]/50">cr</span>
                     </p>
-                    <p className="text-[10px] uppercase tracking-widest text-white/40">Team Value</p>
+                    <p className="text-[10px] uppercase tracking-widest text-[#0b0b0b]/40">Team Value</p>
                   </div>
                 )}
               </>
             ) : (
               <Link
                 href={`${base}/team`}
-                className="px-5 py-3 rounded-xl bg-[#C9A84C] text-[#C9A84C] font-black text-sm hover:bg-yellow-300 transition-colors"
+                className="px-5 py-3 rounded-xl bg-[#C9A84C] text-[#0b0b0b] font-black text-sm hover:bg-[#a8892e] transition-colors"
               >
                 Create Team →
               </Link>
@@ -242,7 +242,7 @@ export default async function ClubDashboardPage({
         />
 
         {lastGw ? (
-          <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] shadow-sm p-5 flex flex-col gap-4">
+          <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] shadow-sm p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
@@ -274,7 +274,7 @@ export default async function ClubDashboardPage({
                     return (
                       <>
                         <div
-                          className={cn('h-full rounded-l-full transition-all', ahead ? 'bg-green-500' : 'bg-[#111111]')}
+                          className={cn('h-full rounded-l-full transition-all', ahead ? 'bg-green-500' : 'bg-[#f0f0f0]')}
                           style={{ width: `${myW}%` }}
                         />
                         <div className="h-full bg-gray-300" style={{ width: `${Math.max(0, avgW - myW)}%` }} />
@@ -303,7 +303,7 @@ export default async function ClubDashboardPage({
             )}
           </div>
         ) : (
-          <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] shadow-sm p-5 flex flex-col items-center justify-center gap-2 min-h-[200px]">
+          <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] shadow-sm p-5 flex flex-col items-center justify-center gap-2 min-h-[200px]">
             <span className="text-3xl">📊</span>
             <p className="text-sm font-semibold text-[#aaaaaa]">No results yet</p>
             <p className="text-xs text-gray-400 text-center">GW summaries will appear once matches are completed.</p>
@@ -324,8 +324,8 @@ export default async function ClubDashboardPage({
             className={cn(
               'flex flex-col items-center justify-center gap-1.5 rounded-2xl py-4 px-2 text-center font-bold text-sm transition-all active:scale-95 select-none',
               primary
-                ? 'bg-[#111111] text-white hover:bg-[#0a0a0a] shadow-md shadow-[#C9A84C]/10'
-                : 'bg-[#111111] border border-[#2a2a2a] text-[#aaaaaa] hover:border-[#C9A84C]/40 hover:bg-[#1c1c1c]',
+                ? 'bg-[#C9A84C] text-[#0b0b0b] hover:bg-[#a8892e] shadow-lg shadow-[#C9A84C]/25 font-black'
+                : 'bg-[#e8e8e8] border border-[#C9A84C]/30 text-[#0b0b0b] hover:border-[#C9A84C] hover:bg-[#fef9ee]/50',
             )}
           >
             <span className="text-2xl">{icon}</span>
@@ -336,7 +336,7 @@ export default async function ClubDashboardPage({
 
       {/* ── GW form strip ─────────────────────────────────────────────────── */}
       {myGwHistory.length > 0 && (
-        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] shadow-sm p-5">
+        <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] shadow-sm p-5">
           <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Recent Form</p>
           <div className="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
             {myGwHistory.map((gw) => {
@@ -350,7 +350,9 @@ export default async function ClubDashboardPage({
                   key={gw.gw}
                   className={cn(
                     'flex-shrink-0 flex flex-col items-center gap-2 px-3 py-3 rounded-xl border-2 min-w-[72px] transition-colors',
-                    isLast ? 'border-[#C9A84C] bg-[#1c1c1c]' : 'border-transparent bg-[#0f0f0f]',
+                    isLast
+                      ? 'border-[#C9A84C] bg-[#fef9ee]/60 shadow-md shadow-[#C9A84C]/15'
+                      : 'border-[#d8d8d8] bg-[#f8f8f8]',
                   )}
                 >
                   <div className="flex items-end justify-center h-10 w-full">
@@ -370,7 +372,7 @@ export default async function ClubDashboardPage({
 
       {/* ── Boosters ────────────────────────────────────────────────────── */}
       {myTeam && (
-        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] shadow-sm p-5">
+        <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] shadow-sm p-5">
           <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Boosters</p>
           <div className="flex flex-wrap gap-2">
             {BOOSTERS.map((booster) => {
@@ -382,8 +384,8 @@ export default async function ClubDashboardPage({
                   <div className={cn(
                     'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors',
                     exhausted
-                      ? 'border-[#2a2a2a] bg-[#0f0f0f] text-gray-400'
-                      : 'border-[#C9A84C]/20 bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#1a1a1a]',
+                      ? 'border-[#d8d8d8] bg-[#f8f8f8] text-gray-500 opacity-50'
+                      : 'border-[#C9A84C] bg-[#fef9ee] text-[#C9A84C] hover:bg-[#fef3d0] hover:border-[#a8892e]',
                   )}>
                     <span>{booster.icon}</span>
                     <span>{booster.name}</span>
@@ -400,14 +402,14 @@ export default async function ClubDashboardPage({
 
       {/* ── GW points breakdown table ────────────────────────────────────── */}
       {gameweeks.length > 0 && allTeams && allTeams.length > 0 && (
-        <div className="rounded-2xl bg-[#111111] border border-[#2a2a2a] shadow-sm overflow-hidden">
+        <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] shadow-sm overflow-hidden">
           <div className="px-5 pt-5 pb-3">
             <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Gameweek Breakdown</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-y border-[#1e1e1e] bg-[#0f0f0f]">
+                <tr className="border-y border-[#1e1e1e] bg-[#f8f8f8]">
                   <th className="text-left px-5 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide min-w-[140px]">Team</th>
                   {gameweeks.map((gw) => (
                     <th key={gw.dateStr} title={gw.label} className="text-center px-3 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide min-w-[52px]">
@@ -421,11 +423,11 @@ export default async function ClubDashboardPage({
                 {(allTeams as FantasyTeam[]).map((team) => {
                   const isMe = team.user_id === user!.id
                   return (
-                    <tr key={team.id} className={isMe ? 'bg-[#1c1c1c]' : 'hover:bg-[#0f0f0f] transition-colors'}>
+                    <tr key={team.id} className={isMe ? 'bg-[#1c1c1c]' : 'hover:bg-[#f8f8f8] transition-colors'}>
                       <td className="px-5 py-3 font-medium text-[#d4d4d4]">
                         <span className="truncate block max-w-[160px]">{team.team_name}</span>
                         {isMe && (
-                          <Badge className="mt-0.5 bg-[#C9A84C] text-[#C9A84C] hover:bg-[#C9A84C] text-[10px] px-1.5">You</Badge>
+                          <Badge className="mt-0.5 bg-[#C9A84C] text-[#0b0b0b] hover:bg-[#C9A84C] text-[10px] px-1.5">You</Badge>
                         )}
                       </td>
                       {gameweeks.map((gw) => {

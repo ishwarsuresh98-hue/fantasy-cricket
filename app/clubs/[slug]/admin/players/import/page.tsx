@@ -26,7 +26,7 @@ export default async function ClubAdminPlayerImportPage({
   return (
     <div className="space-y-6 max-w-4xl">
       <div>
-        <h2 className="text-2xl font-bold text-[#ebebeb]">Import Players</h2>
+        <h2 className="text-2xl font-bold text-[#0b0b0b]">Import Players</h2>
         <p className="text-muted-foreground mt-0.5">{season.name} — upload an Excel file to bulk-add players</p>
       </div>
       <PlayerImport seasonId={season.id} />

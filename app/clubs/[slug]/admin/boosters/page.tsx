@@ -92,7 +92,7 @@ export default async function ClubAdminBoostersPage({
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-[#0f0f0f]">
+                <tr className="border-b bg-[#f8f8f8]">
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Team</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Owner</th>
                   {BOOSTERS.map((b) => (
@@ -108,7 +108,7 @@ export default async function ClubAdminBoostersPage({
                   const profile = Array.isArray(team.profiles) ? team.profiles[0] : team.profiles
 
                   return (
-                    <tr key={team.id} className="hover:bg-[#0f0f0f] transition-colors">
+                    <tr key={team.id} className="hover:bg-[#f8f8f8] transition-colors">
                       <td className="px-4 py-3 font-medium">{team.team_name}</td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {(profile as { display_name?: string } | null)?.display_name ?? '—'}
@@ -133,7 +133,7 @@ export default async function ClubAdminBoostersPage({
                                   return (
                                     <Badge
                                       key={i}
-                                      className="bg-[#1a1500] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#1a1500] text-xs block"
+                                      className="bg-[#fef9ee] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#fef9ee] text-xs block"
                                     >
                                       M{matchInfo.matches?.match_number ?? '?'}
                                     </Badge>

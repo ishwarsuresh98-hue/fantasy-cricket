@@ -66,7 +66,7 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="px-4 py-2 rounded-xl bg-[#111111] text-white text-sm font-bold hover:bg-[#0a0a0a] transition-colors"
+        className="px-4 py-2 rounded-xl bg-[#f0f0f0] text-[#0b0b0b] text-sm font-bold hover:bg-[#fafafa] transition-colors"
       >
         + Create Contest
       </button>
@@ -77,12 +77,12 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
           onClick={handleClose}
         >
           <div
-            className="w-full max-w-md bg-[#111111] rounded-2xl shadow-2xl overflow-hidden"
+            className="w-full max-w-md bg-[#f0f0f0] rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-[#111111] px-6 py-4">
-              <h2 className="text-white font-black text-lg">Create Contest</h2>
-              <p className="text-white/60 text-sm">Admin — create a public or private contest</p>
+            <div className="bg-[#f0f0f0] px-6 py-4">
+              <h2 className="text-[#0b0b0b] font-black text-lg">Create Contest</h2>
+              <p className="text-[#0b0b0b]/60 text-sm">Admin — create a public or private contest</p>
             </div>
 
             <div className="p-6 space-y-4">
@@ -96,7 +96,7 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="e.g. Season Champions League"
                       maxLength={60}
-                      className="w-full px-3 py-2.5 rounded-xl border border-[#2a2a2a] text-sm text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
                     />
                   </div>
 
@@ -109,8 +109,8 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
                           onClick={() => setType(t)}
                           className={`flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-all capitalize ${
                             type === t
-                              ? 'bg-[#111111] border-[#C9A84C] text-white'
-                              : 'bg-[#111111] border-[#2a2a2a] text-gray-600 hover:border-[#C9A84C]/40'
+                              ? 'bg-[#f0f0f0] border-[#C9A84C] text-[#0b0b0b]'
+                              : 'bg-[#f0f0f0] border-[#d8d8d8] text-gray-600 hover:border-[#C9A84C]/40'
                           }`}
                         >
                           {t}
@@ -127,7 +127,7 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
                     <select
                       value={maxTeams}
                       onChange={(e) => setMaxTeams(Number(e.target.value))}
-                      className="w-full px-3 py-2.5 rounded-xl border border-[#2a2a2a] text-sm text-[#d4d4d4] bg-[#111111] focus:outline-none focus:border-[#C9A84C] transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#d4d4d4] bg-[#f0f0f0] focus:outline-none focus:border-[#C9A84C] transition-colors"
                     >
                       {[10, 20, 50, 100, 200, 500].map((n) => (
                         <option key={n} value={n}>{n} teams</option>
@@ -145,20 +145,20 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
                       placeholder="e.g. Trophy + £50 bar tab for the winner"
                       rows={2}
                       maxLength={200}
-                      className="w-full px-3 py-2.5 rounded-xl border border-[#2a2a2a] text-sm text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] transition-colors resize-none"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] transition-colors resize-none"
                     />
                   </div>
 
                   {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
 
                   <div className="flex gap-2 pt-1">
-                    <button onClick={handleClose} className="flex-1 py-2.5 rounded-xl border border-[#2a2a2a] text-gray-600 text-sm font-semibold hover:bg-[#0f0f0f] transition-colors">
+                    <button onClick={handleClose} className="flex-1 py-2.5 rounded-xl border border-[#d8d8d8] text-gray-600 text-sm font-semibold hover:bg-[#f8f8f8] transition-colors">
                       Cancel
                     </button>
                     <button
                       onClick={handleCreate}
                       disabled={saving}
-                      className="flex-1 py-2.5 rounded-xl bg-[#111111] text-white text-sm font-black hover:bg-[#0a0a0a] disabled:opacity-60 transition-colors"
+                      className="flex-1 py-2.5 rounded-xl bg-[#f0f0f0] text-[#0b0b0b] text-sm font-black hover:bg-[#fafafa] disabled:opacity-60 transition-colors"
                     >
                       {saving ? 'Creating…' : 'Create'}
                     </button>
@@ -174,7 +174,7 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
                       <p className="text-3xl font-black tracking-[0.3em] text-[#C9A84C] font-mono">{done}</p>
                     </div>
                   )}
-                  <button onClick={handleClose} className="w-full py-2.5 rounded-xl bg-[#111111] text-white text-sm font-bold hover:bg-[#0a0a0a] transition-colors">
+                  <button onClick={handleClose} className="w-full py-2.5 rounded-xl bg-[#f0f0f0] text-[#0b0b0b] text-sm font-bold hover:bg-[#fafafa] transition-colors">
                     Done
                   </button>
                 </div>

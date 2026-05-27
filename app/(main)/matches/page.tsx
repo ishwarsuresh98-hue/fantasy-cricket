@@ -85,12 +85,12 @@ export default async function MatchesPage() {
               >
                 <div
                   className={`h-px flex-1 ${
-                    isActive ? 'bg-[#111111]' : 'bg-gray-200'
+                    isActive ? 'bg-[#f0f0f0]' : 'bg-gray-200'
                   }`}
                 />
                 <div className="flex items-center gap-2 shrink-0">
                   {isActive && (
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold bg-[#111111] text-white px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold bg-[#f0f0f0] text-[#0b0b0b] px-2 py-0.5 rounded-full">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#C9A84C] inline-block" />
                       Current
                     </span>
@@ -104,7 +104,7 @@ export default async function MatchesPage() {
                 </div>
                 <div
                   className={`h-px flex-1 ${
-                    isActive ? 'bg-[#111111]' : 'bg-gray-200'
+                    isActive ? 'bg-[#f0f0f0]' : 'bg-gray-200'
                   }`}
                 />
               </div>
@@ -119,8 +119,8 @@ export default async function MatchesPage() {
               >
                 {gwMatches.map((match) => (
                   <Link key={match.id} href={`/matches/${match.id}`}>
-                    <div className={`flex items-center justify-between p-4 rounded-lg border bg-[#111111] hover:bg-[#1c1c1c] hover:border-[#C9A84C] transition-colors cursor-pointer group ${
-                      isActive ? 'border-[#C9A84C]/20' : 'border-[#2a2a2a]'
+                    <div className={`flex items-center justify-between p-4 rounded-lg border bg-[#f0f0f0] hover:bg-[#1c1c1c] hover:border-[#C9A84C] transition-colors cursor-pointer group ${
+                      isActive ? 'border-[#C9A84C]/20' : 'border-[#d8d8d8]'
                     }`}>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
@@ -132,12 +132,12 @@ export default async function MatchesPage() {
                               Completed
                             </Badge>
                           ) : (
-                            <Badge className="text-xs bg-[#1a1500] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#1a1500]">
+                            <Badge className="text-xs bg-[#fef9ee] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#fef9ee]">
                               Upcoming
                             </Badge>
                           )}
                         </div>
-                        <p className="font-semibold text-[#ebebeb] group-hover:text-[#C9A84C]">
+                        <p className="font-semibold text-[#0b0b0b] group-hover:text-[#C9A84C]">
                           {match.opponent}
                         </p>
                         {match.venue && (

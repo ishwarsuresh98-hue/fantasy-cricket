@@ -37,7 +37,7 @@ export default async function AdminPlayersPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-2xl font-bold text-[#ebebeb]">Players</h2>
+          <h2 className="text-2xl font-bold text-[#0b0b0b]">Players</h2>
           <p className="text-muted-foreground">{season.name} • {allPlayers.length} players</p>
         </div>
         <div className="flex items-center gap-2">

@@ -12,7 +12,7 @@ const ROLE_COLORS: Record<string, string> = {
   batsman: 'bg-blue-100 text-blue-700',
   bowler: 'bg-[#fceaea] text-[#b5211e]',
   all_rounder: 'bg-[#1c1c1c] text-[#C9A84C]',
-  wicket_keeper: 'bg-[#1a1500] text-[#C9A84C]',
+  wicket_keeper: 'bg-[#fef9ee] text-[#C9A84C]',
 }
 
 interface Props {
@@ -122,7 +122,7 @@ export default function PlayingXIForm({ matchId, players, existingXI }: Props) {
                       className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-left transition-all disabled:opacity-60 ${
                         isPlaying
                           ? 'bg-green-50 border-green-400 ring-1 ring-green-300'
-                          : 'bg-[#111111] border-[#2a2a2a] hover:border-gray-400 hover:bg-[#0f0f0f]'
+                          : 'bg-[#f0f0f0] border-[#d8d8d8] hover:border-gray-400 hover:bg-[#f8f8f8]'
                       }`}
                     >
                       <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isPlaying ? 'bg-green-500' : 'bg-gray-300'}`} />

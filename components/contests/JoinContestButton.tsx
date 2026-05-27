@@ -70,7 +70,7 @@ export default function JoinContestButton({
           'px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
           loading
             ? 'bg-[#141414] text-gray-400 cursor-wait'
-            : 'bg-[#111111] text-white hover:bg-[#0a0a0a]',
+            : 'bg-[#f0f0f0] text-[#0b0b0b] hover:bg-[#fafafa]',
         )}
       >
         {loading ? 'Joining…' : 'Join'}

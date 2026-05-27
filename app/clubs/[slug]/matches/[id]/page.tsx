@@ -13,7 +13,7 @@ const ROLE_BADGE: Record<string, string> = {
   batsman:       'bg-blue-100 text-blue-700',
   bowler:        'bg-[#fceaea] text-[#b5211e]',
   all_rounder:   'bg-[#1c1c1c] text-[#C9A84C]',
-  wicket_keeper: 'bg-[#1a1500] text-[#C9A84C]',
+  wicket_keeper: 'bg-[#fef9ee] text-[#C9A84C]',
 }
 
 function srBonus(runs: number, balls: number, didNotBat: boolean): number | null {
@@ -91,14 +91,14 @@ export default async function ClubMatchDetailPage({
           <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
             <Link href={`${base}/matches`} className="hover:text-[#C9A84C] hover:underline">Matches</Link>
             <span>/</span>
-            <span className="text-[#ebebeb] font-medium">Match {match.match_number}</span>
+            <span className="text-[#0b0b0b] font-medium">Match {match.match_number}</span>
           </div>
           <h1 className="text-3xl font-bold text-[#C9A84C]">{match.opponent}</h1>
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <Badge variant="outline">Match {match.match_number}</Badge>
             {match.status === 'completed'
               ? <Badge className="bg-[#141414] text-[#aaaaaa] hover:bg-[#141414]">Completed</Badge>
-              : <Badge className="bg-[#1a1500] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#1a1500]">Upcoming</Badge>
+              : <Badge className="bg-[#fef9ee] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#fef9ee]">Upcoming</Badge>
             }
           </div>
           {match.venue   && <p className="text-muted-foreground mt-1">{match.venue}</p>}
@@ -113,7 +113,7 @@ export default async function ClubMatchDetailPage({
               buttonVariants({ variant: match.status === 'completed' ? 'outline' : 'default' }),
               match.status === 'completed'
                 ? 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#1c1c1c] shrink-0'
-                : 'bg-[#111111] hover:bg-[#0a0a0a] text-white shrink-0',
+                : 'bg-[#f0f0f0] hover:bg-[#fafafa] text-[#0b0b0b] shrink-0',
             )}
           >
             {match.status === 'completed' ? 'Edit Stats' : 'Enter Stats'}
@@ -124,13 +124,13 @@ export default async function ClubMatchDetailPage({
       {/* Scorecard */}
       {match.status === 'completed' && performances && performances.length > 0 ? (
         <Card>
-          <CardHeader className="bg-[#111111] rounded-t-xl">
-            <CardTitle className="text-white text-base">Player Scorecard</CardTitle>
+          <CardHeader className="bg-[#f0f0f0] rounded-t-xl">
+            <CardTitle className="text-[#0b0b0b] text-base">Player Scorecard</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-[#0f0f0f] border-b">
+                <thead className="bg-[#f8f8f8] border-b">
                   <tr>
                     <th className="text-left   text-xs font-medium text-muted-foreground uppercase tracking-wide px-4 py-3 min-w-[140px]">Player</th>
                     <th className="text-left   text-xs font-medium text-muted-foreground uppercase tracking-wide px-3 py-3">Role</th>
@@ -212,7 +212,7 @@ export default async function ClubMatchDetailPage({
             {isAdmin && (
               <Link
                 href={`${base}/admin/matches/${match.id}/stats`}
-                className={cn(buttonVariants(), 'mt-4 inline-flex bg-[#111111] hover:bg-[#0a0a0a]')}
+                className={cn(buttonVariants(), 'mt-4 inline-flex bg-[#f0f0f0] hover:bg-[#fafafa]')}
               >
                 Enter Player Stats
               </Link>

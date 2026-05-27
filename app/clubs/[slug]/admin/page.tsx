@@ -42,7 +42,7 @@ export default async function ClubAdminPage({
 
       {season ? (
         <Card className="border-[#C9A84C] border-2">
-          <CardHeader className="bg-[#111111] rounded-t-xl pb-3">
+          <CardHeader className="bg-[#f0f0f0] rounded-t-xl pb-3">
             <CardTitle className="text-sm text-[#C9A84C] font-semibold uppercase tracking-wide">Active Season</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
@@ -93,7 +93,7 @@ export default async function ClubAdminPage({
       )}
 
       {season && (
-        <div className="rounded-xl border border-[#2a2a2a] bg-[#111111] p-5 space-y-3">
+        <div className="rounded-xl border border-[#d8d8d8] bg-[#f0f0f0] p-5 space-y-3">
           <p className="text-sm font-bold text-[#C9A84C]">Utilities</p>
           <RecalculatePointsButton />
         </div>

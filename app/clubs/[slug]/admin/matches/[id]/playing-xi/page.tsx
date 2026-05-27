@@ -55,7 +55,7 @@ export default async function ClubAdminPlayingXIPage({
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-[#ebebeb]">Set Playing XI</h2>
+          <h2 className="text-2xl font-bold text-[#0b0b0b]">Set Playing XI</h2>
           <p className="text-muted-foreground mt-0.5">
             Match {match.match_number} — {match.opponent} &bull; {matchDate}
           </p>

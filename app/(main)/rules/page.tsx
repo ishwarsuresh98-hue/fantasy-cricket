@@ -47,7 +47,7 @@ export default function RulesPage() {
               <p className="text-2xl font-bold text-[#C9A84C]">1 day</p>
               <p className="text-xs text-muted-foreground mt-1">= 1 gameweek</p>
             </div>
-            <div className="p-3 rounded-lg border bg-[#1a1500] border-[#C9A84C]/60 text-center">
+            <div className="p-3 rounded-lg border bg-[#fef9ee] border-[#C9A84C]/60 text-center">
               <p className="text-2xl font-bold text-[#C9A84C]">−30 min</p>
               <p className="text-xs text-muted-foreground mt-1">before earliest match</p>
             </div>
@@ -139,7 +139,7 @@ export default function RulesPage() {
         <CardContent className="space-y-4 text-sm text-[#aaaaaa]">
           <div className="grid sm:grid-cols-2 gap-3">
             {[
-              { role: 'Wicket-Keepers', range: '1 – 4', color: 'bg-[#1a1500] text-[#C9A84C] border-yellow-200' },
+              { role: 'Wicket-Keepers', range: '1 – 4', color: 'bg-[#fef9ee] text-[#C9A84C] border-yellow-200' },
               { role: 'Batsmen', range: '3 – 6', color: 'bg-blue-50 text-blue-700 border-blue-200' },
               { role: 'All-Rounders', range: '1 – 4', color: 'bg-[#1c1c1c] text-[#C9A84C] border-[#C9A84C]/20' },
               { role: 'Bowlers', range: '3 – 6', color: 'bg-[#fceaea] text-[#b5211e] border-red-200' },
@@ -297,12 +297,12 @@ export default function RulesPage() {
                 { icon: '🧤', name: 'Keeping Surge', uses: '1×', desc: 'Your wicket-keeper earns 2× points for that match.' },
                 { icon: '🆓', name: 'Free Hit', uses: '1×', desc: 'No budget restriction this match — pick any players. Your squad automatically reverts after.' },
               ].map(({ icon, name, uses, desc }) => (
-                <div key={name} className="flex gap-3 p-3 rounded-lg border bg-[#0f0f0f]">
+                <div key={name} className="flex gap-3 p-3 rounded-lg border bg-[#f8f8f8]">
                   <span className="text-2xl shrink-0">{icon}</span>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-semibold text-[#C9A84C]">{name}</p>
-                      <Badge className="bg-[#111111] text-white hover:bg-[#111111] text-xs px-1.5">{uses} per season</Badge>
+                      <Badge className="bg-[#f0f0f0] text-[#0b0b0b] hover:bg-[#f0f0f0] text-xs px-1.5">{uses} per season</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
                   </div>
@@ -321,12 +321,12 @@ export default function RulesPage() {
                 { icon: '🧊', name: 'Score Freeze', uses: '2×', desc: 'Lock in your current season total as a guaranteed floor. If your team scores less than that floor this matchday, the shortfall is topped up automatically. If you score more, you get the higher score.' },
                 { icon: '🎲', name: 'Underdog', uses: '2×', desc: 'If your team scores below the matchday average your points are doubled. If you score above average, points are normal. Rewards risk-taking and keeps lower-ranked managers competitive.' },
               ].map(({ icon, name, uses, desc }) => (
-                <div key={name} className="flex gap-3 p-3 rounded-lg border bg-[#1a1500] border-[#C9A84C]/60">
+                <div key={name} className="flex gap-3 p-3 rounded-lg border bg-[#fef9ee] border-[#C9A84C]/60">
                   <span className="text-2xl shrink-0">{icon}</span>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-semibold text-[#C9A84C]">{name}</p>
-                      <Badge className="bg-[#C9A84C] text-[#C9A84C] hover:bg-[#C9A84C] text-xs px-1.5 font-bold">{uses} per season</Badge>
+                      <Badge className="bg-[#C9A84C] text-[#0b0b0b] hover:bg-[#C9A84C] text-xs px-1.5 font-bold">{uses} per season</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
                   </div>
