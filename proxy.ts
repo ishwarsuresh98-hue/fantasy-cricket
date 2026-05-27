@@ -1,7 +1,51 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// ── Domain → club slug mapping ────────────────────────────────────────────────
+// Add new club domains here as they go live.
+const CLUB_DOMAINS: Record<string, string> = {
+  'sloughfantasycricket.co.uk': 'slough-cc',
+}
+
+// ── Routes that never require authentication ───────────────────────────────────
+const PUBLIC_PREFIXES = [
+  '/login',
+  '/signup',
+  '/auth/callback',
+  '/xi',          // The XI platform hub
+  '/club-home',   // Public club landing pages
+]
+
 export async function proxy(request: NextRequest) {
+  const rawHost = request.headers.get('host') ?? ''
+  // Strip www. prefix and port so "www.sloughfantasycricket.co.uk" and
+  // "sloughfantasycricket.co.uk" both match the same key.
+  const hostname = rawHost.replace(/^www\./, '').replace(/:\d+$/, '')
+  const { pathname } = request.nextUrl
+
+  // ── Domain-based rewrites (root path only) ────────────────────────────────
+  // These happen before auth so that public landing pages aren't gated.
+  //
+  //  the-xi.app/              → /xi         (The XI platform hub)
+  //  sloughfantasycricket.co.uk/ → /club-home/slough-cc  (club public landing)
+  //
+  if (pathname === '/') {
+    if (hostname === 'the-xi.app') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/xi'
+      return NextResponse.rewrite(url)
+    }
+
+    const clubSlug = CLUB_DOMAINS[hostname]
+    if (clubSlug) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/club-home/${clubSlug}`
+      return NextResponse.rewrite(url)
+    }
+  }
+
+  // ── Supabase session refresh ───────────────────────────────────────────────
+  // Must happen on every request so the session token stays fresh.
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -25,16 +69,12 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
-
-  // Public routes — always accessible; no redirect needed here.
-  // (Login/signup pages redirect to /dashboard themselves after success.)
-  const publicPaths = ['/login', '/signup', '/auth/callback']
-  if (publicPaths.some((p) => pathname.startsWith(p))) {
+  // ── Public routes — always accessible ─────────────────────────────────────
+  if (PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
     return supabaseResponse
   }
 
-  // Protected routes — redirect to login if not authenticated
+  // ── Protected routes — redirect to login if not authenticated ─────────────
   if (!user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
@@ -43,5 +83,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+  ],
 }
