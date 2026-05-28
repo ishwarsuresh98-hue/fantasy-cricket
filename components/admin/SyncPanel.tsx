@@ -169,8 +169,17 @@ export default function SyncPanel({ seasonId, seasonYear, matches }: Props) {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
+  function ordinal(n: number): string {
+    const s = ['th', 'st', 'nd', 'rd']
+    const v = n % 100
+    return n + (s[(v - 20) % 10] ?? s[v] ?? s[0])
+  }
+
   function matchLabel(m: MatchOption) {
-    return `M${m.match_number} vs ${m.opponent} · ${new Date(m.match_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
+    const date = new Date(m.match_date).toLocaleDateString('en-GB', {
+      day: 'numeric', month: 'short', year: 'numeric',
+    })
+    return `${ordinal(m.match_number)} XI vs ${m.opponent} · ${date}`
   }
 
   function selectClass() {

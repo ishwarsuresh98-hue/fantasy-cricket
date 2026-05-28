@@ -25,11 +25,28 @@ export default async function ClubAdminSyncPage({
     ? new Date(season.start_date).getFullYear().toString()
     : new Date().getFullYear().toString()
 
-  const { data: matches } = season
+  // ── Matches: all club seasons, date window −30d → +60d ──────────────────
+  // Don't restrict to the active season — manually-imported matches from any
+  // season and matches whose season link is missing should still appear.
+  const { data: allSeasons } = await supabase
+    .from('seasons')
+    .select('id')
+    .eq('club_id', club.id)
+
+  const seasonIds = (allSeasons ?? []).map(s => s.id)
+
+  const windowStart = new Date()
+  windowStart.setDate(windowStart.getDate() - 30)
+  const windowEnd = new Date()
+  windowEnd.setDate(windowEnd.getDate() + 60)
+
+  const { data: matches } = seasonIds.length > 0
     ? await supabase
         .from('matches')
         .select('id, match_number, opponent, match_date, play_cricket_id')
-        .eq('season_id', season.id)
+        .in('season_id', seasonIds)
+        .gte('match_date', windowStart.toISOString().split('T')[0])
+        .lte('match_date', windowEnd.toISOString().split('T')[0])
         .order('match_date', { ascending: false })
     : { data: [] }
 
