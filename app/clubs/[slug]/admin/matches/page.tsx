@@ -9,7 +9,8 @@ import { cn } from '@/lib/utils'
 import type { Match } from '@/types'
 import MatchForm from '@/components/admin/MatchForm'
 import DeleteMatchButton from '@/components/admin/DeleteMatchButton'
-import GenerateContestsButton from '@/components/admin/GenerateContestsButton'
+import GenerateContestsButton   from '@/components/admin/GenerateContestsButton'
+import GenerateGWContestsButton from '@/components/admin/GenerateGWContestsButton'
 
 const MAX_XI = 11
 
@@ -60,6 +61,21 @@ export default async function ClubAdminMatchesPage({
   const xiCounts: Record<string, number> = {}
   for (const row of xiRows ?? []) {
     xiCounts[row.match_id] = (xiCounts[row.match_id] ?? 0) + 1
+  }
+
+  // ── Gameweek lookup: match_id → gameweek row ──────────────────────────────
+  const allMatchIds = (matches ?? []).map((m: Match) => m.id)
+  const { data: gwRows } = allMatchIds.length > 0
+    ? await supabase
+        .from('gameweeks')
+        .select('id, number, name, match_id')
+        .eq('season_id', season.id)
+        .in('match_id', allMatchIds)
+    : { data: [] }
+
+  const gwByMatch: Record<string, { id: string; name: string; number: number }> = {}
+  for (const gw of gwRows ?? []) {
+    if (gw.match_id) gwByMatch[gw.match_id] = { id: gw.id, name: gw.name, number: gw.number }
   }
 
   return (
@@ -155,6 +171,12 @@ export default async function ClubAdminMatchesPage({
                       <GenerateContestsButton
                         matchId={match.id}
                         matchLabel={`GW${match.match_number} vs ${match.opponent}`}
+                      />
+                    )}
+                    {match.status === 'upcoming' && gwByMatch[match.id] && (
+                      <GenerateGWContestsButton
+                        gameweekId={gwByMatch[match.id].id}
+                        gameweekLabel={`${gwByMatch[match.id].name} vs ${match.opponent}`}
                       />
                     )}
                     <MatchForm seasonId={season.id} match={match} nextMatchNumber={match.match_number} />

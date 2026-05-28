@@ -13,6 +13,9 @@ interface Props {
   walletBalance: number
   clubSlug:      string
   category:      ContestCategory
+  /** If set, this is a gameweek contest — redirect to pick-team if no team yet */
+  gameweekId?:   string | null
+  hasTeam?:      boolean   // user already has a contest_team for this contest
 }
 
 type Stage = 'idle' | 'confirm' | 'joining' | 'stripe' | 'joined'
@@ -37,6 +40,8 @@ export default function ContestDetailJoin({
   walletBalance: initialBalance,
   clubSlug,
   category,
+  gameweekId,
+  hasTeam = false,
 }: Props) {
   const router      = useRouter()
   const [stage, setStage]     = useState<Stage>('idle')
@@ -79,6 +84,17 @@ export default function ContestDetailJoin({
   }, [contestId, fantasyTeamId, router])
 
   function handlePrimary() {
+    // Gameweek contest with no team picked yet → go to pick-team page
+    if (gameweekId && !hasTeam) {
+      router.push(`/clubs/${clubSlug}/contests/${contestId}/pick-team`)
+      return
+    }
+    // Gameweek contest with team already picked → use pick-team API for payment
+    if (gameweekId && hasTeam) {
+      router.push(`/clubs/${clubSlug}/contests/${contestId}/pick-team`)
+      return
+    }
+    // Regular contest
     if (isFree) {
       void doJoin('wallet')
     } else if (canAfford) {
@@ -193,7 +209,9 @@ export default function ContestDetailJoin({
             : `${accentBtn} text-white`,
         )}
       >
-        {isFree
+        {gameweekId
+          ? (hasTeam ? '✏️ Edit Team & Join' : '🏏 Pick Your Team →')
+          : isFree
           ? '🎯 Play Free'
           : canAfford
           ? `Join · ${fmt(entryFee)}`

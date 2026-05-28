@@ -105,15 +105,22 @@ export default async function ContestDetailPage({
     ? await supabase.from('matches').select('id, match_number, opponent, match_date, venue, status').eq('id', c.match_id).single()
     : { data: null }
 
-  // ── Season (for wallet) ────────────────────────────────────────────────────
-  const [{ data: myTeam }, { data: wallet }] = await Promise.all([
+  // ── Season (for wallet) + contest_team check ───────────────────────────────
+  const userId = user?.id ?? ''
+  const gwId   = ((c as unknown) as Record<string, unknown>).gameweek_id as string | null ?? null
+
+  const [{ data: myTeam }, { data: wallet }, { data: myContestTeam }] = await Promise.all([
     c.season_id
-      ? supabase.from('fantasy_teams').select('id').eq('season_id', c.season_id).eq('user_id', user!.id).maybeSingle()
-      : { data: null },
-    supabase.from('wallets').select('balance').eq('user_id', user!.id).maybeSingle(),
+      ? supabase.from('fantasy_teams').select('id').eq('season_id', c.season_id).eq('user_id', userId).maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase.from('wallets').select('balance').eq('user_id', userId).maybeSingle(),
+    gwId
+      ? supabase.from('contest_teams').select('id').eq('contest_id', id).eq('user_id', userId).maybeSingle()
+      : Promise.resolve({ data: null }),
   ])
   const myTeamId      = myTeam?.id ?? null
   const walletBalance = Number(wallet?.balance ?? 0)
+  const hasContestTeam = !!myContestTeam
 
   // ── Entries ────────────────────────────────────────────────────────────────
   const { data: entries } = await supabase
@@ -135,7 +142,7 @@ export default async function ContestDetailPage({
     team_name:    t.team_name as string,
     display_name: (t.profiles as { display_name: string } | null)?.display_name ?? '—',
     total_points: Number(t.total_points ?? 0),
-    is_me:        t.user_id === user!.id,
+    is_me:        t.user_id === userId,
   }))
 
   // ── Derived contest metadata ───────────────────────────────────────────────
@@ -254,6 +261,8 @@ export default async function ContestDetailPage({
           walletBalance={walletBalance}
           clubSlug={slug}
           category={category}
+          gameweekId={gwId}
+          hasTeam={hasContestTeam}
         />
       )}
       {!myTeamId && !isJoined && (
@@ -261,6 +270,19 @@ export default async function ContestDetailPage({
           <span>Create a fantasy team to join this contest.</span>
           <Link href={`${base}/team`} className="bg-[#C9A84C] text-black px-3 py-1.5 rounded-lg text-xs font-black hover:bg-[#a8892e] transition-colors flex-shrink-0">
             Create Team
+          </Link>
+        </div>
+      )}
+
+      {/* Gameweek: show link to view/edit team picks */}
+      {gwId && isJoined && (
+        <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 text-sm text-blue-800 font-medium flex items-center justify-between gap-3">
+          <span>✅ You&apos;re entered{hasContestTeam ? ' with your gameweek team.' : '.'}</span>
+          <Link
+            href={`${base}/contests/${id}/pick-team`}
+            className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-black hover:bg-blue-700 transition-colors flex-shrink-0"
+          >
+            View Team
           </Link>
         </div>
       )}

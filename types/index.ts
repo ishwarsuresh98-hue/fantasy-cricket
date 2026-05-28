@@ -299,3 +299,41 @@ export interface Notification {
   metadata: Record<string, unknown>
   created_at: string
 }
+
+// ── Gameweek contest types ────────────────────────────────────────────────────
+
+/** One entry in a contest_team's players JSONB array. */
+export interface ContestTeamPlayer {
+  player_id:       string
+  is_captain:      boolean
+  is_vice_captain: boolean
+}
+
+/** Row from the contest_teams table. */
+export interface ContestTeamRow {
+  id:              string
+  contest_id:      string
+  user_id:         string
+  players:         ContestTeamPlayer[]
+  total_points:    number
+  rank:            number | null
+  created_at:      string
+}
+
+/** Row from the gameweeks table. */
+export interface GameweekRow {
+  id:         string
+  season_id:  string
+  match_id:   string | null
+  number:     number
+  match_date: string
+  is_active:  boolean
+  name:       string   // e.g. "GW5"
+}
+
+/** LobbyContest extended with gameweek metadata. */
+export interface GWLobbyContest extends LobbyContest {
+  gameweek_id:     string | null
+  gameweek_number: number | null
+  has_team:        boolean   // user already has a contest_team for this contest
+}

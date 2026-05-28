@@ -2,6 +2,7 @@ import { createClient }    from '@/lib/supabase/server'
 import { getClubBySlug }  from '@/lib/club'
 import { notFound }       from 'next/navigation'
 import Link               from 'next/link'
+import { cn }             from '@/lib/utils'
 import { netPrizePool, type PrizeSlot } from '@/lib/prizes'
 import type { ContestCategory, LobbyContest, MatchGroup } from '@/types'
 import ContestPageClient         from '@/components/contests/ContestPageClient'
@@ -56,6 +57,38 @@ export default async function ClubContestsPage({
   ])
   const myTeamId      = myTeam?.id ?? null
   const walletBalance = Number(wallet?.balance ?? 0)
+
+  // ── Active gameweek + its contests ────────────────────────────────────────
+  const { data: activeGw } = await supabase
+    .from('gameweeks')
+    .select('id, number, name, match_date, match_id')
+    .eq('season_id', season.id)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  let gwContests: Record<string, unknown>[] = []
+  let myGwContestTeamIds = new Set<string>()
+
+  if (activeGw) {
+    const { data: gwRows } = await supabase
+      .from('contests')
+      .select('*')
+      .eq('gameweek_id', activeGw.id)
+      .or('status.eq.open,status.is.null')
+      .order('entry_fee', { ascending: true })
+    gwContests = (gwRows ?? []) as Record<string, unknown>[]
+
+    // Which GW contests does the user already have a contest_team for?
+    if (userId && gwContests.length > 0) {
+      const gwContestIds = gwContests.map((c) => c.id as string)
+      const { data: myTeams } = await supabase
+        .from('contest_teams')
+        .select('contest_id')
+        .eq('user_id', userId)
+        .in('contest_id', gwContestIds)
+      myGwContestTeamIds = new Set((myTeams ?? []).map((t: { contest_id: string }) => t.contest_id))
+    }
+  }
 
   // ── All upcoming matches ───────────────────────────────────────────────────
   const { data: upcomingMatches } = await supabase
@@ -169,6 +202,16 @@ export default async function ClubContestsPage({
   const nextMatch     = matchList[0] ?? null
   const matchLockTime = nextMatch?.match_date ?? null
 
+  // ── GW lobby (with has_team flag) ─────────────────────────────────────────
+  const gwLobbyContests = gwContests.map((c) => {
+    const base = toLobbyCcontest(c)
+    return { ...base, gameweek_id: activeGw?.id ?? null, has_team: myGwContestTeamIds.has(base.id) }
+  })
+
+  const gwDate = activeGw
+    ? new Date(activeGw.match_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' })
+    : null
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -192,6 +235,83 @@ export default async function ClubContestsPage({
           <Link href={`${base}/team`} className="bg-[#C9A84C] text-black px-3 py-1.5 rounded-lg text-xs font-black hover:bg-[#a8892e] transition-colors flex-shrink-0">
             Create Team
           </Link>
+        </div>
+      )}
+
+      {/* ── Gameweek Contests (active GW) ─────────────────────────────────── */}
+      {activeGw && gwLobbyContests.length > 0 && (
+        <div className="space-y-3">
+          {/* GW header */}
+          <div className="rounded-2xl bg-gradient-to-r from-[#C9A84C] to-[#a8892e] px-5 py-4 text-black">
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-0.5">
+              Active · {activeGw.name}
+            </p>
+            <p className="text-lg font-black">Gameweek Contests</p>
+            <p className="text-sm opacity-80 mt-0.5">
+              {gwDate} · {gwLobbyContests.length} contest{gwLobbyContests.length !== 1 ? 's' : ''} available
+            </p>
+            <p className="text-xs opacity-60 mt-1">
+              Pick a fresh XI for each contest you enter
+            </p>
+          </div>
+
+          {/* GW contest cards */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            {gwLobbyContests.map((c) => {
+              const isFree    = c.entry_fee === 0
+              const isFull    = c.entry_count >= c.max_teams
+              const pct       = c.max_teams > 0 ? Math.min(100, Math.round((c.entry_count / c.max_teams) * 100)) : 0
+              const isJoined  = c.is_joined
+              const hasTeam   = (c as typeof c & { has_team?: boolean }).has_team ?? false
+              return (
+                <Link
+                  key={c.id}
+                  href={`${base}/contests/${c.id}`}
+                  className={cn(
+                    'block rounded-2xl border-2 px-5 py-4 transition-all hover:shadow-md',
+                    isJoined ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-white hover:border-[#C9A84C]/50',
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-black text-gray-800 truncate">{c.name}</p>
+                      {isJoined ? (
+                        <span className="text-[10px] font-black text-green-700 bg-green-100 px-2 py-0.5 rounded-full">✓ Entered{hasTeam ? ' · Team saved' : ''}</span>
+                      ) : (
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[#C9A84C]">🏏 Pick XI to enter</span>
+                      )}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-lg font-black text-[#C9A84C] tabular-nums">
+                        {c.prize_pool > 0 ? `£${c.prize_pool % 1 === 0 ? c.prize_pool : c.prize_pool.toFixed(2)}` : '—'}
+                      </p>
+                      <p className="text-[10px] text-gray-400">prize pool</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mb-1.5 text-xs">
+                    <span className="text-gray-500">{c.entry_count}/{c.max_teams} spots</span>
+                    <span className={cn('font-bold', isFree ? 'text-green-600' : 'text-[#C9A84C]')}>
+                      {isFree ? 'Free' : `£${Number(c.entry_fee).toFixed(2)}`}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={cn('h-full rounded-full transition-all', pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-orange-400' : 'bg-[#C9A84C]')}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  {isFull && <p className="text-xs text-red-500 font-bold mt-1.5">Full — no spots left</p>}
+                </Link>
+              )
+            })}
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 pt-2">
+            <div className="h-px flex-1 bg-gray-200" />
+            <span className="text-xs font-bold uppercase tracking-widest text-gray-400 flex-shrink-0">All Contests</span>
+            <div className="h-px flex-1 bg-gray-200" />
+          </div>
         </div>
       )}
 
