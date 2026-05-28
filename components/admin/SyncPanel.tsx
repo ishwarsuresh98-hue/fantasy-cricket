@@ -69,9 +69,13 @@ export default function SyncPanel({ seasonId, seasonYear, matches }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ season_id: seasonId, season_year: seasonYear }),
       })
-      const j = await res.json() as { imported?: number; updated?: number; message?: string; error?: string }
+      const j = await res.json() as {
+        imported?: number; updated?: number; skipped?: number
+        auto_xi_synced?: number; message?: string; error?: string
+      }
       if (res.ok) {
-        setMatchSync({ state: 'done', message: `${j.imported ?? 0} imported, ${j.updated ?? 0} updated`, ts: now() })
+        const xiMsg = (j.auto_xi_synced ?? 0) > 0 ? ` · ${j.auto_xi_synced} XI${j.auto_xi_synced === 1 ? '' : 's'} auto-synced` : ''
+        setMatchSync({ state: 'done', message: `${j.imported ?? 0} imported, ${j.updated ?? 0} updated${xiMsg}`, ts: now() })
       } else {
         setMatchSync({ state: 'error', message: j.error ?? 'Error', ts: now() })
       }

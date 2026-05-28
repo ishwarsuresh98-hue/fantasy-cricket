@@ -1,7 +1,8 @@
 import { NextResponse }      from 'next/server'
 import { createClient }      from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getMatches, parsePCDate, isSloughTeam, isYouthMatch } from '@/lib/playcricket'
+import { getMatches, getMatchDetail, parsePCDate, isSloughTeam, isYouthMatch } from '@/lib/playcricket'
+import { broadcastPush } from '@/lib/push'
 
 // ── POST /api/sync/matches ────────────────────────────────────────────────────
 //
@@ -184,5 +185,149 @@ export async function POST(req: Request) {
     }
   }
 
-  return NextResponse.json({ ok: true, fetched, filtered, imported, updated, skipped })
+  // ── Auto-sync playing XIs for upcoming matches ────────────────────────────
+  // After the fixture sync, check every upcoming match that now has a
+  // play_cricket_id. If Play Cricket already has a confirmed team sheet
+  // (players in match_detail), auto-sync the XI and push a notification
+  // to admin users so they know the squad is locked in.
+
+  const today = new Date().toISOString().split('T')[0]
+
+  // Load all upcoming matches for this season that have a Play Cricket link
+  const { data: upcomingRows } = await admin
+    .from('matches')
+    .select('id, match_number, opponent, match_date, play_cricket_id, season_id')
+    .eq('season_id', body.season_id)
+    .gte('match_date', today)
+    .not('play_cricket_id', 'is', null)
+    .order('match_date', { ascending: true })
+
+  const upcoming = upcomingRows ?? []
+
+  if (upcoming.length === 0) {
+    return NextResponse.json({ ok: true, fetched, filtered, imported, updated, skipped, auto_xi_synced: 0, xi_details: [] })
+  }
+
+  // Which matches already have XI rows in the DB?
+  const upcomingIds = upcoming.map(m => m.id as string)
+  const { data: existingXiRows } = await admin
+    .from('match_playing_xi')
+    .select('match_id')
+    .in('match_id', upcomingIds)
+
+  const matchesWithXi = new Set((existingXiRows ?? []).map(r => r.match_id as string))
+
+  // Load season players once (shared across all auto-XI syncs below)
+  const { data: seasonPlayers } = await admin
+    .from('players')
+    .select('id, name')
+    .eq('season_id', body.season_id)
+    .eq('is_active', true)
+
+  function normName(n: string) {
+    return n.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, ' ').trim()
+  }
+
+  const playerByNorm: Record<string, string> = {}
+  for (const p of seasonPlayers ?? []) {
+    playerByNorm[normName(p.name)] = p.id
+    const parts = normName(p.name).split(' ')
+    if (parts.length > 1) {
+      const lastName = parts[parts.length - 1]
+      if (!playerByNorm[lastName]) playerByNorm[lastName] = p.id
+    }
+  }
+
+  interface XiDetail {
+    match_id:   string
+    match_label: string
+    matched:    number
+    unmatched:  number
+    newly_confirmed: boolean
+  }
+
+  let auto_xi_synced = 0
+  const xi_details: XiDetail[] = []
+
+  for (const match of upcoming) {
+    const pcId = match.play_cricket_id as string
+    const alreadyHadXi = matchesWithXi.has(match.id as string)
+
+    let detail
+    try {
+      detail = await getMatchDetail(pcId)
+    } catch {
+      // Network / API error for one match — skip, don't abort the whole response
+      continue
+    }
+
+    if (!detail?.players) continue  // XI not published yet
+
+    const homeIsSlough = isSloughTeam(detail.home_team_name)
+    const sloughPlayers = homeIsSlough
+      ? (detail.players.home_team ?? [])
+      : (detail.players.away_team ?? [])
+
+    if (sloughPlayers.length === 0) continue
+
+    // Resolve player IDs
+    const rows: { match_id: string; player_id: string }[] = []
+    const unmatched: string[] = []
+    for (const pcPlayer of sloughPlayers) {
+      const norm = normName(pcPlayer.name)
+      const pid  = playerByNorm[norm]
+      if (pid) {
+        rows.push({ match_id: match.id as string, player_id: pid })
+      } else {
+        unmatched.push(pcPlayer.name)
+      }
+    }
+
+    if (rows.length === 0) continue
+
+    // Clear old rows and insert fresh ones
+    await admin.from('match_playing_xi').delete().eq('match_id', match.id as string)
+    await admin.from('match_playing_xi').insert(rows)
+
+    const matchLabel = `Match ${match.match_number as number} vs ${match.opponent as string} (${match.match_date as string})`
+
+    xi_details.push({
+      match_id:        match.id as string,
+      match_label:     matchLabel,
+      matched:         rows.length,
+      unmatched:       unmatched.length,
+      newly_confirmed: !alreadyHadXi,
+    })
+
+    if (!alreadyHadXi) {
+      auto_xi_synced++
+
+      // Push notification to all admin users
+      try {
+        // Find admin user IDs so we broadcast only to admins
+        const { data: admins } = await admin
+          .from('profiles')
+          .select('id')
+          .eq('role', 'admin')
+
+        const adminIds = (admins ?? []).map(a => a.id as string)
+
+        for (const adminId of adminIds) {
+          await broadcastPush({
+            payload: {
+              title: '🏏 Team sheet confirmed!',
+              body:  `The playing XI for ${match.opponent as string} on ${match.match_date as string} has been imported from Play Cricket.`,
+              url:   `/clubs/admin/sync`,
+              type:  'xi_confirmed',
+            },
+            userId: adminId,
+          })
+        }
+      } catch {
+        // Push failure must not break the sync response
+      }
+    }
+  }
+
+  return NextResponse.json({ ok: true, fetched, filtered, imported, updated, skipped, auto_xi_synced, xi_details })
 }
