@@ -152,6 +152,40 @@ export function isSloughTeam(name: string): boolean {
   return /slough/i.test(name)
 }
 
+/**
+ * Keywords that identify colts, junior, or age-category matches.
+ * Any match where home_team_name, away_team_name, competition_name, or
+ * league_name contains one of these strings (case-insensitive) is excluded
+ * from senior sync.
+ */
+const YOUTH_KEYWORDS = [
+  'colts', 'under',
+  'u9', 'u10', 'u11', 'u12', 'u13', 'u14', 'u15', 'u16', 'u17', 'u18',
+  'junior', 'youth', 'girls', 'boys', 'kwik', 'tape ball',
+]
+
+const YOUTH_RE = new RegExp(
+  YOUTH_KEYWORDS.map(k => `\\b${k.replace(' ', '\\s+')}\\b`).join('|'),
+  'i',
+)
+
+/**
+ * Returns true when the match is a colts/junior/age-category fixture and
+ * should be excluded from senior sync.
+ */
+export function isYouthMatch(match: Pick<
+  PCMatchSummary,
+  'home_team_name' | 'away_team_name' | 'competition_name' | 'league_name'
+>): boolean {
+  const fields = [
+    match.home_team_name,
+    match.away_team_name,
+    match.competition_name ?? '',
+    match.league_name      ?? '',
+  ]
+  return fields.some(f => YOUTH_RE.test(f))
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**

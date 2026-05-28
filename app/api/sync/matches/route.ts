@@ -1,7 +1,7 @@
 import { NextResponse }      from 'next/server'
 import { createClient }      from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getMatches, parsePCDate, isSloughTeam } from '@/lib/playcricket'
+import { getMatches, parsePCDate, isSloughTeam, isYouthMatch } from '@/lib/playcricket'
 
 // ── POST /api/sync/matches ────────────────────────────────────────────────────
 //
@@ -43,9 +43,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: (e as Error).message }, { status: 502 })
   }
 
-  // Filter to Slough's matches only (exclude friendlies / cup matches if needed)
+  // Filter to senior Slough matches only — exclude colts/junior/age-category fixtures
   const sloughMatches = pcMatches.filter(
-    m => isSloughTeam(m.home_team_name) || isSloughTeam(m.away_team_name)
+    m =>
+      (isSloughTeam(m.home_team_name) || isSloughTeam(m.away_team_name)) &&
+      !isYouthMatch(m),
   )
 
   if (sloughMatches.length === 0) {
