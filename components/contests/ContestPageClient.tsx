@@ -3,8 +3,7 @@
 import { useState, useMemo } from 'react'
 import { cn }                from '@/lib/utils'
 import ContestLobby          from '@/components/ContestLobby'
-import type { LobbyContest } from '@/components/ContestLobby'
-import type { MatchGroup }   from '@/app/clubs/[slug]/contests/page'
+import type { LobbyContest, MatchGroup } from '@/types'
 
 // ── Filter / sort types ───────────────────────────────────────────────────────
 

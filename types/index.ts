@@ -220,6 +220,34 @@ export interface ContestEntry {
   joined_at:       string
 }
 
+// ── Contest lobby / contests page shared types ────────────────────────────────
+
+/** A contest as needed by the lobby card and contests page client. */
+export interface LobbyContest {
+  id:                string
+  name:              string
+  type:              'public' | 'private'
+  contest_category:  ContestCategory
+  entry_fee:         number
+  prize_pool:        number
+  guaranteed_prize:  boolean
+  max_teams:         number
+  prize_description: string | null
+  entry_count:       number
+  is_joined:         boolean
+}
+
+/** Upcoming match with its open contests, used on the contests list page. */
+export interface MatchGroup {
+  matchId:     string
+  matchNumber: number
+  opponent:    string
+  matchDate:   string
+  venue:       string | null
+  isNext:      boolean
+  contests:    LobbyContest[]
+}
+
 export interface Wallet {
   id:         string
   user_id:    string

@@ -6,28 +6,15 @@
  * card designs, and a join flow that checks wallet first then falls back to Stripe.
  */
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useId, useMemo, useCallback } from 'react'
 import { createClient }         from '@/lib/supabase/client'
 import { cn }                   from '@/lib/utils'
 import ContestPaymentWrapper    from '@/components/ContestPaymentWrapper'
 import Link                     from 'next/link'
-import type { ContestCategory } from '@/types'
+import type { ContestCategory, LobbyContest } from '@/types'
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-export interface LobbyContest {
-  id:                string
-  name:              string
-  type:              'public' | 'private'
-  contest_category:  ContestCategory
-  entry_fee:         number
-  prize_pool:        number
-  guaranteed_prize:  boolean
-  max_teams:         number
-  prize_description: string | null
-  entry_count:       number
-  is_joined:         boolean
-}
+// Re-export so existing imports from this file continue to work
+export type { LobbyContest }
 
 interface ContestLobbyProps {
   initialContests: LobbyContest[]
@@ -210,6 +197,7 @@ export default function ContestLobby({
   const countdown = useCountdown(matchLockTime)
   const isLocked  = countdown === 'LOCKED'
 
+  const instanceId = useId()
   const [contests, setContests] = useState<LobbyContest[]>(initialContests)
   const [balance,  setBalance]  = useState(initialBalance)
   const [tab,        setTab]        = useState<TabFilter>('all')
@@ -217,10 +205,10 @@ export default function ContestLobby({
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [join,     setJoin]     = useState<JoinState | null>(null)
 
-  // Real-time entry count updates
+  // Real-time entry count updates — unique channel name per instance to avoid conflicts
   useEffect(() => {
     const supabase = createClient()
-    const channel  = supabase.channel('lobby-entries')
+    const channel  = supabase.channel(`lobby-entries-${instanceId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contest_entries' }, (p) => {
         const { contest_id } = p.new as { contest_id: string }
         setContests((prev) => prev.map((c) => c.id === contest_id ? { ...c, entry_count: c.entry_count + 1 } : c))
@@ -281,7 +269,7 @@ export default function ContestLobby({
       <div className="flex items-center justify-between gap-3 rounded-2xl bg-gray-100 border border-gray-200 px-5 py-4">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Wallet</p>
-          <p className="text-2xl font-black text-[#C9A84C] tabular-nums">£{balance.toFixed(2)}</p>
+          <p className="text-2xl font-black text-[#C9A84C] tabular-nums">£{Number(balance).toFixed(2)}</p>
         </div>
         <div className="h-10 w-px bg-gray-300" />
         <div className="text-right">

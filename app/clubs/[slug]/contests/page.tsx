@@ -3,8 +3,7 @@ import { getClubBySlug }  from '@/lib/club'
 import { notFound }       from 'next/navigation'
 import Link               from 'next/link'
 import { netPrizePool, type PrizeSlot } from '@/lib/prizes'
-import type { ContestCategory }  from '@/types'
-import type { LobbyContest }     from '@/components/ContestLobby'
+import type { ContestCategory, LobbyContest, MatchGroup } from '@/types'
 import ContestPageClient         from '@/components/contests/ContestPageClient'
 
 // Map DB contest type → ContestCategory
@@ -18,16 +17,6 @@ const TYPE_TO_CATEGORY: Record<string, ContestCategory> = {
   private:          'small_league',
 }
 
-export interface MatchGroup {
-  matchId:     string
-  matchNumber: number
-  opponent:    string
-  matchDate:   string
-  venue:       string | null
-  isNext:      boolean
-  contests:    LobbyContest[]
-}
-
 export default async function ClubContestsPage({
   params,
 }: {
@@ -39,6 +28,7 @@ export default async function ClubContestsPage({
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const userId = user?.id ?? ''
   const base = `/clubs/${slug}`
 
   // ── Active season ──────────────────────────────────────────────────────────
@@ -61,11 +51,11 @@ export default async function ClubContestsPage({
 
   // ── User team & wallet ─────────────────────────────────────────────────────
   const [{ data: myTeam }, { data: wallet }] = await Promise.all([
-    supabase.from('fantasy_teams').select('id').eq('season_id', season.id).eq('user_id', user!.id).maybeSingle(),
-    supabase.from('wallets').select('balance').eq('user_id', user!.id).maybeSingle(),
+    userId ? supabase.from('fantasy_teams').select('id').eq('season_id', season.id).eq('user_id', userId).maybeSingle() : Promise.resolve({ data: null }),
+    userId ? supabase.from('wallets').select('balance').eq('user_id', userId).maybeSingle() : Promise.resolve({ data: null }),
   ])
   const myTeamId      = myTeam?.id ?? null
-  const walletBalance = (wallet?.balance ?? 0) as number
+  const walletBalance = Number(wallet?.balance ?? 0)
 
   // ── All upcoming matches ───────────────────────────────────────────────────
   const { data: upcomingMatches } = await supabase
