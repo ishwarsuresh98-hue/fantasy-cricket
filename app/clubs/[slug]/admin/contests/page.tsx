@@ -165,8 +165,8 @@ export default async function ClubAdminContestsPage({
   const season    = (allSeasons ?? []).find(s => s.is_active) ?? null
   const seasonIds = (allSeasons ?? []).map(s => s.id)
 
-  // ── All matches for this club ─────────────────────────────────────────────
-  const { data: allMatches } = seasonIds.length > 0
+  // ── All matches for this club (matches carry season_id) ──────────────────
+  const { data: matchesData } = seasonIds.length > 0
     ? await supabase
         .from('matches')
         .select('id, season_id, match_number, opponent, match_date, venue, status')
@@ -174,27 +174,62 @@ export default async function ClubAdminContestsPage({
         .order('match_date', { ascending: false })
     : { data: [] as MatchRow[] }
 
+  const allMatches = (matchesData ?? []) as MatchRow[]
+  const matchIds   = allMatches.map(m => m.id)
   const matchById: Record<string, MatchRow> = {}
-  for (const m of allMatches ?? []) matchById[m.id] = m as MatchRow
+  for (const m of allMatches) matchById[m.id] = m
 
-  // ── Gameweeks for GW generation dropdown (active season) ──────────────────
-  const { data: gameweeks } = season
+  // ── All gameweeks for this club (season_id on gameweeks) ─────────────────
+  // Used for: (a) GW dropdown (active season only), (b) finding GW-only contests
+  const { data: allGwData } = seasonIds.length > 0
     ? await supabase
         .from('gameweeks')
-        .select('id, name, number, match_date')
-        .eq('season_id', season.id)
+        .select('id, season_id, match_id, name, number, match_date')
+        .in('season_id', seasonIds)
         .order('number')
-    : { data: [] as { id: string; name: string; number: number; match_date: string }[] }
+    : { data: [] as { id: string; season_id: string; match_id: string | null; name: string; number: number; match_date: string }[] }
 
-  // ── ALL contests for this club — query by season_id IN (all season IDs) ───
-  let allContests: ContestRow[] = []
-  if (seasonIds.length > 0) {
-    const { data } = await supabase
-      .from('contests')
-      .select('*')
-      .in('season_id', seasonIds)
-      .order('created_at', { ascending: false })
-    allContests = (data ?? []) as ContestRow[]
+  const gwIds = (allGwData ?? []).map(gw => gw.id)
+
+  // Dropdown only shows active season's gameweeks
+  const gameweeks = (allGwData ?? []).filter(gw => gw.season_id === season?.id)
+
+  // ── Fetch ALL contests for this club ──────────────────────────────────────
+  // contests table has NO season_id column — join through matches or gameweeks.
+  //
+  // Query A: contests with match_id IN (club match IDs)
+  // Query B: contests with gameweek_id IN (club GW IDs) AND match_id IS NULL
+  //          (GW contests where the gameweek has no linked match)
+  //
+  // Merge A + B, deduplicate by id.
+
+  const [{ data: contestsByMatch }, { data: contestsByGw }] = await Promise.all([
+    matchIds.length > 0
+      ? supabase
+          .from('contests')
+          .select('*')
+          .in('match_id', matchIds)
+          .order('created_at', { ascending: false })
+      : Promise.resolve({ data: [] }),
+
+    gwIds.length > 0
+      ? supabase
+          .from('contests')
+          .select('*')
+          .in('gameweek_id', gwIds)
+          .is('match_id', null)
+          .order('created_at', { ascending: false })
+      : Promise.resolve({ data: [] }),
+  ])
+
+  const seenIds = new Set<string>()
+  const allContests: ContestRow[] = []
+  for (const c of [...(contestsByMatch ?? []), ...(contestsByGw ?? [])]) {
+    const contest = c as ContestRow
+    if (!seenIds.has(contest.id)) {
+      seenIds.add(contest.id)
+      allContests.push(contest)
+    }
   }
 
   // ── Entry counts ──────────────────────────────────────────────────────────
@@ -226,7 +261,7 @@ export default async function ClubAdminContestsPage({
   }
 
   // Matches that actually have contests, ordered by date desc
-  const matchesWithContests = (allMatches ?? []).filter(m => byMatch[m.id])
+  const matchesWithContests = allMatches.filter(m => byMatch[m.id])
 
   return (
     <div className="space-y-6">
