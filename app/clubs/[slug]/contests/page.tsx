@@ -68,15 +68,25 @@ export default async function ClubContestsPage({
 
   let gwContests: Record<string, unknown>[] = []
   let myGwContestTeamIds = new Set<string>()
+  let gwPlayerCount = 0          // confirmed playing XI count for active GW
 
   if (activeGw) {
-    const { data: gwRows } = await supabase
-      .from('contests')
-      .select('*')
-      .eq('gameweek_id', activeGw.id)
-      .or('status.eq.open,status.is.null')
-      .order('entry_fee', { ascending: true })
-    gwContests = (gwRows ?? []) as Record<string, unknown>[]
+    const [{ data: gwRows }, { count: xiCount }] = await Promise.all([
+      supabase
+        .from('contests')
+        .select('*')
+        .eq('gameweek_id', activeGw.id)
+        .or('status.eq.open,status.is.null')
+        .order('entry_fee', { ascending: true }),
+      activeGw.match_id
+        ? supabase
+            .from('match_playing_xi')
+            .select('player_id', { count: 'exact', head: true })
+            .eq('match_id', activeGw.match_id)
+        : Promise.resolve({ count: 0 }),
+    ])
+    gwContests    = (gwRows ?? []) as Record<string, unknown>[]
+    gwPlayerCount = xiCount ?? 0
 
     // Which GW contests does the user already have a contest_team for?
     if (userId && gwContests.length > 0) {
@@ -243,15 +253,17 @@ export default async function ClubContestsPage({
         <div className="space-y-3">
           {/* GW header */}
           <div className="rounded-2xl bg-gradient-to-r from-[#C9A84C] to-[#a8892e] px-5 py-4 text-black">
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-0.5">
-              Active · {activeGw.name}
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">
+              Active · {gwDate}
             </p>
-            <p className="text-lg font-black">Gameweek Contests</p>
-            <p className="text-sm opacity-80 mt-0.5">
-              {gwDate} · {gwLobbyContests.length} contest{gwLobbyContests.length !== 1 ? 's' : ''} available
-            </p>
+            <p className="text-2xl font-black leading-tight">Gameweek {activeGw.number}</p>
+            {gwPlayerCount > 0 ? (
+              <p className="text-base font-black mt-0.5">{gwPlayerCount} players available</p>
+            ) : (
+              <p className="text-sm opacity-70 mt-0.5">Team sheet not yet confirmed</p>
+            )}
             <p className="text-xs opacity-60 mt-1">
-              Pick a fresh XI for each contest you enter
+              {gwLobbyContests.length} contest{gwLobbyContests.length !== 1 ? 's' : ''} · Pick a fresh XI for each you enter
             </p>
           </div>
 

@@ -73,6 +73,7 @@ export interface Match {
   venue: string | null
   status: MatchStatus
   result: string | null
+  play_cricket_id?: string | null   // Play Cricket match ID for API sync
   created_at: string
 }
 
