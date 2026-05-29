@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { createClient }  from '@/lib/supabase/server'
 import { getClubBySlug } from '@/lib/club'
 import { notFound }      from 'next/navigation'
