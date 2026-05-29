@@ -87,7 +87,7 @@ export async function POST(req: Request) {
   const fetched = pcMatches.length
 
   // ── Apply youth/colts filter ──────────────────────────────────────────────
-  const sloughAll    = pcMatches.filter(m => isSloughTeam(m.home_team_name) || isSloughTeam(m.away_team_name))
+  const sloughAll    = pcMatches.filter(m => isSloughTeam(m.home_club_name) || isSloughTeam(m.away_club_name))
   const sloughSenior = sloughAll.filter(m => !isYouthMatch(m))
   const filtered     = sloughAll.length - sloughSenior.length
 
@@ -266,7 +266,7 @@ export async function POST(req: Request) {
 
     if (!detail?.players) continue  // XI not published yet
 
-    const homeIsSlough = isSloughTeam(detail.home_team_name)
+    const homeIsSlough = isSloughTeam(detail.home_club_name)
     const sloughPlayers = homeIsSlough
       ? (detail.players.home_team ?? [])
       : (detail.players.away_team ?? [])
