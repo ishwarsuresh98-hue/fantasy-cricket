@@ -84,6 +84,41 @@ export default function SyncPanel({ seasonId, seasonYear, matches }: Props) {
     }
   }
 
+  // ── Quick Import by Play Cricket ID ──────────────────────────────────────
+  const [quickPcId, setQuickPcId] = useState('')
+  const [quickSync, setQuickSync] = useState<SyncResult>({ state: 'idle', message: '', ts: null })
+
+  async function quickImport() {
+    if (!quickPcId.trim()) {
+      setQuickSync({ state: 'error', message: 'Enter a Play Cricket match ID', ts: null })
+      return
+    }
+    setQuickSync({ state: 'loading', message: 'Looking up match…', ts: null })
+    try {
+      const res1  = await fetch('/api/admin/match-by-pc-id?pc_id=' + quickPcId.trim())
+      const json1 = await res1.json() as { data: { id: string } | null; error?: string }
+      if (!json1.data) {
+        setQuickSync({ state: 'error', message: json1.error ?? 'No match found with that Play Cricket ID. Run Sync Matches first.', ts: now() })
+        return
+      }
+      setQuickSync({ state: 'loading', message: 'Fetching scorecard & calculating points…', ts: null })
+      const res2 = await fetch('/api/sync/results', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ match_id: json1.data.id, pc_match_id: quickPcId.trim() }),
+      })
+      const j = await res2.json() as { players_synced?: number; teams_updated?: number; error?: string }
+      if (res2.ok) {
+        setQuickSync({ state: 'done', message: `${j.players_synced ?? 0} players synced · ${j.teams_updated ?? 0} contest teams updated`, ts: now() })
+        setQuickPcId('')
+      } else {
+        setQuickSync({ state: 'error', message: j.error ?? 'Error', ts: now() })
+      }
+    } catch (e: unknown) {
+      setQuickSync({ state: 'error', message: (e as Error).message, ts: now() })
+    }
+  }
+
   // ── Sync Playing XI ───────────────────────────────────────────────────────
   const [xiMatchId,  setXiMatchId]  = useState('')
   const [pcXiId,     setPcXiId]     = useState('')
@@ -219,6 +254,30 @@ export default function SyncPanel({ seasonId, seasonYear, matches }: Props) {
         >
           {matchSync.state === 'loading' ? 'Syncing…' : '↓ Sync Matches from Play Cricket'}
         </button>
+      </SyncSection>
+
+      {/* ── 1b. Quick Import by Play Cricket ID ──────────────────────────── */}
+      <SyncSection
+        title="Quick Import by Play Cricket ID"
+        description="Enter a Play Cricket match ID to instantly import results and calculate fantasy points — no dropdown needed."
+      >
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={quickPcId}
+            onChange={e => setQuickPcId(e.target.value)}
+            placeholder="e.g. 7276987"
+            className={inputClass() + ' flex-1'}
+          />
+          <button
+            onClick={() => void quickImport()}
+            disabled={quickSync.state === 'loading'}
+            className={btnClass('gold', quickSync.state === 'loading')}
+          >
+            {quickSync.state === 'loading' ? 'Importing…' : '↓ Import & Calc Points'}
+          </button>
+        </div>
+        <StatusBadge result={quickSync} />
       </SyncSection>
 
       {/* ── 2. Sync Playing XI ───────────────────────────────────────────── */}
