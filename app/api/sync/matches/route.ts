@@ -193,13 +193,14 @@ export async function POST(req: Request) {
 
   const today = new Date().toISOString().split('T')[0]
 
-  // Load all upcoming matches for this season that have a Play Cricket link
+  // Load all upcoming matches for this season — including those where
+  // play_cricket_id was just stamped on by the upsert loop above so that
+  // newly-linked matches are picked up for XI auto-sync in the same request.
   const { data: upcomingRows } = await admin
     .from('matches')
     .select('id, match_number, opponent, match_date, play_cricket_id, season_id')
     .eq('season_id', body.season_id)
     .gte('match_date', today)
-    .not('play_cricket_id', 'is', null)
     .order('match_date', { ascending: true })
 
   const upcoming = upcomingRows ?? []
@@ -250,7 +251,9 @@ export async function POST(req: Request) {
   const xi_details: XiDetail[] = []
 
   for (const match of upcoming) {
-    const pcId = match.play_cricket_id as string
+    const pcId = match.play_cricket_id as string | null
+    if (!pcId) continue   // no PC link yet — nothing to look up
+
     const alreadyHadXi = matchesWithXi.has(match.id as string)
 
     let detail
