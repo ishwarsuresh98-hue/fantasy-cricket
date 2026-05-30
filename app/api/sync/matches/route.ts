@@ -266,7 +266,7 @@ export async function POST(req: Request) {
 
     if (!detail?.players) continue  // XI not published yet
 
-    const homeIsSlough = isSloughTeam(detail.home_club_name)
+    const homeIsSlough = isSloughTeam(detail.home_team_name)
     const sloughPlayers = homeIsSlough
       ? (detail.players.home_team ?? [])
       : (detail.players.away_team ?? [])
