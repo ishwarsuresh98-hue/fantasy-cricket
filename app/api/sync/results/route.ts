@@ -62,7 +62,7 @@ export async function POST(req: Request) {
 
   // ── Identify Slough's team ID ─────────────────────────────────────────────
   // Check both club name (more reliable) and team name as fallback
-  const homeIsSlough  = isSloughTeam(detail.home_team_name) || isSloughTeam((detail as Record<string, unknown>).home_club_name as string ?? '')
+  const homeIsSlough  = isSloughTeam(detail.home_team_name) || isSloughTeam(detail.home_club_name)
   const sloughTeamId  = homeIsSlough ? detail.home_team_id : detail.away_team_id
 
   function normName(n: string) {
