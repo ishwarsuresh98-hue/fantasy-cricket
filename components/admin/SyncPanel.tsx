@@ -84,38 +84,74 @@ export default function SyncPanel({ seasonId, seasonYear, matches }: Props) {
     }
   }
 
-  // ── Quick Import by Play Cricket ID ──────────────────────────────────────
-  const [quickPcId, setQuickPcId] = useState('')
-  const [quickSync, setQuickSync] = useState<SyncResult>({ state: 'idle', message: '', ts: null })
+  // ── Quick XI by Play Cricket ID ───────────────────────────────────────────
+  const [quickXiPcId, setQuickXiPcId] = useState('')
+  const [quickXiSync, setQuickXiSync] = useState<SyncResult>({ state: 'idle', message: '', ts: null })
 
-  async function quickImport() {
-    if (!quickPcId.trim()) {
-      setQuickSync({ state: 'error', message: 'Enter a Play Cricket match ID', ts: null })
+  async function quickSyncXI() {
+    if (!quickXiPcId.trim()) {
+      setQuickXiSync({ state: 'error', message: 'Enter a Play Cricket match ID', ts: null })
       return
     }
-    setQuickSync({ state: 'loading', message: 'Looking up match…', ts: null })
+    setQuickXiSync({ state: 'loading', message: 'Looking up match…', ts: null })
     try {
-      const res1  = await fetch('/api/admin/match-by-pc-id?pc_id=' + quickPcId.trim())
+      const res1  = await fetch('/api/admin/match-by-pc-id?pc_id=' + quickXiPcId.trim())
       const json1 = await res1.json() as { data: { id: string } | null; error?: string }
       if (!json1.data) {
-        setQuickSync({ state: 'error', message: json1.error ?? 'No match found with that Play Cricket ID. Run Sync Matches first.', ts: now() })
+        setQuickXiSync({ state: 'error', message: json1.error ?? 'No match found with that Play Cricket ID.', ts: now() })
         return
       }
-      setQuickSync({ state: 'loading', message: 'Fetching scorecard & calculating points…', ts: null })
+      setQuickXiSync({ state: 'loading', message: 'Fetching playing XI from Play Cricket…', ts: null })
+      const res2 = await fetch('/api/sync/playing-xi', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ match_id: json1.data.id, pc_match_id: quickXiPcId.trim() }),
+      })
+      const j = await res2.json() as { matched?: number; unmatched_names?: string[]; error?: string }
+      if (res2.ok) {
+        const unmatchedStr = j.unmatched_names?.length ? ` · Unmatched: ${j.unmatched_names.join(', ')}` : ''
+        setQuickXiSync({ state: 'done', message: `${j.matched ?? 0} players matched${unmatchedStr}`, ts: now() })
+        setQuickXiPcId('')
+      } else {
+        setQuickXiSync({ state: 'error', message: j.error ?? 'Error', ts: now() })
+      }
+    } catch (e: unknown) {
+      setQuickXiSync({ state: 'error', message: (e as Error).message, ts: now() })
+    }
+  }
+
+  // ── Quick Results by Play Cricket ID ──────────────────────────────────────
+  const [quickResPcId, setQuickResPcId] = useState('')
+  const [quickResSync, setQuickResSync] = useState<SyncResult>({ state: 'idle', message: '', ts: null })
+
+  async function quickImportResults() {
+    if (!quickResPcId.trim()) {
+      setQuickResSync({ state: 'error', message: 'Enter a Play Cricket match ID', ts: null })
+      return
+    }
+    setQuickResSync({ state: 'loading', message: 'Looking up match…', ts: null })
+    try {
+      const res1  = await fetch('/api/admin/match-by-pc-id?pc_id=' + quickResPcId.trim())
+      const json1 = await res1.json() as { data: { id: string } | null; error?: string }
+      if (!json1.data) {
+        setQuickResSync({ state: 'error', message: json1.error ?? 'No match found with that Play Cricket ID.', ts: now() })
+        return
+      }
+      setQuickResSync({ state: 'loading', message: 'Fetching scorecard & calculating points…', ts: null })
       const res2 = await fetch('/api/sync/results', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ match_id: json1.data.id, pc_match_id: quickPcId.trim() }),
+        body:    JSON.stringify({ match_id: json1.data.id, pc_match_id: quickResPcId.trim() }),
       })
       const j = await res2.json() as { players_synced?: number; teams_updated?: number; error?: string }
       if (res2.ok) {
-        setQuickSync({ state: 'done', message: `${j.players_synced ?? 0} players synced · ${j.teams_updated ?? 0} contest teams updated`, ts: now() })
-        setQuickPcId('')
+        setQuickResSync({ state: 'done', message: `${j.players_synced ?? 0} players synced · ${j.teams_updated ?? 0} contest teams updated`, ts: now() })
+        setQuickResPcId('')
       } else {
-        setQuickSync({ state: 'error', message: j.error ?? 'Error', ts: now() })
+        setQuickResSync({ state: 'error', message: j.error ?? 'Error', ts: now() })
       }
     } catch (e: unknown) {
-      setQuickSync({ state: 'error', message: (e as Error).message, ts: now() })
+      setQuickResSync({ state: 'error', message: (e as Error).message, ts: now() })
     }
   }
 
@@ -256,28 +292,52 @@ export default function SyncPanel({ seasonId, seasonYear, matches }: Props) {
         </button>
       </SyncSection>
 
-      {/* ── 1b. Quick Import by Play Cricket ID ──────────────────────────── */}
+      {/* ── 1b. Sync Playing XI by PC ID ─────────────────────────────────── */}
       <SyncSection
-        title="Quick Import by Play Cricket ID"
-        description="Enter a Play Cricket match ID to instantly import results and calculate fantasy points — no dropdown needed."
+        title="Sync Playing XI by Play Cricket ID"
+        description="Enter a Play Cricket match ID to import the confirmed team sheet — no dropdown needed."
       >
         <div className="flex gap-3">
           <input
             type="text"
-            value={quickPcId}
-            onChange={e => setQuickPcId(e.target.value)}
+            value={quickXiPcId}
+            onChange={e => setQuickXiPcId(e.target.value)}
             placeholder="e.g. 7276987"
             className={inputClass() + ' flex-1'}
           />
           <button
-            onClick={() => void quickImport()}
-            disabled={quickSync.state === 'loading'}
-            className={btnClass('gold', quickSync.state === 'loading')}
+            onClick={() => void quickSyncXI()}
+            disabled={quickXiSync.state === 'loading'}
+            className={btnClass('gold', quickXiSync.state === 'loading')}
           >
-            {quickSync.state === 'loading' ? 'Importing…' : '↓ Import & Calc Points'}
+            {quickXiSync.state === 'loading' ? 'Syncing…' : '↓ Sync Playing XI'}
           </button>
         </div>
-        <StatusBadge result={quickSync} />
+        <StatusBadge result={quickXiSync} />
+      </SyncSection>
+
+      {/* ── 1c. Import Results & Calc Points by PC ID ────────────────────── */}
+      <SyncSection
+        title="Import Results & Calc Points by Play Cricket ID"
+        description="Enter a Play Cricket match ID to import the final scorecard and calculate fantasy points — no dropdown needed."
+      >
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={quickResPcId}
+            onChange={e => setQuickResPcId(e.target.value)}
+            placeholder="e.g. 7276987"
+            className={inputClass() + ' flex-1'}
+          />
+          <button
+            onClick={() => void quickImportResults()}
+            disabled={quickResSync.state === 'loading'}
+            className={btnClass('gold', quickResSync.state === 'loading')}
+          >
+            {quickResSync.state === 'loading' ? 'Importing…' : '↓ Import & Calc Points'}
+          </button>
+        </div>
+        <StatusBadge result={quickResSync} />
       </SyncSection>
 
       {/* ── 2. Sync Playing XI ───────────────────────────────────────────── */}

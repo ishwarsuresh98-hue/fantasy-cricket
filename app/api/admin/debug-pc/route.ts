@@ -22,18 +22,3 @@ export async function GET() {
     return NextResponse.json({ error: (e as Error).message })
   }
 }
-import { NextResponse } from 'next/server'
-import { getMatchDetail } from '@/lib/playcricket'
-
-export async function GET(req: Request) {
-  const pc_id = new URL(req.url).searchParams.get('pc_id') ?? '7276990'
-  const detail = await getMatchDetail(pc_id)
-  return NextResponse.json({
-    home_team_name: detail?.home_team_name,
-    away_team_name: detail?.away_team_name,
-    home_club_name: (detail as any)?.home_club_name,
-    away_club_name: (detail as any)?.away_club_name,
-    players_home: detail?.players?.home_team?.slice(0, 3),
-    players_away: detail?.players?.away_team?.slice(0, 3),
-  })
-}
