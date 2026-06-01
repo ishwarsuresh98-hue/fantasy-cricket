@@ -44,7 +44,7 @@ export async function POST(req: Request) {
 
   for (const innings of detail.innings ?? []) {
     const sloughIsBatting = innings.team_batting_id === sloughTeamId
-    const sloughIsBowling = innings.team_bowling_id === sloughTeamId
+    const sloughIsBowling = innings.team_fielding_id === sloughTeamId
 
     if (sloughIsBatting && innings.bat) {
       for (const b of innings.bat) {
