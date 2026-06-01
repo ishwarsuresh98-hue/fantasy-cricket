@@ -61,22 +61,44 @@ export async function POST(req: Request) {
   }
 
   // ── Identify Slough's team ID ─────────────────────────────────────────────
-  const homeIsSlough  = isSloughTeam(detail.home_team_name)
+  // Check both club name (more reliable) and team name as fallback
+  const homeIsSlough  = isSloughTeam(detail.home_team_name) || isSloughTeam((detail as Record<string, unknown>).home_club_name as string ?? '')
   const sloughTeamId  = homeIsSlough ? detail.home_team_id : detail.away_team_id
-
-  // ── Load all season players for name → id matching ────────────────────────
-  const { data: seasonPlayers } = await admin
-    .from('players')
-    .select('id, name, role')
-    .eq('season_id', match.season_id)
-    .eq('is_active', true)
 
   function normName(n: string) {
     return n.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, ' ').trim()
   }
 
+  // ── Load players for name → id matching ──────────────────────────────────
+  // Prefer match_playing_xi (confirmed squad) when available; fall back to
+  // all active season players so the route still works before XI is synced.
+  const { data: xiRows } = await admin
+    .from('match_playing_xi')
+    .select('player_id')
+    .eq('match_id', body.match_id)
+
+  let candidatePlayers: { id: string; name: string }[]
+
+  if (xiRows && xiRows.length > 0) {
+    // XI confirmed — only match against players who actually played
+    const xiPlayerIds = xiRows.map(r => r.player_id as string)
+    const { data: xiPlayers } = await admin
+      .from('players')
+      .select('id, name')
+      .in('id', xiPlayerIds)
+    candidatePlayers = xiPlayers ?? []
+  } else {
+    // No XI on record — fall back to all active season players
+    const { data: seasonPlayers } = await admin
+      .from('players')
+      .select('id, name')
+      .eq('season_id', match.season_id)
+      .eq('is_active', true)
+    candidatePlayers = seasonPlayers ?? []
+  }
+
   const playerByNorm: Record<string, string> = {}
-  for (const p of seasonPlayers ?? []) {
+  for (const p of candidatePlayers) {
     playerByNorm[normName(p.name)] = p.id
     const parts = normName(p.name).split(' ')
     if (parts.length > 1 && !playerByNorm[parts[parts.length - 1]]) {
