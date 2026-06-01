@@ -3,6 +3,17 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMatchDetail, isSloughTeam } from '@/lib/playcricket'
 
+function parsePlayCricketDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return new Date().toISOString()
+  // Handle DD/MM/YYYY format from Play Cricket
+  const parts = dateStr.split('/')
+  if (parts.length === 3) {
+    const [day, month, year] = parts
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+  }
+  return dateStr
+}
+
 export async function GET(req: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -44,10 +55,10 @@ export async function GET(req: Request) {
 
   if (!season) return NextResponse.json({ error: 'No active season found' }, { status: 400 })
 
-  // 4. Determine opponent name
+  // 4. Determine opponent and date
   const homeIsSlough = isSloughTeam(detail.home_team_name)
   const opponent = homeIsSlough ? detail.away_team_name : detail.home_team_name
-  const matchDate = detail.match_date ?? new Date().toISOString()
+  const matchDate = parsePlayCricketDate(detail.match_date)
 
   // 5. Get next match number
   const { data: lastMatch } = await admin
