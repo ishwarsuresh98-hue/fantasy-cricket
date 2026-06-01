@@ -91,7 +91,12 @@ export interface PCMatchDetail {
   away_team_name:     string
   ground_name:        string
   match_date:         string
+  /** Human-readable result on the detail endpoint: "Won by 8 wickets", "Lost by 25 runs", etc.
+   *  (On the /matches summary endpoint the same field name carries league-points info instead.) */
   result_description: string
+  /** Numeric result code: "1" = home win, "2" = away win, "3" = tie/draw, "4" = no result.
+   *  Present on the match_detail endpoint; may be absent on older matches. */
+  match_result?:      string
   players?: {
     home_team?: PCPlayerRecord[]
     away_team?: PCPlayerRecord[]

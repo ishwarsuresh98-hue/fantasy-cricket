@@ -30,9 +30,14 @@ export async function GET(req: Request) {
   const raw = await res.json() as { match_details?: unknown[] }
 
   // Return the raw first match object so every field is visible
-  const detail = raw.match_details?.[0] ?? null
+  const detail = raw.match_details?.[0] as Record<string, unknown> | null ?? null
   return NextResponse.json({
-    raw_keys:   detail ? Object.keys(detail as object) : [],
-    raw_detail: detail,
+    // Top-level keys — scan these for the result field name
+    raw_keys:          detail ? Object.keys(detail) : [],
+    // The two most likely result fields highlighted for easy inspection
+    result_description: detail?.result_description,
+    match_result:       detail?.match_result,
+    // Full raw object
+    raw_detail:        detail,
   })
 }
