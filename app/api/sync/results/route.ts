@@ -206,15 +206,33 @@ export async function POST(req: Request) {
   // ── Calculate base_points for each player ─────────────────────────────────
   for (const perf of Object.values(perfMap)) {
     perf.base_points = computeBasePoints(perf)
+    // DEBUG: log SR decision for every player so we can verify role gating
+    const role = perf.player_role ?? null
+    const balls = perf.balls_faced ?? 0
+    const runs  = perf.runs_scored ?? 0
+    if (!perf.did_not_bat && balls >= 10) {
+      const sr = (runs / balls) * 100
+      console.log(`[sync/results] SR check — player ${perf.player_id} role=${String(role)} balls=${balls} runs=${runs} SR=${sr.toFixed(1)} srApplies=${role !== 'bowler'}`)
+    }
   }
 
-  const rows = Object.values(perfMap)
+  // DEBUG: log roleById contents so we can verify Nadeem's role was found
+  console.log('[sync/results] roleById:', roleById)
+
+  if (Object.keys(perfMap).length === 0) {
+    return NextResponse.json({ error: 'Could not match any Slough players to the scorecard. Run Sync Playing XI first.' }, { status: 400 })
+  }
+
+  // ── Upsert match_performances ─────────────────────────────────────────────
+  // Strip player_role from the DB payload — it is not a column in match_performances.
+  // We keep it in perfMap for in-memory scoring above, but must not send it to Supabase
+  // or the upsert will fail with "Could not find the player_role column".
+  const rows = Object.values(perfMap).map(({ player_role: _r, ...rest }) => rest)
 
   if (rows.length === 0) {
     return NextResponse.json({ error: 'Could not match any Slough players to the scorecard. Run Sync Playing XI first.' }, { status: 400 })
   }
 
-  // ── Upsert match_performances ─────────────────────────────────────────────
   const { error: upsertErr } = await admin
     .from('match_performances')
     .upsert(rows, { onConflict: 'match_id,player_id' })
