@@ -224,7 +224,19 @@ export async function POST(req: Request) {
   const awayLabel     = `${detail.away_club_name} - ${detail.away_team_name}`
   const freshOpponent = `${homeLabel} vs ${awayLabel}`
 
-  await admin
+  // ── DEBUG: confirm what PC is returning for the result field ─────────────
+  console.log('[sync/results] match update payload:', {
+    match_id:         body.match_id,
+    pc_match_id:      pcMatchId,
+    opponent:         freshOpponent,
+    venue:            detail.ground_name || null,
+    result_raw:       detail.result_description,        // raw string from PC API
+    result_stored:    detail.result_description || null, // what will be written to DB
+    match_result_code: detail.match_result ?? 'n/a',    // numeric code if present
+    status:           'completed',
+  })
+
+  const { error: updateErr } = await admin
     .from('matches')
     .update({
       status:          'completed',
@@ -234,6 +246,12 @@ export async function POST(req: Request) {
       result:          detail.result_description || null,
     })
     .eq('id', body.match_id)
+
+  if (updateErr) {
+    console.error('[sync/results] match update failed:', updateErr.message)
+  } else {
+    console.log('[sync/results] match update succeeded for', body.match_id)
+  }
 
   // Renumber all season matches by date so ordering stays consistent
   await renumberMatches(admin, match.season_id as string)
