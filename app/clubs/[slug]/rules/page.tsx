@@ -19,7 +19,7 @@ export default function RulesPage() {
           ['Duck (0 off ≥1 ball)', '−2 pts'],
         ]} />
 
-        <h3 className="font-semibold text-sm text-gray-700 mt-4 mb-2">Strike Rate Bonus / Penalty <span className="font-normal text-gray-400">(min. 10 balls faced · batsmen, all-rounders &amp; keepers only)</span></h3>
+        <h3 className="font-semibold text-sm text-gray-700 mt-4 mb-2">Strike Rate Bonus / Penalty <span className="font-normal text-gray-400">(min. 10 balls faced · batters, all-rounders &amp; keepers only)</span></h3>
         <Table rows={[
           ['SR ≥ 150', '+3 pts'],
           ['SR 125–149', '+2 pts'],

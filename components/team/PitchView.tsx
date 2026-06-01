@@ -24,7 +24,7 @@ interface PitchViewProps {
 const PITCH_ROWS: { role: PlayerRole; label: string }[] = [
   { role: 'bowler',        label: 'Bowlers' },
   { role: 'all_rounder',   label: 'All-Rounders' },
-  { role: 'batsman',       label: 'Batsmen' },
+  { role: 'batsman',       label: 'Batters' },
   { role: 'wicket_keeper', label: 'Wicket-Keepers' },
 ]
 

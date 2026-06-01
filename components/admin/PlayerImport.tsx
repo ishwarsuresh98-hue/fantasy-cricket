@@ -35,7 +35,7 @@ function mapRole(raw: string): PlayerRole | null {
 }
 
 const ROLE_LABELS: Record<PlayerRole, string> = {
-  batsman:        'Batsman',
+  batsman:        'Batter',
   bowler:         'Bowler',
   all_rounder:    'All-Rounder',
   wicket_keeper:  'Wicket-Keeper',
@@ -262,7 +262,7 @@ export default function PlayerImport({ seasonId }: PlayerImportProps) {
             <div>
               <p className="font-semibold text-[#aaaaaa] mb-1">Accepted role values</p>
               <ul className="space-y-0.5">
-                <li>Batsman, Bat, Batter</li>
+                <li>Batter, Bat, Batsman</li>
                 <li>Bowler, Bowl</li>
                 <li>All-Rounder, All Rounder, AR</li>
                 <li>Wicket-Keeper, Wicket Keeper, Keeper, WK</li>

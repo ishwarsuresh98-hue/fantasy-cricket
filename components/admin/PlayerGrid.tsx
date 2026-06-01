@@ -12,7 +12,7 @@ import PlayerForm from '@/components/admin/PlayerForm'
 const PAGE_SIZE = 30
 
 const ROLE_LABELS: Record<string, string> = {
-  batsman:       'Batsman',
+  batsman:       'Batter',
   bowler:        'Bowler',
   all_rounder:   'All-Rounder',
   wicket_keeper: 'Wicket-Keeper',

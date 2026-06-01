@@ -14,7 +14,7 @@ export const BOOSTERS: BoosterDef[] = [
     type: 'batting_surge',
     name: 'Batting Surge',
     icon: '🏏',
-    description: 'All batsmen & all-rounders in your team earn 2× points',
+    description: 'All batters & all-rounders in your team earn 2× points',
     maxUses: 1,
     requiresPlayerPick: false,
   },

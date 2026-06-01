@@ -27,7 +27,7 @@ export function computeBasePoints(perf: Partial<MatchPerformance>): number {
     // Strike rate bonus/penalty (minimum 10 balls faced)
     // Bowlers are excluded — their value is in wickets/economy, not batting SR.
     const role = perf.player_role ?? null
-    const srApplies = role !== 'bowler'   // batsman, all_rounder, wicket_keeper all get it
+    const srApplies = role !== 'bowler'   // batter, all_rounder, wicket_keeper all get it
     if (srApplies && balls >= 10) {
       const sr = (runs / balls) * 100
       if (sr >= 150) points += 3
@@ -63,7 +63,7 @@ export function applyMultiplier(basePoints: number, isCaptain: boolean, isViceCa
 }
 
 export const PLAYER_ROLE_LABELS: Record<string, string> = {
-  batsman: 'Batsman',
+  batsman: 'Batter',
   bowler: 'Bowler',
   all_rounder: 'All-Rounder',
   wicket_keeper: 'Wicket-Keeper',

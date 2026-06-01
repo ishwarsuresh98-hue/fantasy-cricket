@@ -26,7 +26,7 @@ type RoleFilter = 'all' | 'wicket_keeper' | 'batsman' | 'all_rounder' | 'bowler'
 
 const ROLE_CONFIG: Record<string, { label: string; short: string; color: string; min: number; max: number }> = {
   wicket_keeper: { label: 'Wicket Keepers', short: 'WK',   color: 'bg-amber-100 text-amber-700',   min: 1, max: 4 },
-  batsman:       { label: 'Batsmen',         short: 'BAT',  color: 'bg-blue-100 text-blue-700',     min: 3, max: 6 },
+  batsman:       { label: 'Batters',          short: 'BAT',  color: 'bg-blue-100 text-blue-700',     min: 3, max: 6 },
   all_rounder:   { label: 'All-Rounders',    short: 'AR',   color: 'bg-purple-100 text-purple-700', min: 1, max: 4 },
   bowler:        { label: 'Bowlers',          short: 'BOWL', color: 'bg-green-100 text-green-700',   min: 3, max: 6 },
 }
