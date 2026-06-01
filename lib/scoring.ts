@@ -25,7 +25,10 @@ export function computeBasePoints(perf: Partial<MatchPerformance>): number {
     if (runs === 0 && balls > 0) points -= 2 // duck penalty
 
     // Strike rate bonus/penalty (minimum 10 balls faced)
-    if (balls >= 10) {
+    // Bowlers are excluded — their value is in wickets/economy, not batting SR.
+    const role = perf.player_role ?? null
+    const srApplies = role !== 'bowler'   // batsman, all_rounder, wicket_keeper all get it
+    if (srApplies && balls >= 10) {
       const sr = (runs / balls) * 100
       if (sr >= 150) points += 3
       else if (sr >= 125) points += 2

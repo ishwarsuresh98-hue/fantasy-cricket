@@ -117,6 +117,7 @@ export interface MatchPerformance {
   id: string
   match_id: string
   player_id: string
+  player_role?: PlayerRole | null   // used by scoring to gate SR bonus/penalty
   runs_scored: number
   balls_faced: number
   fours: number

@@ -78,29 +78,31 @@ export async function POST(req: Request) {
     .select('player_id')
     .eq('match_id', body.match_id)
 
-  let candidatePlayers: { id: string; name: string }[]
+  let candidatePlayers: { id: string; name: string; role: string }[]
 
   if (xiRows && xiRows.length > 0) {
     // XI confirmed — only match against players who actually played
     const xiPlayerIds = xiRows.map(r => r.player_id as string)
     const { data: xiPlayers } = await admin
       .from('players')
-      .select('id, name')
+      .select('id, name, role')
       .in('id', xiPlayerIds)
     candidatePlayers = xiPlayers ?? []
   } else {
     // No XI on record — fall back to all active season players
     const { data: seasonPlayers } = await admin
       .from('players')
-      .select('id, name')
+      .select('id, name, role')
       .eq('season_id', match.season_id)
       .eq('is_active', true)
     candidatePlayers = seasonPlayers ?? []
   }
 
   const playerByNorm: Record<string, string> = {}
+  const roleById:     Record<string, string> = {}   // player_id → role
   for (const p of candidatePlayers) {
     playerByNorm[normName(p.name)] = p.id
+    roleById[p.id] = p.role
     const parts = normName(p.name).split(' ')
     if (parts.length > 1 && !playerByNorm[parts[parts.length - 1]]) {
       playerByNorm[parts[parts.length - 1]] = p.id
@@ -119,6 +121,7 @@ export async function POST(req: Request) {
       perfMap[playerId] = {
         match_id:     body.match_id!,
         player_id:    playerId,
+        player_role:  (roleById[playerId] ?? null) as import('@/types').PlayerRole | null,
         runs_scored:  0,
         balls_faced:  0,
         fours:        0,
