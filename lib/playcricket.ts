@@ -148,7 +148,7 @@ export function parsePCDate(raw: string): string {
 }
 
 /** True if the match description mentions the given club name (case-insensitive). */
-export function isSloughTeam(name: string): boolean {
+export function isSloughTeam(name: string | null | undefined): boolean {
   return /slough/i.test(name)
 }
 

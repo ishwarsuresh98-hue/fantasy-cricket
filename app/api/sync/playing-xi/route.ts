@@ -50,7 +50,7 @@ export async function POST(req: Request) {
   }
 
   // ── Identify Slough team (home or away) ───────────────────────────────────
-  const homeIsSlough = isSloughTeam(detail.home_team_name)
+  const homeIsSlough = isSloughTeam(detail.home_club_name) || isSloughTeam(detail.home_team_name)
   const sloughPlayers = homeIsSlough
     ? (detail.players?.home_team ?? [])
     : (detail.players?.away_team ?? [])
