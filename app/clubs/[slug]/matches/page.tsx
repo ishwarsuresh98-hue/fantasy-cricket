@@ -105,7 +105,7 @@ export default async function ClubMatchesPage({
                     <div className={`flex items-center justify-between p-4 rounded-lg border bg-[#f0f0f0] hover:bg-[#fef9ee] hover:border-[#C9A84C] transition-colors cursor-pointer group ${isActive ? 'border-[#C9A84C]/20' : 'border-[#d8d8d8]'}`}>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">Match {match.match_number}</Badge>
+                          <Badge variant="outline" className="text-xs">GW{gw.gw}</Badge><Badge variant="outline" className="text-xs">Match {match.match_number}</Badge>
                           {match.status === 'completed' ? (
                             <Badge className="text-xs bg-[#141414] text-gray-600 hover:bg-[#141414]">Completed</Badge>
                           ) : (
