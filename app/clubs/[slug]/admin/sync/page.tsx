@@ -38,9 +38,9 @@ export default async function ClubAdminSyncPage({
   const seasonIds = (allSeasons ?? []).map(s => s.id)
 
   const windowStart = new Date()
-  windowStart.setDate(windowStart.getDate() - 30)
+  windowStart.setDate(windowStart.getDate() - 180)
   const windowEnd = new Date()
-  windowEnd.setDate(windowEnd.getDate() + 60)
+  windowEnd.setDate(windowEnd.getDate() + 180)
 
   const { data: matches } = seasonIds.length > 0
     ? await supabase
