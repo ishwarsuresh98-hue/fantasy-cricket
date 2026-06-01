@@ -2,8 +2,9 @@ import UIKit
 import Capacitor
 import WebKit
 
-/// Custom bridge view controller that keeps all navigation inside the WKWebView.
-/// Prevents target="_blank" links and external URLs from bouncing out to Safari.
+/// Custom bridge view controller that keeps external links inside the WKWebView.
+/// Prevents target="_blank" links from bouncing out to Safari while leaving
+/// Capacitor's own navigation handling fully intact.
 class ViewController: CAPBridgeViewController {
 
     override func viewDidLoad() {
@@ -15,39 +16,33 @@ class ViewController: CAPBridgeViewController {
 
     // MARK: – Navigation policy
 
-    /// Intercept every navigation decision so no link escapes to an external browser.
+    /// Only intercepts target="_blank" navigations to external http/https URLs.
+    /// Everything else — including Capacitor internals, the app domain, Supabase,
+    /// and any same-frame navigation — is passed to super so Capacitor's bridge
+    /// handling runs normally and the initial page load is never blocked.
     override func webView(
         _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
-        guard let url = navigationAction.request.url else {
-            decisionHandler(.allow)
-            return
-        }
-
-        let scheme = url.scheme?.lowercased() ?? ""
-        let host   = url.host?.lowercased()   ?? ""
-
-        // Always allow Capacitor internals, blob URLs, and the app's own domain
-        let isInternal = ["capacitor", "ionic", "about", "blob"].contains(scheme)
-                      || host.hasSuffix("the-xi.app")
-                      || host == "localhost"
-
-        if isInternal {
-            decisionHandler(.allow)
-            return
-        }
-
-        // target="_blank" has a nil targetFrame — load within the WebView instead
-        // of letting UIKit hand it off to Safari
-        if navigationAction.targetFrame == nil {
+        // Only act on new-window / target="_blank" navigations (targetFrame == nil)
+        // that point to external http/https URLs.
+        if navigationAction.targetFrame == nil,
+           let url = navigationAction.request.url,
+           let scheme = url.scheme?.lowercased(),
+           (scheme == "https" || scheme == "http"),
+           let host = url.host?.lowercased(),
+           !host.hasSuffix("the-xi.app"),
+           !host.hasSuffix("supabase.co"),
+           host != "localhost" {
+            // Load within the WebView instead of handing off to Safari
             webView.load(navigationAction.request)
             decisionHandler(.cancel)
             return
         }
 
-        // Allow all other navigation (relative paths, Supabase auth callbacks, etc.)
-        decisionHandler(.allow)
+        // Let Capacitor's bridge handle everything else — this is critical for
+        // the initial page load, deep links, and auth callbacks.
+        super.webView(webView, decidePolicyFor: navigationAction, decisionHandler: decisionHandler)
     }
 }
