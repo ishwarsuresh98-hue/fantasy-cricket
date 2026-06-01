@@ -300,12 +300,13 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
     let nextNumber = (existing?.match_number ?? currentMatchCount) + 1
 
     const rows = validRows.map((m) => ({
-      season_id:    seasonId,
-      match_number: nextNumber++,
-      opponent:     m.opponent,
-      match_date:   m.matchDate!.toISOString(),
-      venue:        m.venue || null,
-      status:       'upcoming',
+      season_id:       seasonId,
+      match_number:    nextNumber++,
+      opponent:        m.opponent,
+      match_date:      m.matchDate!.toISOString(),
+      venue:           m.venue || null,
+      status:          'upcoming',
+      play_cricket_id: m.fixtureId || null,
     }))
 
     // Insert in batches of 50
@@ -504,6 +505,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Opponent</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Venue</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Type</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Fixture ID</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Status</th>
                   </tr>
                 </thead>
@@ -531,6 +533,9 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
                         ) : (
                           <span className="text-xs text-muted-foreground">—</span>
                         )}
+                      </td>
+                      <td className="px-4 py-2.5 text-xs text-muted-foreground font-mono">
+                        {m.fixtureId || '—'}
                       </td>
                       <td className="px-4 py-2.5">
                         {m.error
