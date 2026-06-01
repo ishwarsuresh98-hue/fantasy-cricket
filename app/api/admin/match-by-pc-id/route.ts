@@ -56,12 +56,16 @@ export async function GET(req: Request) {
   if (!season) return NextResponse.json({ error: 'No active season found' }, { status: 400 })
 
   // 4. Determine opponent, date, venue, result, status
-  const homeIsSlough = isSloughTeam(detail.home_team_name) || isSloughTeam(detail.home_club_name)
-  const opponent     = homeIsSlough ? (detail.away_club_name || detail.away_team_name) : (detail.home_club_name || detail.home_team_name)
-  const matchDate    = parsePlayCricketDate(detail.match_date)
-  const venue        = detail.ground_name || null
-  const result       = detail.result_description || null
-  const status       = result ? 'completed' : 'upcoming'
+  const homeIsSlough  = isSloughTeam(detail.home_team_name) || isSloughTeam(detail.home_club_name)
+  const rawOpponent   = homeIsSlough
+    ? (detail.away_club_name || detail.away_team_name)
+    : (detail.home_club_name || detail.home_team_name)
+  // Strip XI/county suffixes so "Harefield CC, Middx - 1st XI" → "Harefield CC"
+  const opponent      = rawOpponent.replace(/\s*[-,]\s*(1st|2nd|3rd|\d+th)\s*XI\b.*/i, '').replace(/\s+-\s+.*/, '').trim()
+  const matchDate     = parsePlayCricketDate(detail.match_date)
+  const venue         = detail.ground_name || null
+  const result        = detail.result_description || null
+  const status        = result ? 'completed' : 'upcoming'
 
   // 5. Get next match number
   const { data: lastMatch } = await admin

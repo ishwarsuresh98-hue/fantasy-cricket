@@ -217,10 +217,25 @@ export async function POST(req: Request) {
 
   if (upsertErr) return NextResponse.json({ error: upsertErr.message }, { status: 500 })
 
-  // ── Mark match as completed ───────────────────────────────────────────────
+  // ── Refresh match row with latest Play Cricket data ──────────────────────
+  // Strip XI/county suffixes so "Harefield CC, Middx - 1st XI" → "Harefield CC"
+  const rawOpponent  = homeIsSlough
+    ? (detail.away_club_name || detail.away_team_name)
+    : (detail.home_club_name || detail.home_team_name)
+  const freshOpponent = rawOpponent
+    .replace(/\s*[-,]\s*(1st|2nd|3rd|\d+th)\s*XI\b.*/i, '')
+    .replace(/\s+-\s+.*/, '')
+    .trim()
+
   await admin
     .from('matches')
-    .update({ status: 'completed', play_cricket_id: pcMatchId })
+    .update({
+      status:          'completed',
+      play_cricket_id: pcMatchId,
+      opponent:        freshOpponent,
+      venue:           detail.ground_name || null,
+      result:          detail.result_description || null,
+    })
     .eq('id', body.match_id)
 
   // ── Recalculate GW contest team points for this match ─────────────────────
