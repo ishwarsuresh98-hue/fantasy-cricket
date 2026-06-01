@@ -55,10 +55,13 @@ export async function GET(req: Request) {
 
   if (!season) return NextResponse.json({ error: 'No active season found' }, { status: 400 })
 
-  // 4. Determine opponent and date
-  const homeIsSlough = isSloughTeam(detail.home_team_name)
-  const opponent = homeIsSlough ? detail.away_team_name : detail.home_team_name
-  const matchDate = parsePlayCricketDate(detail.match_date)
+  // 4. Determine opponent, date, venue, result, status
+  const homeIsSlough = isSloughTeam(detail.home_team_name) || isSloughTeam(detail.home_club_name)
+  const opponent     = homeIsSlough ? (detail.away_club_name || detail.away_team_name) : (detail.home_club_name || detail.home_team_name)
+  const matchDate    = parsePlayCricketDate(detail.match_date)
+  const venue        = detail.ground_name || null
+  const result       = detail.result_description || null
+  const status       = result ? 'completed' : 'upcoming'
 
   // 5. Get next match number
   const { data: lastMatch } = await admin
@@ -71,16 +74,18 @@ export async function GET(req: Request) {
 
   const nextNumber = (lastMatch?.match_number ?? 0) + 1
 
-  // 6. Insert new match
+  // 6. Insert new match — only columns that exist in the schema
   const { data: newMatch, error: insertErr } = await admin
     .from('matches')
     .insert({
       season_id:       season.id,
-      opponent:        opponent,
-      match_date:      matchDate,
-      play_cricket_id: pc_id,
       match_number:    nextNumber,
-      status:          'upcoming',
+      opponent,
+      match_date:      matchDate,
+      venue,
+      result,
+      status,
+      play_cricket_id: pc_id,
     })
     .select('id, opponent, match_date')
     .single()
