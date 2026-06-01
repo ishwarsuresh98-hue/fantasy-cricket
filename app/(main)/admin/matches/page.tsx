@@ -61,7 +61,7 @@ export default async function AdminMatchesPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/admin/matches/import"
-            className={cn(buttonVariants({ variant: 'outline' }), 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#1c1c1c]')}
+            className={cn(buttonVariants({ variant: 'outline' }), 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#fef9ee]')}
           >
             Import Matches
           </Link>
@@ -81,7 +81,7 @@ export default async function AdminMatchesPage() {
           <CardContent className="p-0">
             <div className="divide-y">
               {matches.map((match: Match) => (
-                <div key={match.id} className="flex items-center justify-between px-6 py-4 hover:bg-[#1c1c1c] transition-colors">
+                <div key={match.id} className="flex items-center justify-between px-6 py-4 hover:bg-[#fef9ee] transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="text-center min-w-[3rem] bg-[#f0f0f0] text-[#0b0b0b] rounded-lg py-1.5">
                       <p className="text-xs opacity-70">Match</p>
@@ -137,7 +137,7 @@ export default async function AdminMatchesPage() {
 
                     <Link
                       href={`/admin/matches/${match.id}/stats`}
-                      className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#1c1c1c]')}
+                      className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#fef9ee]')}
                     >
                       {match.status === 'completed' ? 'Edit Stats' : 'Enter Stats'}
                     </Link>

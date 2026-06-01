@@ -171,7 +171,7 @@ export default async function ClubTeamDetailPage({
                           {rows.map((row) => {
                             const bonus = row.totalEarned - row.totalBasePoints
                             return (
-                              <tr key={row.playerId} className="hover:bg-[#1c1c1c] transition-colors">
+                              <tr key={row.playerId} className="hover:bg-[#fef9ee] transition-colors">
                                 <td className="px-4 py-2.5">
                                   <div className="flex items-center gap-1.5">
                                     {row.isCaptain ? (

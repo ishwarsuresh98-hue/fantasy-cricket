@@ -429,7 +429,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
               className={`flex flex-col items-center justify-center gap-2 w-full h-28 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${
                 dragOver
                   ? 'border-[#C9A84C] bg-[#1c1c1c]'
-                  : 'border-[#C9A84C]/30 bg-[#f0f0f0] hover:border-[#C9A84C]/60 hover:bg-[#1c1c1c]/40'
+                  : 'border-[#C9A84C]/30 bg-[#f0f0f0] hover:border-[#C9A84C]/60 hover:bg-[#fef9ee]/40'
               }`}
             >
               <input type="file" accept=".pdf,application/pdf" className="sr-only" onChange={onFileInput} />
@@ -737,7 +737,7 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
                         <Badge className={`text-xs mt-0.5 ${
                           player.role === 'batsman' ? 'bg-blue-100 text-blue-700 hover:bg-blue-100' :
                           player.role === 'bowler' ? 'bg-[#fceaea] text-[#b5211e] hover:bg-[#fceaea]' :
-                          player.role === 'all_rounder' ? 'bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#1c1c1c]' :
+                          player.role === 'all_rounder' ? 'bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#fef9ee]' :
                           'bg-[#fef9ee] text-[#C9A84C] hover:bg-[#fef9ee]'
                         }`}>
                           {PLAYER_ROLE_LABELS[player.role]}

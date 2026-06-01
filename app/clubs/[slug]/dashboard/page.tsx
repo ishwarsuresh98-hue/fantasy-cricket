@@ -250,7 +250,7 @@ export default async function ClubDashboardPage({
                 </p>
                 <p className="text-[11px] text-gray-400">{lastGw.label}</p>
               </div>
-              <Badge className="bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#1c1c1c] font-semibold">GW{lastGw.gw}</Badge>
+              <Badge className="bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#fef9ee] font-semibold">GW{lastGw.gw}</Badge>
             </div>
             <div>
               <p className="text-4xl font-black text-[#C9A84C] tabular-nums leading-none">

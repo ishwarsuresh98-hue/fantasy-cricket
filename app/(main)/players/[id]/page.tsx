@@ -336,7 +336,7 @@ export default async function PlayerProfilePage({
                     <tr
                       key={m.id}
                       className={cn(
-                        'transition-colors hover:bg-[#1c1c1c]',
+                        'transition-colors hover:bg-[#fef9ee]',
                         dnp ? 'opacity-40' : '',
                       )}
                     >
@@ -432,7 +432,7 @@ export default async function PlayerProfilePage({
                   if (!ft) return null
                   const ownerName = (ft.profiles as { display_name: string } | null)?.display_name ?? '—'
                   return (
-                    <tr key={o.fantasy_team_id} className="hover:bg-[#1c1c1c] transition-colors">
+                    <tr key={o.fantasy_team_id} className="hover:bg-[#fef9ee] transition-colors">
                       <td className="px-5 py-2.5">
                         <Link
                           href={`/teams/${o.fantasy_team_id}`}

@@ -137,7 +137,7 @@ export default function PlayerCard({
         onKeyDown={onClick ? (e) => e.key === 'Enter' && onClick() : undefined}
         className={cn(
           'flex items-center gap-2.5 px-3 py-2 transition-colors',
-          onClick && 'cursor-pointer hover:bg-[#1c1c1c]',
+          onClick && 'cursor-pointer hover:bg-[#fef9ee]',
           isSelected && 'bg-green-50',
           className,
         )}
@@ -223,7 +223,7 @@ export default function PlayerCard({
         'relative flex flex-col items-center gap-2 p-3 rounded-2xl border-2 text-center transition-all duration-150 select-none',
         isSelected
           ? 'bg-green-50 border-green-400 shadow-md shadow-green-100'
-          : 'bg-[#f0f0f0] border-[#d8d8d8] hover:border-[#C9A84C]/40 hover:bg-[#1c1c1c]',
+          : 'bg-[#f0f0f0] border-[#d8d8d8] hover:border-[#C9A84C]/40 hover:bg-[#fef9ee]',
         onClick && 'cursor-pointer',
         className,
       )}

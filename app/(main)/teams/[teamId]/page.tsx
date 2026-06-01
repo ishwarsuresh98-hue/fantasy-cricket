@@ -314,7 +314,7 @@ export default async function TeamDetailPage({
                             return (
                               <tr
                                 key={row.playerId}
-                                className="hover:bg-[#1c1c1c] transition-colors"
+                                className="hover:bg-[#fef9ee] transition-colors"
                               >
                                 {/* Player + C/VC badge */}
                                 <td className="px-4 py-2.5">

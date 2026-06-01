@@ -177,7 +177,7 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
               className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all ${
                 isActive
                   ? 'bg-[#f0f0f0] text-[#0b0b0b] border-[#C9A84C]'
-                  : 'bg-[#f0f0f0] text-gray-600 border-[#d8d8d8] hover:border-[#C9A84C]/40 hover:bg-[#1c1c1c]'
+                  : 'bg-[#f0f0f0] text-gray-600 border-[#d8d8d8] hover:border-[#C9A84C]/40 hover:bg-[#fef9ee]'
               }`}
             >
               {ROLE_SHORT[role]}
@@ -237,7 +237,7 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
                   ? 'bg-green-50 border-green-500 shadow-sm shadow-green-100'
                   : wouldExceed
                   ? 'bg-[#f8f8f8] border-[#1e1e1e] opacity-40 cursor-not-allowed'
-                  : 'bg-[#f0f0f0] border-[#d8d8d8] hover:border-[#C9A84C]/40 hover:bg-[#1c1c1c] cursor-pointer'
+                  : 'bg-[#f0f0f0] border-[#d8d8d8] hover:border-[#C9A84C]/40 hover:bg-[#fef9ee] cursor-pointer'
               }`}
             >
               {/* Tick / circle */}

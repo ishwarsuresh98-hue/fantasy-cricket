@@ -210,7 +210,7 @@ export default async function ClubPlayerProfilePage({
                   const p = perfByMatch.get(m.id); const h = histByMatch.get(m.id)
                   const dnp = !p; const dnb = p?.did_not_bat
                   return (
-                    <tr key={m.id} className={cn('transition-colors hover:bg-[#1c1c1c]', dnp ? 'opacity-40' : '')}>
+                    <tr key={m.id} className={cn('transition-colors hover:bg-[#fef9ee]', dnp ? 'opacity-40' : '')}>
                       <td className="px-5 py-2.5 text-xs font-bold text-gray-400 tabular-nums">{m.match_number}</td>
                       <td className="px-4 py-2.5 font-medium text-[#d4d4d4] max-w-[140px] truncate">
                         <Link href={`${base}/matches/${m.id}`} className="hover:text-[#C9A84C] hover:underline">{m.opponent}</Link>
@@ -276,7 +276,7 @@ export default async function ClubPlayerProfilePage({
                   const ft = o.fantasy_teams; if (!ft) return null
                   const ownerName = (ft.profiles as { display_name: string } | null)?.display_name ?? '—'
                   return (
-                    <tr key={o.fantasy_team_id} className="hover:bg-[#1c1c1c] transition-colors">
+                    <tr key={o.fantasy_team_id} className="hover:bg-[#fef9ee] transition-colors">
                       <td className="px-5 py-2.5">
                         <Link href={`${base}/teams/${o.fantasy_team_id}`} className="font-semibold text-[#d4d4d4] hover:text-[#C9A84C] hover:underline">{ft.team_name}</Link>
                       </td>

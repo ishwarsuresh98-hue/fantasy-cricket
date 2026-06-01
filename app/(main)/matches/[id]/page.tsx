@@ -113,7 +113,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
             className={cn(
               buttonVariants({ variant: match.status === 'completed' ? 'outline' : 'default' }),
               match.status === 'completed'
-                ? 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#1c1c1c] shrink-0'
+                ? 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#fef9ee] shrink-0'
                 : 'bg-[#f0f0f0] hover:bg-[#fafafa] text-[#0b0b0b] shrink-0',
             )}
           >
@@ -153,7 +153,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                   {(performances as (MatchPerformance & { players: Player })[]).map((perf) => {
                     const role = perf.players?.role ?? ''
                     return (
-                      <tr key={perf.id} className="hover:bg-[#1c1c1c] transition-colors">
+                      <tr key={perf.id} className="hover:bg-[#fef9ee] transition-colors">
                         <td className="px-4 py-3 font-medium">
                           {perf.players?.id ? (
                             <Link

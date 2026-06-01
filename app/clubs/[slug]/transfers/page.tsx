@@ -172,7 +172,7 @@ export default async function ClubTransfersPage({
               <p className="text-[10px] uppercase tracking-wide text-gray-400">limit</p>
             </div>
           </div>
-          <Link href={`${base}/team`} className="px-4 py-2 rounded-xl border border-[#C9A84C] text-[#C9A84C] text-sm font-semibold hover:bg-[#1c1c1c] transition-colors">
+          <Link href={`${base}/team`} className="px-4 py-2 rounded-xl border border-[#C9A84C] text-[#C9A84C] text-sm font-semibold hover:bg-[#fef9ee] transition-colors">
             My Team
           </Link>
         </div>

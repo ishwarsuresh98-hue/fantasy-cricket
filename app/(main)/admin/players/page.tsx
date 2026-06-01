@@ -43,7 +43,7 @@ export default async function AdminPlayersPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/admin/players/import"
-            className={cn(buttonVariants({ variant: 'outline' }), 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#1c1c1c]')}
+            className={cn(buttonVariants({ variant: 'outline' }), 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#fef9ee]')}
           >
             Import Players
           </Link>

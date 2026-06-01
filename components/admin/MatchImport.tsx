@@ -448,7 +448,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
           <CardContent className="space-y-4">
             <label
               htmlFor="match-xlsx-upload"
-              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-[#C9A84C] hover:bg-[#1c1c1c]/30 transition-colors"
+              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-[#C9A84C] hover:bg-[#fef9ee]/30 transition-colors"
             >
               <span className="text-3xl mb-2">📂</span>
               <span className="text-sm font-medium text-[#aaaaaa]">

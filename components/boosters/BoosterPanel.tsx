@@ -150,7 +150,7 @@ export default function BoosterPanel({
                   Used
                 </Badge>
               ) : (
-                <Badge className="bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#1c1c1c] text-[11px] justify-center">
+                <Badge className="bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#fef9ee] text-[11px] justify-center">
                   {remaining}/{booster.maxUses} left
                 </Badge>
               )}
