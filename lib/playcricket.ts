@@ -68,6 +68,8 @@ export interface PCBowl {
 }
 
 export interface PCInnings {
+  team_bowling_id:    string
+  team_bowling_name:  string
   team_batting_id:    string
   team_batting_name:  string
   team_fielding_id:   string
@@ -78,6 +80,8 @@ export interface PCInnings {
 }
 
 export interface PCMatchDetail {
+  home_club_name:     string
+  away_club_name:     string
   id:                 string
   home_club_id:       string
   home_team_id:       string
