@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMatchDetail, isSloughTeam } from '@/lib/playcricket'
+import { renumberMatches } from '@/lib/matches'
 
 function parsePlayCricketDate(dateStr: string | null | undefined): string {
   if (!dateStr) return new Date().toISOString()
@@ -94,6 +95,9 @@ export async function GET(req: Request) {
     .single()
 
   if (insertErr) return NextResponse.json({ error: insertErr.message }, { status: 500 })
+
+  // Renumber all season matches by date so the new row slots in correctly
+  await renumberMatches(admin, season.id)
 
   return NextResponse.json({ data: newMatch, created: true })
 }

@@ -3,6 +3,7 @@ import { createClient }      from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMatchDetail, isSloughTeam, oversToBalls } from '@/lib/playcricket'
 import { computeBasePoints } from '@/lib/scoring'
+import { renumberMatches }   from '@/lib/matches'
 import type { MatchPerformance } from '@/types'
 
 // ── POST /api/sync/results ────────────────────────────────────────────────────
@@ -233,6 +234,9 @@ export async function POST(req: Request) {
       result:          detail.result_description || null,
     })
     .eq('id', body.match_id)
+
+  // Renumber all season matches by date so ordering stays consistent
+  await renumberMatches(admin, match.season_id as string)
 
   // ── Recalculate GW contest team points for this match ─────────────────────
   // Find contests linked to this match (direct or via gameweek)
