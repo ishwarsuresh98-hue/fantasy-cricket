@@ -99,7 +99,7 @@ export default async function ClubMatchesPage({
                 <div className={`h-px flex-1 ${isActive ? 'bg-[#f0f0f0]' : 'bg-gray-200'}`} />
               </div>
 
-              <div className={`space-y-2 rounded-xl p-3 ${isActive ? 'bg-transparent ring-1 ring-[#C9A84C]/50 shadow-[0_0_32px_rgba(201,168,76,0.12)] rounded-xl' : 'bg-transparent'}`}>
+              <div className={`space-y-2 rounded-xl p-3 ${isActive ? 'bg-[#fef9ee] ring-1 ring-[#C9A84C]/50 shadow-[0_0_32px_rgba(201,168,76,0.15)]' : 'bg-transparent'}`}>
                 {gwMatches.map((match) => (
                   <Link key={match.id} href={`${base}/matches/${match.id}`}>
                     <div className={`flex items-center justify-between p-4 rounded-lg border bg-[#f0f0f0] hover:bg-[#1c1c1c] hover:border-[#C9A84C] transition-colors cursor-pointer group ${isActive ? 'border-[#C9A84C]/20' : 'border-[#d8d8d8]'}`}>
