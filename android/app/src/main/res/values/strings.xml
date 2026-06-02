@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Slough CC Fantasy</string>
+    <string name="title_activity_main">Slough CC Fantasy</string>
+    <string name="package_name">com.sloughcc.fantasy</string>
+    <string name="custom_url_scheme">com.sloughcc.fantasy</string>
+</resources>
