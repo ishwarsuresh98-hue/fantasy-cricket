@@ -31,7 +31,6 @@ export default function RulesPage() {
             BATTING
         ══════════════════════════════════════════════════════════════════ */}
         <Section
-          icon="🏏"
           label="Batting"
           color="from-blue-500/20 to-transparent"
           borderColor="border-blue-500/30"
@@ -76,7 +75,6 @@ export default function RulesPage() {
             BOWLING
         ══════════════════════════════════════════════════════════════════ */}
         <Section
-          icon="🎳"
           label="Bowling"
           color="from-emerald-500/20 to-transparent"
           borderColor="border-emerald-500/30"
@@ -106,7 +104,6 @@ export default function RulesPage() {
             FIELDING
         ══════════════════════════════════════════════════════════════════ */}
         <Section
-          icon="🧤"
           label="Fielding"
           color="from-amber-500/20 to-transparent"
           borderColor="border-amber-500/30"
@@ -218,7 +215,7 @@ const srPtColor: Record<ColorKey, string> = tileNum
 // ── Components ─────────────────────────────────────────────────────────────────
 
 function Section({ icon, label, color, borderColor, accentColor, children }: {
-  icon: string; label: string
+  icon?: string; label: string
   color: string; borderColor: string; accentColor: string
   children: React.ReactNode
 }) {
@@ -226,9 +223,11 @@ function Section({ icon, label, color, borderColor, accentColor, children }: {
     <section>
       {/* Section header */}
       <div className={`flex items-center gap-3 mb-5 pb-4 border-b ${borderColor}`}>
-        <div className={`text-3xl w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br ${color} border ${borderColor} shrink-0`}>
-          {icon}
-        </div>
+        {icon && (
+          <div className={`text-3xl w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br ${color} border ${borderColor} shrink-0`}>
+            {icon}
+          </div>
+        )}
         <h2 className={`text-2xl sm:text-3xl font-black tracking-tight ${accentColor}`}>{label}</h2>
       </div>
       {children}
