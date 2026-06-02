@@ -1,124 +1,179 @@
-// Premium scoring rules page — black × gold × white palette
+// ── The XI — Scoring Rules (premium redesign) ─────────────────────────────────
 
 export default function RulesPage() {
   return (
-    // Full-bleed dark canvas
-    <div className="min-h-screen bg-[#0a0a0a] -mx-4 sm:-mx-6 px-4 sm:px-6 py-12">
-      <div className="space-y-8">
+    <div className="min-h-screen bg-[#0a0a0a] -mx-4 sm:-mx-6 px-4 sm:px-6 pb-16">
 
-        {/* ── Hero header ─────────────────────────────────────────────── */}
-        <div className="text-center space-y-3 pb-4">
-          {/* Gold shimmer pill */}
-          <div className="inline-flex items-center gap-2 bg-[#C9A84C]/10 border border-[#C9A84C]/30 rounded-full px-4 py-1.5 text-xs font-bold tracking-widest text-[#C9A84C] uppercase">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#C9A84C] shadow-[0_0_6px_#C9A84C] inline-block" />
-            The XI Fantasy Cricket
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white">
-            Scoring{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C9A84C] via-[#f0d078] to-[#a8892e]">
-              Rules
-            </span>
-          </h1>
-          <p className="text-white/40 text-sm max-w-md mx-auto">
-            Every run, wicket, and catch earns your team points. Master the scoring
-            system to build the perfect XI.
-          </p>
-          {/* Gold divider */}
-          <div className="flex items-center justify-center gap-3 pt-2">
-            <div className="h-px w-16 bg-gradient-to-r from-transparent to-[#C9A84C]/60" />
-            <div className="w-1.5 h-1.5 rounded-full bg-[#C9A84C]/60" />
-            <div className="h-px w-16 bg-gradient-to-l from-transparent to-[#C9A84C]/60" />
-          </div>
+      {/* ── HERO ──────────────────────────────────────────────────────────── */}
+      <div className="py-14 text-center relative overflow-hidden">
+        {/* Background radial glow */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="w-[600px] h-[300px] rounded-full bg-[#C9A84C]/8 blur-[80px]" />
         </div>
+        <p className="relative text-[#C9A84C] text-xs font-black uppercase tracking-[0.25em] mb-4">
+          The XI Fantasy Cricket
+        </p>
+        <h1 className="relative text-5xl sm:text-7xl font-black tracking-tighter text-white leading-none">
+          HOW TO<br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C9A84C] via-[#f5d97a] to-[#C9A84C]">
+            SCORE POINTS
+          </span>
+        </h1>
+        <p className="relative mt-5 text-white/35 text-sm max-w-lg mx-auto leading-relaxed">
+          Every run, wicket, catch and dot ball earns your fantasy team points.
+          Master this and you&apos;ll master the game.
+        </p>
+      </div>
 
-        {/* ── Batting ─────────────────────────────────────────────────── */}
-        <GoldCard title="🏏 Batting" accent="batting">
-          <ScoreTable rows={[
-            { label: 'Run scored',           value: '1 pt',     type: 'pos-dim' },
-            { label: 'Boundary (four)',       value: '+1 pt',    type: 'pos-dim' },
-            { label: 'Six',                   value: '+2 pts',   type: 'pos' },
-            { label: 'Half-century (50+)',    value: '+8 pts',   type: 'bonus' },
-            { label: 'Century (100+)',        value: '+16 pts',  type: 'big-bonus' },
-            { label: 'Duck (0 off ≥1 ball)', value: '−2 pts',   type: 'neg' },
-          ]} />
+      <div className="space-y-12">
 
-          {/* SR sub-section */}
-          <div className="mt-5 pt-5 border-t border-white/10">
-            <p className="text-xs font-bold uppercase tracking-widest text-[#C9A84C]/80 mb-3">
+        {/* ══════════════════════════════════════════════════════════════════
+            BATTING
+        ══════════════════════════════════════════════════════════════════ */}
+        <Section
+          icon="🏏"
+          label="Batting"
+          color="from-blue-500/20 to-transparent"
+          borderColor="border-blue-500/30"
+          accentColor="text-blue-400"
+        >
+          {/* Main batting grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <StatTile label="Run scored"    pts="1"   unit="pt"  color="green-dim" wide />
+            <StatTile label="Four"          pts="+1"  unit="pt"  color="green-dim" wide />
+            <StatTile label="Six"           pts="+2"  unit="pts" color="green" wide />
+            <StatTile label="Half-century"  pts="+8"  unit="pts" color="gold" wide sub="50+ runs" />
+            <StatTile label="Century"       pts="+16" unit="pts" color="emerald" wide sub="100+ runs" />
+            <StatTile label="Duck"          pts="−2"  unit="pts" color="red" wide sub="0 off ≥1 ball" />
+          </div>
+
+          {/* Strike rate spectrum */}
+          <div className="mt-6 rounded-2xl bg-white/[0.03] border border-white/[0.07] p-5">
+            <p className="text-xs font-black uppercase tracking-widest text-white/40 mb-1">
               Strike Rate Bonus / Penalty
-              <span className="ml-2 font-normal normal-case text-white/30 tracking-normal">
-                min. 10 balls · batters, all-rounders &amp; keepers only
-              </span>
             </p>
-            <div className="space-y-1.5">
+            <p className="text-[11px] text-white/25 mb-4">
+              Min. 10 balls faced · batters, all-rounders &amp; keepers only
+            </p>
+            <div className="grid grid-cols-5 gap-2">
               {([
-                { label: 'SR ≥ 150',   value: '+3 pts', type: 'big-bonus' },
-                { label: 'SR 125–149', value: '+2 pts', type: 'bonus' },
-                { label: 'SR 100–124', value: '+1 pt',  type: 'pos' },
-                { label: 'SR 75–99',   value: '0 pts',  type: 'neutral' },
-                { label: 'SR < 75',    value: '−2 pts', type: 'neg' },
-              ] as Row[]).map(({ label, value, type }) => (
-                <div key={label} className="flex items-center justify-between rounded-lg px-3 py-2 bg-white/[0.03] border border-white/[0.06]">
-                  <span className="text-sm text-white/70">{label}</span>
-                  <ValueBadge value={value} type={type} />
+                { range: 'SR < 75',    pts: '−2', color: 'red'      },
+                { range: 'SR 75–99',   pts: '0',  color: 'neutral'  },
+                { range: 'SR 100–124', pts: '+1', color: 'green-dim'},
+                { range: 'SR 125–149', pts: '+2', color: 'gold'     },
+                { range: 'SR ≥ 150',   pts: '+3', color: 'emerald'  },
+              ] as { range: string; pts: string; color: ColorKey }[]).map(({ range, pts, color }) => (
+                <div key={range} className={`rounded-xl p-3 text-center border ${srColors[color]}`}>
+                  <p className={`text-xl font-black tabular-nums ${srPtColor[color]}`}>{pts}</p>
+                  <p className="text-[10px] text-white/40 mt-1 leading-tight">{range}</p>
                 </div>
               ))}
             </div>
           </div>
-        </GoldCard>
+        </Section>
 
-        {/* ── Bowling ─────────────────────────────────────────────────── */}
-        <GoldCard title="🎳 Bowling" accent="bowling">
-          <ScoreTable rows={[
-            { label: 'Wicket',        value: '25 pts',   type: 'big-bonus' },
-            { label: '3-wicket haul', value: '+4 pts',   type: 'pos' },
-            { label: '4-wicket haul', value: '+8 pts',   type: 'bonus' },
-            { label: '5-wicket haul', value: '+16 pts',  type: 'big-bonus' },
-            { label: 'Dot ball',      value: '+1 pt',    type: 'pos-dim' },
-            { label: 'Maiden over',   value: '+8 pts',   type: 'bonus' },
-          ]} />
-          <p className="mt-4 text-xs text-white/30 italic">
+        {/* ══════════════════════════════════════════════════════════════════
+            BOWLING
+        ══════════════════════════════════════════════════════════════════ */}
+        <Section
+          icon="🎳"
+          label="Bowling"
+          color="from-emerald-500/20 to-transparent"
+          borderColor="border-emerald-500/30"
+          accentColor="text-emerald-400"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {/* Wicket — hero tile spans 2 cols */}
+            <div className="col-span-2 sm:col-span-1 row-span-2 relative rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-emerald-500/15 to-emerald-500/5 p-6 flex flex-col items-center justify-center text-center overflow-hidden shadow-[0_0_40px_rgba(52,211,153,0.1)]">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent" />
+              <p className="text-6xl font-black text-emerald-400 tabular-nums leading-none">25</p>
+              <p className="text-emerald-400/60 text-xs font-bold uppercase tracking-widest mt-1">pts</p>
+              <p className="text-white/60 text-sm font-semibold mt-3">Wicket</p>
+              <p className="text-white/25 text-xs mt-1">per dismissal</p>
+            </div>
+            <StatTile label="3-wicket haul" pts="+4"  unit="pts" color="green"   sub="bonus" />
+            <StatTile label="4-wicket haul" pts="+8"  unit="pts" color="gold"    sub="bonus" />
+            <StatTile label="5-wicket haul" pts="+16" unit="pts" color="emerald" sub="bonus" />
+            <StatTile label="Dot ball"      pts="+1"  unit="pt"  color="green-dim" />
+            <StatTile label="Maiden over"   pts="+8"  unit="pts" color="gold" />
+          </div>
+          <p className="mt-3 text-xs text-white/25 italic">
             Bowlers do not receive a strike-rate bonus or penalty.
           </p>
-        </GoldCard>
+        </Section>
 
-        {/* ── Fielding ────────────────────────────────────────────────── */}
-        <GoldCard title="🧤 Fielding" accent="fielding">
-          <ScoreTable rows={[
-            { label: 'Catch',    value: '8 pts',  type: 'pos' },
-            { label: 'Stumping', value: '12 pts', type: 'bonus' },
-            { label: 'Run out',  value: '6 pts',  type: 'pos' },
-          ]} />
-        </GoldCard>
-
-        {/* ── Captain / Vice-Captain ──────────────────────────────────── */}
-        <GoldCard title="⭐ Captain &amp; Vice-Captain" accent="captain">
-          <div className="grid grid-cols-2 gap-4 mt-1">
-            <MultiplierTile label="Captain" multiplier="2×" sub="base points" glow />
-            <MultiplierTile label="Vice-Captain" multiplier="1.5×" sub="base points" />
+        {/* ══════════════════════════════════════════════════════════════════
+            FIELDING
+        ══════════════════════════════════════════════════════════════════ */}
+        <Section
+          icon="🧤"
+          label="Fielding"
+          color="from-amber-500/20 to-transparent"
+          borderColor="border-amber-500/30"
+          accentColor="text-amber-400"
+        >
+          <div className="grid grid-cols-3 gap-3">
+            <StatTile label="Catch"    pts="8"  unit="pts" color="gold"    wide />
+            <StatTile label="Stumping" pts="12" unit="pts" color="emerald" wide />
+            <StatTile label="Run Out"  pts="6"  unit="pts" color="green"   wide />
           </div>
-          <p className="mt-4 text-xs text-white/30 italic">
-            Choose your captain and vice-captain wisely — they can make or break your score.
-          </p>
-        </GoldCard>
+        </Section>
 
-        {/* ── General Rules ────────────────────────────────────────────── */}
-        <GoldCard title="📋 General Rules" accent="general">
-          <ul className="space-y-3">
+        {/* ══════════════════════════════════════════════════════════════════
+            CAPTAIN & VICE-CAPTAIN
+        ══════════════════════════════════════════════════════════════════ */}
+        <Section
+          icon="⭐"
+          label="Captain & Vice-Captain"
+          color="from-[#C9A84C]/25 to-transparent"
+          borderColor="border-[#C9A84C]/40"
+          accentColor="text-[#C9A84C]"
+        >
+          <div className="grid grid-cols-2 gap-4">
+            {/* Captain */}
+            <div className="relative rounded-2xl border border-[#C9A84C]/40 bg-gradient-to-b from-[#C9A84C]/15 to-[#C9A84C]/5 p-6 text-center overflow-hidden shadow-[0_0_40px_rgba(201,168,76,0.15)]">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#C9A84C]/70 to-transparent" />
+              <p className="text-xs text-white/40 font-bold uppercase tracking-widest mb-2">Captain</p>
+              <p className="text-7xl font-black text-[#C9A84C] leading-none tabular-nums">2×</p>
+              <p className="text-white/35 text-sm mt-3">all base points</p>
+            </div>
+            {/* Vice-Captain */}
+            <div className="relative rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center overflow-hidden">
+              <p className="text-xs text-white/40 font-bold uppercase tracking-widest mb-2">Vice-Captain</p>
+              <p className="text-7xl font-black text-white/70 leading-none tabular-nums">1.5×</p>
+              <p className="text-white/35 text-sm mt-3">all base points</p>
+            </div>
+          </div>
+          <p className="mt-4 text-xs text-white/25 text-center italic">
+            Choose wisely — your captain can single-handedly win you the contest.
+          </p>
+        </Section>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            GENERAL RULES
+        ══════════════════════════════════════════════════════════════════ */}
+        <Section
+          icon="📋"
+          label="General Rules"
+          color="from-slate-500/20 to-transparent"
+          borderColor="border-slate-500/20"
+          accentColor="text-slate-400"
+        >
+          <div className="grid sm:grid-cols-2 gap-3">
             {[
-              'Pick 11 players from the confirmed squad within your budget.',
-              'Teams lock when the match starts — no changes after lock.',
-              'Points are calculated from the official Play Cricket scorecard.',
-              'Did-not-bat players score 0 batting points (no duck penalty).',
-              'Ties in contest leaderboards share the combined prize for those positions.',
-            ].map((rule) => (
-              <li key={rule} className="flex items-start gap-3 text-sm text-white/60">
-                <span className="mt-0.5 shrink-0 w-1.5 h-1.5 rounded-full bg-[#C9A84C]/60 shadow-[0_0_4px_#C9A84C]/60" />
-                {rule}
-              </li>
+              { icon: '👥', rule: 'Pick 11 players from the confirmed squad within your budget.' },
+              { icon: '🔒', rule: 'Teams lock when the match starts — no changes after lock.' },
+              { icon: '📊', rule: 'Points are calculated from the official Play Cricket scorecard.' },
+              { icon: '🏏', rule: 'Did-not-bat players score 0 batting points — no duck penalty.' },
+              { icon: '🤝', rule: 'Ties share the combined prize for those positions.' },
+            ].map(({ icon, rule }) => (
+              <div key={rule} className="flex items-start gap-3 rounded-xl bg-white/[0.03] border border-white/[0.06] px-4 py-3">
+                <span className="text-xl shrink-0 mt-0.5">{icon}</span>
+                <p className="text-sm text-white/55 leading-snug">{rule}</p>
+              </div>
             ))}
-          </ul>
-        </GoldCard>
+          </div>
+        </Section>
 
       </div>
     </div>
@@ -127,82 +182,69 @@ export default function RulesPage() {
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-type PointType = 'big-bonus' | 'bonus' | 'pos' | 'pos-dim' | 'neutral' | 'neg'
-interface Row { label: string; value: string; type: PointType }
+type ColorKey = 'emerald' | 'gold' | 'green' | 'green-dim' | 'red' | 'neutral'
 
-// ── Primitives ─────────────────────────────────────────────────────────────────
+// ── Colour maps ────────────────────────────────────────────────────────────────
 
-function ValueBadge({ value, type }: { value: string; type: PointType }) {
-  const styles: Record<PointType, string> = {
-    'big-bonus': 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-[0_0_8px_rgba(52,211,153,0.15)]',
-    'bonus':     'bg-[#C9A84C]/15 text-[#C9A84C] border border-[#C9A84C]/30',
-    'pos':       'bg-[#C9A84C]/10 text-[#C9A84C]/80 border border-[#C9A84C]/20',
-    'pos-dim':   'bg-white/5 text-white/50 border border-white/10',
-    'neutral':   'bg-white/5 text-white/30 border border-white/10',
-    'neg':       'bg-red-500/10 text-red-400 border border-red-500/20',
-  }
-  return (
-    <span className={`inline-block px-2.5 py-0.5 rounded-md text-xs font-black tabular-nums ${styles[type]}`}>
-      {value}
-    </span>
-  )
+const tileBg: Record<ColorKey, string> = {
+  emerald:    'bg-emerald-500/10 border-emerald-500/25 shadow-[0_0_20px_rgba(52,211,153,0.07)]',
+  gold:       'bg-[#C9A84C]/10 border-[#C9A84C]/25',
+  green:      'bg-green-500/10 border-green-500/25',
+  'green-dim':'bg-white/[0.04] border-white/[0.08]',
+  red:        'bg-red-500/10 border-red-500/25',
+  neutral:    'bg-white/[0.03] border-white/[0.07]',
 }
 
-function ScoreTable({ rows }: { rows: Row[] }) {
+const tileNum: Record<ColorKey, string> = {
+  emerald:    'text-emerald-400',
+  gold:       'text-[#C9A84C]',
+  green:      'text-green-400',
+  'green-dim':'text-white/55',
+  red:        'text-red-400',
+  neutral:    'text-white/25',
+}
+
+const srColors: Record<ColorKey, string> = {
+  emerald:    'bg-emerald-500/10 border-emerald-500/25',
+  gold:       'bg-[#C9A84C]/10 border-[#C9A84C]/25',
+  green:      'bg-green-500/10 border-green-500/25',
+  'green-dim':'bg-white/[0.04] border-white/[0.08]',
+  red:        'bg-red-500/10 border-red-500/25',
+  neutral:    'bg-white/[0.03] border-white/[0.06]',
+}
+
+const srPtColor: Record<ColorKey, string> = tileNum
+
+// ── Components ─────────────────────────────────────────────────────────────────
+
+function Section({ icon, label, color, borderColor, accentColor, children }: {
+  icon: string; label: string
+  color: string; borderColor: string; accentColor: string
+  children: React.ReactNode
+}) {
   return (
-    <div className="space-y-1">
-      {rows.map(({ label, value, type }) => (
-        <div key={label} className="flex items-center justify-between py-2 border-b border-white/[0.05] last:border-0">
-          <span className="text-sm text-white/65">{label}</span>
-          <ValueBadge value={value} type={type} />
+    <section>
+      {/* Section header */}
+      <div className={`flex items-center gap-3 mb-5 pb-4 border-b ${borderColor}`}>
+        <div className={`text-3xl w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br ${color} border ${borderColor} shrink-0`}>
+          {icon}
         </div>
-      ))}
-    </div>
-  )
-}
-
-function MultiplierTile({ label, multiplier, sub, glow = false }: {
-  label: string; multiplier: string; sub: string; glow?: boolean
-}) {
-  return (
-    <div className={`relative rounded-xl border p-4 text-center overflow-hidden ${
-      glow
-        ? 'bg-gradient-to-b from-[#C9A84C]/15 to-[#C9A84C]/5 border-[#C9A84C]/40 shadow-[0_0_20px_rgba(201,168,76,0.15)]'
-        : 'bg-white/[0.03] border-white/10'
-    }`}>
-      {glow && (
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#C9A84C]/60 to-transparent" />
-      )}
-      <p className="text-xs text-white/40 font-medium mb-1">{label}</p>
-      <p className={`text-4xl font-black tabular-nums ${glow ? 'text-[#C9A84C]' : 'text-white/80'}`}>
-        {multiplier}
-      </p>
-      <p className="text-xs text-white/30 mt-0.5">{sub}</p>
-    </div>
-  )
-}
-
-function GoldCard({ title, children, accent: _accent }: {
-  title: string; children: React.ReactNode; accent?: string
-}) {
-  return (
-    <section className="relative rounded-2xl overflow-hidden border border-[#C9A84C]/20 bg-[#111111] shadow-[0_2px_24px_rgba(0,0,0,0.6)]">
-      {/* Top gold line */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#C9A84C]/50 to-transparent" />
-
-      {/* Header */}
-      <div className="relative px-5 py-4 bg-gradient-to-r from-[#C9A84C]/10 via-[#C9A84C]/5 to-transparent border-b border-[#C9A84C]/15">
-        <h2 className="font-black text-base tracking-wide text-[#C9A84C]"
-            dangerouslySetInnerHTML={{ __html: title }} />
+        <h2 className={`text-2xl sm:text-3xl font-black tracking-tight ${accentColor}`}>{label}</h2>
       </div>
-
-      {/* Body */}
-      <div className="px-5 py-5">
-        {children}
-      </div>
-
-      {/* Bottom corner glow */}
-      <div className="pointer-events-none absolute -bottom-6 -right-6 w-24 h-24 rounded-full bg-[#C9A84C]/5 blur-2xl" />
+      {children}
     </section>
+  )
+}
+
+function StatTile({ label, pts, unit, color, sub, wide: _wide }: {
+  label: string; pts: string; unit: string; color: ColorKey; sub?: string; wide?: boolean
+}) {
+  return (
+    <div className={`relative rounded-xl border p-4 flex flex-col items-center justify-center text-center overflow-hidden ${tileBg[color]}`}>
+      <p className={`text-3xl font-black tabular-nums leading-none ${tileNum[color]}`}>{pts}</p>
+      <p className={`text-[10px] font-bold tabular-nums ${tileNum[color]} opacity-60 mt-0.5`}>{unit}</p>
+      <p className="text-xs text-white/55 font-semibold mt-2 leading-tight">{label}</p>
+      {sub && <p className="text-[10px] text-white/25 mt-0.5">{sub}</p>}
+    </div>
   )
 }
