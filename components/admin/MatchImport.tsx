@@ -520,7 +520,6 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Date &amp; Time</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Home Team</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Away Team</th>
-                    <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Fixture</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Venue</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Type</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Fixture ID</th>
@@ -544,21 +543,6 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
                       {/* Away Team (raw) */}
                       <td className="px-4 py-2.5 text-xs max-w-[150px] truncate">
                         {m.awayTeam || <span className="text-red-400 italic">missing</span>}
-                      </td>
-                      {/* Derived fixture — our_team vs opponent_team */}
-                      <td className="px-4 py-2.5 max-w-[220px]">
-                        {m.our_team && m.opponent_team ? (
-                          <div>
-                            <span className="text-xs font-semibold text-[#C9A84C]">{m.our_team}</span>
-                            <span className="text-xs text-muted-foreground mx-1">vs</span>
-                            <span className="text-xs font-medium">{m.opponent_team}</span>
-                            {m.noSloughFound && (
-                              <p className="text-[10px] text-amber-600 mt-0.5">⚠ No "Slough" found — home treated as ours</p>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-red-400 italic text-xs">missing</span>
-                        )}
                       </td>
                       <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[140px] truncate">
                         {m.venue || '—'}
