@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import type { Match } from '@/types'
 import MatchForm from '@/components/admin/MatchForm'
 import DeleteMatchButton from '@/components/admin/DeleteMatchButton'
+import LiveMatchToggle   from '@/components/admin/LiveMatchToggle'
 
 const MAX_XI = 11
 
@@ -100,12 +101,21 @@ export default async function AdminMatchesPage() {
                   </div>
                   <div className="flex items-center gap-2 flex-wrap justify-end">
                     <Badge className={
-                      match.status === 'completed'
-                        ? 'bg-[#eeeeee] text-[#aaaaaa] hover:bg-[#eeeeee]'
-                        : 'bg-[#fef9ee] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#fef9ee]'
+                      match.status === 'completed' ? 'bg-[#eeeeee] text-[#aaaaaa] hover:bg-[#eeeeee]' :
+                      match.status === 'live'      ? 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-100' :
+                                                     'bg-[#fef9ee] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#fef9ee]'
                     }>
-                      {match.status === 'completed' ? 'Completed' : 'Upcoming'}
+                      {match.status === 'completed' ? 'Completed' :
+                       match.status === 'live'      ? '🟢 Live'    : 'Upcoming'}
                     </Badge>
+
+                    <LiveMatchToggle
+                      matchId={match.id}
+                      matchNumber={match.match_number}
+                      opponentTeam={match.opponent_team}
+                      status={match.status}
+                      playCricketId={match.play_cricket_id}
+                    />
 
                     {/* Playing XI button — only for upcoming matches */}
                     {match.status === 'upcoming' && (() => {

@@ -10,7 +10,7 @@ export interface Club {
 
 export type UserRole = 'admin' | 'member'
 export type PlayerRole = 'batsman' | 'bowler' | 'all_rounder' | 'wicket_keeper'
-export type MatchStatus = 'upcoming' | 'completed'
+export type MatchStatus = 'upcoming' | 'live' | 'completed'
 export type BoosterType =
   | 'batting_surge'
   | 'keeping_surge'
