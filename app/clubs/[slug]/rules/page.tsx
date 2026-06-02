@@ -4,7 +4,7 @@ export default function RulesPage() {
   return (
     // Full-bleed dark canvas
     <div className="min-h-screen bg-[#0a0a0a] -mx-4 sm:-mx-6 px-4 sm:px-6 py-12">
-      <div className="max-w-3xl mx-auto space-y-8">
+      <div className="space-y-8">
 
         {/* ── Hero header ─────────────────────────────────────────────── */}
         <div className="text-center space-y-3 pb-4">
