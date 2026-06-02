@@ -318,7 +318,7 @@ function PageBtn({
         active
           ? 'bg-[#f0f0f0] text-[#0b0b0b]'
           : disabled
-          ? 'text-gray-300 cursor-not-allowed'
+          ? 'text-gray-400 cursor-not-allowed'
           : 'text-gray-600 hover:bg-[#eeeeee]'
       }`}
     >

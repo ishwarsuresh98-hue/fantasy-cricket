@@ -169,7 +169,7 @@ export default function ContestTemplatesAdmin({
                       <td className="px-4 py-3 text-center">
                         {t.auto_create
                           ? <span className="text-green-600 font-bold text-xs">Yes</span>
-                          : <span className="text-gray-300 text-xs">No</span>}
+                          : <span className="text-gray-400 text-xs">No</span>}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <button

@@ -443,8 +443,8 @@ export default function GameweekTeamBuilder({
               className={cn(
                 'flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all whitespace-nowrap',
                 roleFilter === value
-                  ? 'bg-gray-900 border-gray-900 text-[#111111]'
-                  : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300',
+                  ? 'bg-[#C9A84C] border-[#C9A84C] text-[#0b0b0b]'
+                  : 'bg-white border-gray-200 text-gray-500 hover:border-[#C9A84C]/50 hover:bg-[#fdf6e3]',
               )}
             >
               {label}

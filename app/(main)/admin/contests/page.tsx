@@ -92,7 +92,7 @@ export default async function AdminContestsPage() {
                     <td className="px-4 py-3 text-center">
                       {contest.entry_code
                         ? <span className="font-black tracking-[0.2em] text-[#C9A84C] font-mono text-sm">{contest.entry_code}</span>
-                        : <span className="text-gray-300 text-xs">—</span>
+                        : <span className="text-gray-400 text-xs">—</span>
                       }
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -114,7 +114,7 @@ export default async function AdminContestsPage() {
                     <td className="px-4 py-3 max-w-[200px]">
                       {contest.prize_description
                         ? <p className="text-xs text-gray-500 truncate">{contest.prize_description}</p>
-                        : <span className="text-gray-300 text-xs">—</span>
+                        : <span className="text-gray-400 text-xs">—</span>
                       }
                     </td>
                     <td className="px-5 py-3 text-right">

@@ -219,11 +219,11 @@ export default async function ClubPlayerProfilePage({
                         <td colSpan={8} className="px-3 py-2.5 text-center text-xs text-gray-400 italic">Did not play</td>
                       ) : (
                         <>
-                          <td className="px-3 py-2.5 text-center">{dnb ? <span className="text-gray-300 text-xs">DNB</span> : <span className="font-medium">{p!.runs_scored ?? 0}</span>}</td>
+                          <td className="px-3 py-2.5 text-center">{dnb ? <span className="text-gray-400 text-xs">DNB</span> : <span className="font-medium">{p!.runs_scored ?? 0}</span>}</td>
                           <td className="px-3 py-2.5 text-center text-gray-500">{dnb ? '—' : (p!.balls_faced ?? '—')}</td>
                           <td className="px-3 py-2.5 text-center text-gray-500">{p!.fours    || '—'}</td>
                           <td className="px-3 py-2.5 text-center text-gray-500">{p!.sixes    || '—'}</td>
-                          <td className="px-3 py-2.5 text-center">{(p!.wickets ?? 0) > 0 ? <span className="font-semibold text-[#b5211e]">{p!.wickets}</span> : <span className="text-gray-300">—</span>}</td>
+                          <td className="px-3 py-2.5 text-center">{(p!.wickets ?? 0) > 0 ? <span className="font-semibold text-[#b5211e]">{p!.wickets}</span> : <span className="text-gray-400">—</span>}</td>
                           <td className="px-3 py-2.5 text-center text-gray-500">{p!.catches  || '—'}</td>
                           <td className="px-3 py-2.5 text-center text-gray-500">{p!.maidens  || '—'}</td>
                           <td className="px-3 py-2.5 text-center"><span className="font-black text-[#C9A84C] tabular-nums">{fmtPts(p!.base_points ?? 0)}</span></td>
@@ -238,7 +238,7 @@ export default async function ClubPlayerProfilePage({
                             {h.credit_after > h.credit_before && ' ↑'}
                             {h.credit_after < h.credit_before && ' ↓'}
                           </span>
-                        ) : <span className="text-gray-300">—</span>}
+                        ) : <span className="text-gray-400">—</span>}
                       </td>
                     </tr>
                   )
@@ -284,7 +284,7 @@ export default async function ClubPlayerProfilePage({
                       <td className="px-3 py-2.5 text-center">
                         {o.is_captain ? <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#C9A84C] text-[#0b0b0b] text-[10px] font-black">C</span>
                           : o.is_vice_captain ? <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-200 text-gray-600 text-[10px] font-black">V</span>
-                          : <span className="text-gray-300 text-xs">—</span>}
+                          : <span className="text-gray-400 text-xs">—</span>}
                       </td>
                       <td className="px-5 py-2.5 text-right font-bold text-[#C9A84C] tabular-nums">{fmtPts(ft.total_points)}</td>
                     </tr>

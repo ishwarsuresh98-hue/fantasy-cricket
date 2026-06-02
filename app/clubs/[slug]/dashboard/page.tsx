@@ -436,7 +436,7 @@ export default async function ClubDashboardPage({
                           <td key={gw.dateStr} className="px-3 py-3 text-center">
                             {pts > 0
                               ? <span className={cn('font-semibold', isMe ? 'text-[#C9A84C]' : 'text-[#aaaaaa]')}>{fmtPts(pts)}</span>
-                              : <span className="text-gray-300 text-xs">—</span>}
+                              : <span className="text-gray-400 text-xs">—</span>}
                           </td>
                         )
                       })}

@@ -417,9 +417,9 @@ function H2HLayout({ myEntry, opponent, isLocked, isJoined, maxTeams }: {
             </>
           ) : (
             <>
-              <div className="w-12 h-12 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-300 text-xl mb-2">?</div>
+              <div className="w-12 h-12 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-xl mb-2">?</div>
               <p className="text-xs text-gray-400">Waiting for opponent</p>
-              <p className="text-[10px] text-gray-300 mt-0.5">{maxTeams - (myEntry ? 1 : 0)} spot{maxTeams - (myEntry ? 1 : 0) !== 1 ? 's' : ''} left</p>
+              <p className="text-[10px] text-gray-400 mt-0.5">{maxTeams - (myEntry ? 1 : 0)} spot{maxTeams - (myEntry ? 1 : 0) !== 1 ? 's' : ''} left</p>
             </>
           )}
         </div>
@@ -454,7 +454,7 @@ function WtaLayout({ entries, maxTeams, isLocked, myEntry }: {
                    : 'bg-gray-200 border-dashed border-red-200',
             )}>
               <span className={cn('text-lg font-black w-6 text-center flex-shrink-0',
-                i === 0 ? 'text-[#C9A84C]' : 'text-gray-300')}>
+                i === 0 ? 'text-[#C9A84C]' : 'text-gray-400')}>
                 {i === 0 ? '🥇' : i + 1}
               </span>
               {team ? (
@@ -473,7 +473,7 @@ function WtaLayout({ entries, maxTeams, isLocked, myEntry }: {
                   {isLocked && <span className="text-sm font-black text-gray-600 tabular-nums flex-shrink-0">{team.total_points}pts</span>}
                 </>
               ) : (
-                <p className="text-sm text-gray-300 italic">Open spot</p>
+                <p className="text-sm text-gray-400 italic">Open spot</p>
               )}
             </div>
           )
@@ -513,7 +513,7 @@ function StandardEntryList({ entries, maxTeams, isLocked }: {
         {entries.map((team, i) => (
           <div key={team.id} className={cn('flex items-center gap-3 px-5 py-3',
             team.is_me ? 'bg-[#fef9ee]' : '')}>
-            <span className="text-sm font-black text-gray-300 w-6 flex-shrink-0 tabular-nums">{i + 1}</span>
+            <span className="text-sm font-black text-gray-400 w-6 flex-shrink-0 tabular-nums">{i + 1}</span>
             <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0',
               team.is_me ? 'bg-[#C9A84C] text-black' : 'bg-gray-100 text-gray-500')}>
               {isLocked ? team.display_name.slice(0, 2).toUpperCase() : '?'}

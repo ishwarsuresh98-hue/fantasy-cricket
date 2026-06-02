@@ -266,7 +266,7 @@ export default function OnboardingTour({ userId }: Props) {
         </div>
 
         {/* Keyboard hint — desktop only */}
-        <p className="hidden sm:block text-center text-[10px] text-gray-300 pb-3">
+        <p className="hidden sm:block text-center text-[10px] text-gray-400 pb-3">
           Press <kbd className="bg-[#eeeeee] text-gray-500 rounded px-1 font-mono text-[10px]">→</kbd> to advance, <kbd className="bg-[#eeeeee] text-gray-500 rounded px-1 font-mono text-[10px]">Esc</kbd> to skip
         </p>
       </div>

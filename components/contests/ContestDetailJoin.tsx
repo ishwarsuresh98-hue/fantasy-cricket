@@ -26,7 +26,7 @@ function fmt(n: number): string {
 }
 
 const CATEGORY_ACCENT: Record<ContestCategory, string> = {
-  practice:     'bg-gray-900 hover:bg-gray-700',
+  practice:     'bg-[#f5f5f5] border border-gray-300 text-[#555555] hover:border-[#C9A84C]/60 hover:bg-[#fdf6e3]',
   h2h:          'bg-blue-600 hover:bg-blue-700',
   small_league: 'bg-green-600 hover:bg-green-700',
   jackpot:      'bg-red-600 hover:bg-red-700',

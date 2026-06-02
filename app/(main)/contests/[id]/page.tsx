@@ -298,7 +298,7 @@ function LeaderboardRow({
 
   const movementEl =
     movement === null || movement === 0
-      ? <span className="text-gray-300 text-xs">→</span>
+      ? <span className="text-gray-400 text-xs">→</span>
       : movement > 0
       ? <span className="text-green-600 text-[11px] font-bold">↑{movement}</span>
       : <span className="text-red-500 text-[11px] font-bold">↓{Math.abs(movement)}</span>
@@ -334,7 +334,7 @@ function LeaderboardRow({
           <td key={gw.dateStr} className="px-3 py-3 text-center">
             {pts > 0
               ? <span className={cn('font-semibold text-sm tabular-nums', isMe ? 'text-[#C9A84C]' : 'text-[#aaaaaa]')}>{fmtPts(pts)}</span>
-              : <span className="text-gray-300 text-xs">—</span>
+              : <span className="text-gray-400 text-xs">—</span>
             }
           </td>
         )

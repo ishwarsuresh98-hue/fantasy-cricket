@@ -200,7 +200,7 @@ export default function PlayerCard({
         {gwPoints !== undefined && (
           <span className={cn(
             'flex-shrink-0 w-9 text-right text-sm font-bold',
-            gwPoints > 0 ? 'text-[#C9A84C]' : 'text-gray-300',
+            gwPoints > 0 ? 'text-[#C9A84C]' : 'text-gray-400',
           )}>
             {gwPoints > 0
               ? gwPoints % 1 === 0 ? gwPoints : gwPoints.toFixed(1)

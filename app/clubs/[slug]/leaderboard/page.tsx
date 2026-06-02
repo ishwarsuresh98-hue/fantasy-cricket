@@ -64,7 +64,7 @@ function TableRow({
     return <span className={cn('inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold', isMe ? 'bg-[#C9A84C]/20 text-[#C9A84C]' : 'bg-[#eeeeee] text-gray-600')}>{rank}</span>
   })()
   const movementEl = (() => {
-    if (movement === null || movement === 0) return <span className="text-gray-300 text-xs font-bold">→</span>
+    if (movement === null || movement === 0) return <span className="text-gray-400 text-xs font-bold">→</span>
     if (movement > 0) return <span className="inline-flex items-center gap-0.5 text-green-600 text-[11px] font-bold">↑<span className="tabular-nums">{movement}</span></span>
     return <span className="inline-flex items-center gap-0.5 text-red-500 text-[11px] font-bold">↓<span className="tabular-nums">{Math.abs(movement)}</span></span>
   })()
@@ -98,7 +98,7 @@ function TableRow({
           <td key={gw.dateStr} className="px-3 py-3 text-center">
             {pts > 0
               ? <span className={cn('font-semibold text-sm tabular-nums', isMe ? 'text-[#C9A84C]' : 'text-[#aaaaaa]')}>{fmtPts(pts)}</span>
-              : <span className="text-gray-300 text-xs">—</span>}
+              : <span className="text-gray-400 text-xs">—</span>}
           </td>
         )
       })}
