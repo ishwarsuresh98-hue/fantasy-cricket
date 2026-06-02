@@ -116,7 +116,14 @@ export default async function ClubAdminMatchesPage({
                       <p className="font-bold text-lg leading-none">{match.match_number}</p>
                     </div>
                     <div>
-                      <p className="font-semibold">{match.opponent_team}</p>
+                      {/* Opponent club — the primary match title */}
+                      <p className="font-semibold text-[#0b0b0b]">{match.opponent_team}</p>
+                      {/* Full fixture line when our_team is populated */}
+                      {match.our_team && (
+                        <p className="text-xs text-[#C9A84C] font-medium mt-0.5">
+                          {match.our_team} vs {match.opponent_team}
+                        </p>
+                      )}
                       {match.venue && <p className="text-sm text-muted-foreground">{match.venue}</p>}
                       <p className="text-sm text-muted-foreground">
                         {new Date(match.match_date).toLocaleDateString('en-AU', {
