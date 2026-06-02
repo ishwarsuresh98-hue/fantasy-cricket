@@ -61,7 +61,7 @@ function TableRow({
     if (rank === 1) return <span className="text-xl leading-none">🥇</span>
     if (rank === 2) return <span className="text-xl leading-none">🥈</span>
     if (rank === 3) return <span className="text-xl leading-none">🥉</span>
-    return <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#141414] text-gray-600 text-xs font-bold">{rank}</span>
+    return <span className={cn('inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold', isMe ? 'bg-[#C9A84C]/20 text-[#C9A84C]' : 'bg-[#141414] text-gray-600')}>{rank}</span>
   })()
   const movementEl = (() => {
     if (movement === null || movement === 0) return <span className="text-gray-300 text-xs font-bold">→</span>
@@ -84,11 +84,11 @@ function TableRow({
             {initials(owner)}
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-sm text-[#0b0b0b] truncate flex items-center gap-1.5">
+            <p className={cn('font-semibold text-sm truncate flex items-center gap-1.5', isMe ? 'text-white' : 'text-[#0b0b0b]')}>
               {teamName}
               {isMe && <span className="inline-flex items-center px-1.5 py-0 rounded text-[9px] font-black bg-[#C9A84C] text-[#0b0b0b]">YOU</span>}
             </p>
-            <p className="text-xs text-gray-400 truncate">{owner}</p>
+            <p className={cn('text-xs truncate', isMe ? 'text-white/50' : 'text-gray-400')}>{owner}</p>
           </div>
         </div>
       </td>
