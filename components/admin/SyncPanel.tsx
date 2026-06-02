@@ -84,6 +84,59 @@ export default function SyncPanel({ seasonId, seasonYear, matches }: Props) {
     }
   }
 
+  // ── Bulk Import by Play Cricket IDs ──────────────────────────────────────
+  interface BulkItem { id: string; status: 'pending' | 'running' | 'ok' | 'error'; error?: string }
+
+  const [bulkText,    setBulkText]    = useState('')
+  const [bulkItems,   setBulkItems]   = useState<BulkItem[]>([])
+  const [bulkRunning, setBulkRunning] = useState(false)
+
+  function parseBulkIds(raw: string): string[] {
+    return raw
+      .split(/[\n,]+/)
+      .map(s => s.trim())
+      .filter(s => /^\d+$/.test(s))
+  }
+
+  async function runBulkImport() {
+    const ids = parseBulkIds(bulkText)
+    if (ids.length === 0) return
+    const initial: BulkItem[] = ids.map(id => ({ id, status: 'pending' }))
+    setBulkItems(initial)
+    setBulkRunning(true)
+
+    const items = [...initial]
+    for (let i = 0; i < items.length; i++) {
+      items[i] = { ...items[i], status: 'running' }
+      setBulkItems([...items])
+      try {
+        const res = await fetch('/api/admin/match-by-pc-id?pc_id=' + items[i].id)
+        const j   = await res.json() as { data?: { id: string } | null; error?: string }
+        if (!res.ok || !j.data) {
+          items[i] = { ...items[i], status: 'error', error: j.error ?? 'Not found' }
+        } else {
+          items[i] = { ...items[i], status: 'ok' }
+        }
+      } catch (e: unknown) {
+        items[i] = { ...items[i], status: 'error', error: (e as Error).message }
+      }
+      setBulkItems([...items])
+    }
+    setBulkRunning(false)
+  }
+
+  function resetBulk() {
+    setBulkText('')
+    setBulkItems([])
+    setBulkRunning(false)
+  }
+
+  const bulkDone      = bulkItems.length > 0 && !bulkRunning
+  const bulkSucceeded = bulkItems.filter(i => i.status === 'ok').length
+  const bulkFailed    = bulkItems.filter(i => i.status === 'error')
+  const bulkCurrent   = bulkItems.findIndex(i => i.status === 'running') + 1
+  const bulkTotal     = bulkItems.length
+
   // ── Quick XI by Play Cricket ID ───────────────────────────────────────────
   const [quickXiPcId, setQuickXiPcId] = useState('')
   const [quickXiSync, setQuickXiSync] = useState<SyncResult>({ state: 'idle', message: '', ts: null })
@@ -338,6 +391,107 @@ export default function SyncPanel({ seasonId, seasonYear, matches }: Props) {
           </button>
         </div>
         <StatusBadge result={quickResSync} />
+      </SyncSection>
+
+      {/* ── 1d. Bulk Import by Play Cricket IDs ──────────────────────────── */}
+      <SyncSection
+        title="Bulk Import Results by Play Cricket IDs"
+        description="Paste multiple Play Cricket match IDs (one per line or comma-separated) to import results and calculate points for all of them in one go."
+      >
+        {/* Input area — hidden once a run is in progress */}
+        {bulkItems.length === 0 && (
+          <div className="space-y-3">
+            <textarea
+              value={bulkText}
+              onChange={e => setBulkText(e.target.value)}
+              placeholder={"7276987\n7276988\n7276989\n\nor: 7276987, 7276988, 7276989"}
+              rows={5}
+              className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 font-mono placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors resize-y"
+            />
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => void runBulkImport()}
+                disabled={parseBulkIds(bulkText).length === 0}
+                className={btnClass('gold', parseBulkIds(bulkText).length === 0)}
+              >
+                ↓ Import {parseBulkIds(bulkText).length > 0 ? `${parseBulkIds(bulkText).length} Match${parseBulkIds(bulkText).length !== 1 ? 'es' : ''}` : 'Matches'}
+              </button>
+              {parseBulkIds(bulkText).length > 0 && (
+                <span className="text-xs text-gray-400">{parseBulkIds(bulkText).length} ID{parseBulkIds(bulkText).length !== 1 ? 's' : ''} detected</span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Progress list */}
+        {bulkItems.length > 0 && (
+          <div className="space-y-3">
+            {/* Progress header */}
+            {bulkRunning && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-700">
+                <span className="inline-block w-3 h-3 rounded-full bg-amber-400 animate-pulse" />
+                Importing {bulkCurrent} of {bulkTotal}…
+              </div>
+            )}
+
+            {/* Summary when done */}
+            {bulkDone && (
+              <div className={cn(
+                'px-3 py-2.5 rounded-lg border text-xs font-semibold',
+                bulkFailed.length === 0
+                  ? 'bg-green-50 border-green-200 text-green-700'
+                  : bulkSucceeded === 0
+                  ? 'bg-red-50 border-red-200 text-red-600'
+                  : 'bg-amber-50 border-amber-200 text-amber-700',
+              )}>
+                {bulkFailed.length === 0
+                  ? `✓ All ${bulkSucceeded} imported successfully`
+                  : `✓ ${bulkSucceeded} succeeded · ✗ ${bulkFailed.length} failed`}
+                {bulkFailed.length > 0 && (
+                  <ul className="mt-1.5 space-y-0.5 font-normal">
+                    {bulkFailed.map(f => (
+                      <li key={f.id} className="font-mono">
+                        {f.id} — {f.error}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+
+            {/* Per-ID rows */}
+            <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
+              {bulkItems.map(item => (
+                <div key={item.id} className={cn(
+                  'flex items-center justify-between px-3 py-2 text-xs',
+                  item.status === 'running' ? 'bg-amber-50' :
+                  item.status === 'ok'      ? 'bg-green-50' :
+                  item.status === 'error'   ? 'bg-red-50'   : 'bg-white',
+                )}>
+                  <span className="font-mono text-gray-700">{item.id}</span>
+                  <span className={cn(
+                    'font-semibold',
+                    item.status === 'running' ? 'text-amber-600' :
+                    item.status === 'ok'      ? 'text-green-600' :
+                    item.status === 'error'   ? 'text-red-500'   : 'text-gray-400',
+                  )}>
+                    {item.status === 'pending' ? '…' :
+                     item.status === 'running' ? '⏳ Importing…' :
+                     item.status === 'ok'      ? '✓ Imported' :
+                     `✗ ${item.error ?? 'Failed'}`}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Reset button */}
+            {bulkDone && (
+              <button onClick={resetBulk} className={btnClass('gray')}>
+                ← Import More
+              </button>
+            )}
+          </div>
+        )}
       </SyncSection>
 
       {/* ── 2. Sync Playing XI ───────────────────────────────────────────── */}
