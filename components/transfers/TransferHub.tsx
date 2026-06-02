@@ -54,6 +54,26 @@ const ROLE_CONSTRAINTS: Record<PlayerRole, { min: number; max: number }> = {
 }
 const MAX_SQUAD = 11
 
+// Role colour config for the available-players panel
+const AVAILABLE_ROLE_STYLE: Record<PlayerRole, { avatar: string; badge: string }> = {
+  wicket_keeper: {
+    avatar: 'bg-amber-500/15 text-amber-400',
+    badge:  'bg-amber-500/15 text-amber-400 border-amber-500/30',
+  },
+  batsman: {
+    avatar: 'bg-blue-500/15 text-blue-400',
+    badge:  'bg-blue-500/15 text-blue-400 border-blue-500/30',
+  },
+  all_rounder: {
+    avatar: 'bg-emerald-500/15 text-emerald-400',
+    badge:  'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+  },
+  bowler: {
+    avatar: 'bg-red-500/15 text-red-400',
+    badge:  'bg-red-500/15 text-red-400 border-red-500/30',
+  },
+}
+
 function fmtPts(n: number) { return n % 1 === 0 ? n.toString() : n.toFixed(1) }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -405,34 +425,49 @@ export default function TransferHub({
         </div>
 
         {/* ── Right: Available Players ───────────────────────────────────── */}
-        <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] overflow-hidden flex flex-col">
+        <div className="rounded-2xl bg-[#0e0e0e] border border-[#C9A84C]/20 overflow-hidden flex flex-col shadow-[0_4px_32px_rgba(0,0,0,0.5)]">
+          {/* Top shimmer */}
+          <div className="h-px bg-gradient-to-r from-transparent via-[#C9A84C]/50 to-transparent" />
+
           {/* Panel header */}
-          <div className="bg-[#f8f8f8] border-b border-[#d8d8d8] px-4 py-3">
-            <p className="text-[#d4d4d4] font-bold text-sm mb-2">
-              Available Players
+          <div className="bg-[#111] border-b border-white/[0.07] px-4 pt-4 pb-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-white font-black text-sm tracking-wide">
+                Available Players
+              </p>
               {!outId && (
-                <span className="ml-1.5 text-xs font-normal text-gray-400">
-                  — select a squad player first to swap
+                <span className="text-[10px] font-semibold text-white/30 bg-white/[0.05] px-2 py-0.5 rounded-full">
+                  pick a player to swap first
                 </span>
               )}
-            </p>
+            </div>
 
             {/* Role tabs */}
-            <div className="flex gap-1.5 flex-wrap mb-2">
-              {(['all', ...ROLE_ORDER] as const).map((role) => (
-                <button
-                  key={role}
-                  onClick={() => setRoleFilter(role)}
-                  className={cn(
-                    'px-2.5 py-1 rounded-lg text-xs font-bold border transition-all',
-                    roleFilter === role
-                      ? 'bg-[#f0f0f0] text-[#0b0b0b] border-[#C9A84C]'
-                      : 'bg-[#f0f0f0] text-gray-600 border-[#d8d8d8] hover:border-[#C9A84C]/40',
-                  )}
-                >
-                  {role === 'all' ? 'ALL' : ROLE_SHORT[role]}
-                </button>
-              ))}
+            <div className="flex gap-1.5 flex-wrap">
+              {(['all', ...ROLE_ORDER] as const).map((role) => {
+                const active = roleFilter === role
+                const roleCls = role === 'all' ? ''
+                  : role === 'wicket_keeper' ? 'data-[active]:bg-amber-500/20 data-[active]:text-amber-400 data-[active]:border-amber-500/40'
+                  : role === 'batsman'       ? 'data-[active]:bg-blue-500/20 data-[active]:text-blue-400 data-[active]:border-blue-500/40'
+                  : role === 'all_rounder'   ? 'data-[active]:bg-emerald-500/20 data-[active]:text-emerald-400 data-[active]:border-emerald-500/40'
+                  :                           'data-[active]:bg-red-500/20 data-[active]:text-red-400 data-[active]:border-red-500/40'
+                return (
+                  <button
+                    key={role}
+                    data-active={active ? '' : undefined}
+                    onClick={() => setRoleFilter(role)}
+                    className={cn(
+                      'px-3 py-1 rounded-lg text-xs font-black border transition-all',
+                      roleCls,
+                      active
+                        ? role === 'all' ? 'bg-[#C9A84C]/15 text-[#C9A84C] border-[#C9A84C]/40' : ''
+                        : 'bg-white/[0.04] text-white/40 border-white/[0.08] hover:border-white/20 hover:text-white/60',
+                    )}
+                  >
+                    {role === 'all' ? 'ALL' : ROLE_SHORT[role]}
+                  </button>
+                )
+              })}
               {/* Sort */}
               <div className="ml-auto flex gap-1">
                 {(['points', 'price', 'form'] as const).map((s) => (
@@ -440,13 +475,13 @@ export default function TransferHub({
                     key={s}
                     onClick={() => setSortBy(s)}
                     className={cn(
-                      'px-2 py-1 rounded text-[10px] font-bold border transition-all capitalize',
+                      'px-2 py-1 rounded text-[10px] font-black border transition-all',
                       sortBy === s
-                        ? 'bg-[#f0f0f0] text-[#0b0b0b] border-[#C9A84C]'
-                        : 'bg-[#f0f0f0] text-gray-500 border-[#d8d8d8] hover:border-gray-400',
+                        ? 'bg-[#C9A84C]/15 text-[#C9A84C] border-[#C9A84C]/40'
+                        : 'bg-white/[0.04] text-white/30 border-white/[0.08] hover:text-white/50',
                     )}
                   >
-                    {s === 'points' ? 'Pts' : s === 'price' ? 'Cr' : 'Form'}
+                    {s === 'points' ? 'PTS' : s === 'price' ? 'CR' : 'FORM'}
                   </button>
                 ))}
               </div>
@@ -454,7 +489,7 @@ export default function TransferHub({
 
             {/* Search */}
             <div className="relative">
-              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none"
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/25 pointer-events-none"
                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0Z" />
               </svg>
@@ -463,69 +498,146 @@ export default function TransferHub({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search players…"
-                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-[#d8d8d8] bg-[#f0f0f0] text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-white/[0.08] bg-white/[0.04] text-white placeholder:text-white/25 focus:outline-none focus:border-[#C9A84C]/50 focus:ring-1 focus:ring-[#C9A84C]/15 transition-colors"
               />
             </div>
           </div>
 
-          <div className="divide-y divide-gray-100 overflow-y-auto max-h-[460px]">
+          {/* Player list */}
+          <div className="divide-y divide-white/[0.05] overflow-y-auto max-h-[460px]">
             {availablePlayers.length === 0 ? (
-              <p className="py-12 text-center text-sm text-gray-400">
+              <p className="py-12 text-center text-sm text-white/25">
                 No players available{search ? ` matching "${search}"` : ''}
               </p>
             ) : (
               availablePlayers.map((player) => {
-                const isIn        = inId === player.id
-                const roleCount   = [...squadIds].filter((id) => playerMap.get(id)?.role === player.role).length
-                const wouldExceed = roleCount >= ROLE_CONSTRAINTS[player.role].max
+                const isIn         = inId === player.id
+                const roleCount    = [...squadIds].filter((id) => playerMap.get(id)?.role === player.role).length
+                const wouldExceed  = roleCount >= ROLE_CONSTRAINTS[player.role].max
                 const tooExpensive = !megaTransferActive &&
                   outPlayer ? (budgetLeft + outPlayer.price - player.price < -0.001) : false
                 const canAdd = !wouldExceed && !tooExpensive && !!outId
+                const disabled = !canAdd && !!outId
+
+                // Role colour config
+                const roleStyle = AVAILABLE_ROLE_STYLE[player.role]
+
+                // Initials
+                const initials = player.name.split(' ').slice(0, 2).map((w) => w[0] ?? '').join('').toUpperCase()
+
+                // Form: last 3 recent pts
+                const formDots = player.recentPts.slice(-3)
+
+                // Avg recent form label
+                const validPts  = player.recentPts.filter((v): v is number => v !== null)
+                const avgRecent = validPts.length > 0
+                  ? validPts.reduce((s, v) => s + v, 0) / validPts.length
+                  : null
 
                 return (
-                  <div key={player.id} className="relative flex items-center gap-2 pr-3">
-                    {/* Player card (grows) */}
-                    <div
-                      className={cn(
-                        'flex-1 transition-all',
-                        isIn ? 'ring-2 ring-inset ring-green-400 bg-green-50' : '',
-                        !canAdd && outId ? 'opacity-50' : '',
-                      )}
-                    >
-                      <PlayerCard
-                        id={player.id}
-                        name={player.name}
-                        role={player.role}
-                        price={player.price}
-                        size="compact"
-                        isPlaying={player.isPlaying}
-                        recentPoints={player.recentPts}
-                        gwPoints={player.seasonPts > 0 ? player.seasonPts : undefined}
-                      />
+                  <div
+                    key={player.id}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-3 transition-all',
+                      isIn     ? 'bg-emerald-500/10 border-l-2 border-emerald-400'  : 'border-l-2 border-transparent',
+                      disabled ? 'opacity-40' : 'hover:bg-white/[0.03]',
+                    )}
+                  >
+                    {/* Avatar */}
+                    <div className={cn(
+                      'w-11 h-11 rounded-xl flex items-center justify-center text-sm font-black shrink-0',
+                      roleStyle.avatar,
+                    )}>
+                      {initials}
                     </div>
 
-                    {/* Add button */}
-                    <button
-                      onClick={() => canAdd && selectIn(player.id)}
-                      disabled={!canAdd}
-                      className={cn(
-                        'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all',
-                        isIn
-                          ? 'bg-green-500 border-green-500 text-[#0b0b0b]'
-                          : canAdd
-                          ? 'border-[#C9A84C] text-[#C9A84C] hover:bg-[#f0f0f0] hover:text-[#0b0b0b]'
-                          : 'border-[#d8d8d8] text-gray-300 cursor-not-allowed',
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className="text-sm font-black text-white leading-tight truncate">{player.name}</p>
+                        {player.isPlaying && (
+                          <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase tracking-wide">
+                            Playing
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        {/* Role badge */}
+                        <span className={cn(
+                          'text-[9px] font-black px-1.5 py-0.5 rounded border uppercase tracking-wider',
+                          roleStyle.badge,
+                        )}>
+                          {ROLE_SHORT[player.role]}
+                        </span>
+                        {/* Season pts */}
+                        <span className="text-[11px] text-white/35 tabular-nums">
+                          {player.seasonPts > 0 ? `${fmtPts(player.seasonPts)} pts` : 'No pts yet'}
+                        </span>
+                        {/* Avg form */}
+                        {avgRecent !== null && (
+                          <span className={cn(
+                            'text-[11px] font-bold tabular-nums',
+                            avgRecent >= 40 ? 'text-emerald-400' : avgRecent >= 20 ? 'text-[#C9A84C]' : 'text-white/30',
+                          )}>
+                            ~{fmtPts(avgRecent)} avg
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right: form dots + price + button */}
+                    <div className="flex items-center gap-3 shrink-0">
+                      {/* Form sparkline */}
+                      {formDots.length > 0 && (
+                        <div className="flex gap-1 items-end h-5">
+                          {formDots.map((pts, i) => {
+                            const h = pts === null ? 4 : Math.min(20, Math.max(4, Math.round((pts / 60) * 20)))
+                            const col = pts === null ? 'bg-white/15'
+                              : pts >= 40 ? 'bg-emerald-400'
+                              : pts >= 20 ? 'bg-[#C9A84C]'
+                              : pts > 0   ? 'bg-white/40'
+                              :             'bg-red-400/60'
+                            return (
+                              <div
+                                key={i}
+                                title={pts !== null ? `${fmtPts(pts)} pts` : 'DNP'}
+                                className={cn('w-1.5 rounded-sm', col)}
+                                style={{ height: `${h}px` }}
+                              />
+                            )
+                          })}
+                        </div>
                       )}
-                      title={
-                        !outId ? 'Select a squad player to swap out first'
+
+                      {/* Price */}
+                      <div className="text-right">
+                        <p className="text-sm font-black text-[#C9A84C] tabular-nums leading-none">{player.price.toFixed(1)}</p>
+                        <p className="text-[9px] text-white/25 uppercase tracking-wide">cr</p>
+                      </div>
+
+                      {/* Add / selected button */}
+                      <button
+                        onClick={() => canAdd && selectIn(player.id)}
+                        disabled={!canAdd}
+                        title={
+                          !outId       ? 'Select a squad player to swap out first'
                           : tooExpensive ? 'Not enough budget'
-                          : wouldExceed ? `Max ${ROLE_CONSTRAINTS[player.role].max} ${ROLE_SHORT[player.role]}s allowed`
-                          : isIn ? 'Selected'
-                          : 'Add'
-                      }
-                    >
-                      {isIn ? '✓' : '+'}
-                    </button>
+                          : wouldExceed  ? `Max ${ROLE_CONSTRAINTS[player.role].max} ${ROLE_SHORT[player.role]}s`
+                          : isIn         ? 'Selected'
+                          : 'Add player'
+                        }
+                        className={cn(
+                          'w-9 h-9 rounded-xl flex items-center justify-center font-black text-base transition-all shrink-0',
+                          isIn
+                            ? 'bg-emerald-500 text-white shadow-[0_0_12px_rgba(52,211,153,0.4)]'
+                            : canAdd
+                            ? 'bg-[#C9A84C] text-[#0b0b0b] hover:bg-[#a8892e] shadow-[0_0_12px_rgba(201,168,76,0.3)]'
+                            : 'bg-white/[0.06] text-white/20 cursor-not-allowed',
+                        )}
+                      >
+                        {isIn ? '✓' : '+'}
+                      </button>
+                    </div>
                   </div>
                 )
               })
