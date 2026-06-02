@@ -10,13 +10,18 @@ import { Button } from '@/components/ui/button'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/** Tries to identify which team is Slough CC and returns the other one as "opponent". */
-function deriveOpponent(home: string, away: string): string {
-  const isHome = /slough/i.test(home)
-  const isAway = /slough/i.test(away)
-  if (isHome) return away.trim()
-  if (isAway) return home.trim()
-  return `${home.trim()} vs ${away.trim()}`
+/**
+ * Given raw home and away team strings, derive our_team and opponent_team.
+ * If one side contains "Slough" that becomes our_team; the other is opponent_team.
+ * When neither side contains "Slough", home is treated as our_team.
+ */
+function deriveTeams(home: string, away: string): { our_team: string; opponent_team: string } {
+  const homeIsSlough = /slough/i.test(home)
+  const awayIsSlough = /slough/i.test(away)
+  if (homeIsSlough) return { our_team: home.trim(), opponent_team: away.trim() }
+  if (awayIsSlough) return { our_team: away.trim(), opponent_team: home.trim() }
+  // Neither contains "Slough" — treat home as ours, flag for review
+  return { our_team: home.trim(), opponent_team: away.trim() }
 }
 
 /**
@@ -149,16 +154,20 @@ function formatPreviewDate(d: Date): string {
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface ParsedMatch {
-  rowIndex: number
-  opponent_team: string
-  matchDate: Date | null
-  venue: string
-  fixtureType: string
-  division: string
-  fixtureId: string
-  rawDate: string
-  rawTime: string
-  error?: string
+  rowIndex:      number
+  homeTeam:      string   // raw Home_Team value from Excel
+  awayTeam:      string   // raw Away_Team value from Excel
+  our_team:      string   // derived: the Slough side
+  opponent_team: string   // derived: the other side
+  matchDate:     Date | null
+  venue:         string
+  fixtureType:   string
+  division:      string
+  fixtureId:     string
+  rawDate:       string
+  rawTime:       string
+  noSloughFound: boolean  // true when neither team name contains "Slough"
+  error?:        string
 }
 
 interface Props {
@@ -241,9 +250,15 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
           const division = divCol     ? String(row[divCol]     ?? '').trim() : ''
           const fixId    = idCol      ? String(row[idCol]      ?? '').trim() : ''
 
+          const noSloughFound = !/slough/i.test(rawHome) && !/slough/i.test(rawAway)
+          const { our_team, opponent_team } = deriveTeams(rawHome, rawAway)
+
           const m: ParsedMatch = {
             rowIndex: rowNum,
-            opponent_team: '',
+            homeTeam:  rawHome,
+            awayTeam:  rawAway,
+            our_team,
+            opponent_team,
             matchDate: null,
             venue,
             fixtureType: ftType,
@@ -251,14 +266,13 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
             fixtureId: fixId,
             rawDate,
             rawTime,
+            noSloughFound,
           }
 
           if (!rawHome && !rawAway) {
             m.error = 'Missing team names'
             return m
           }
-
-          m.opponent_team = deriveOpponent(rawHome, rawAway)
 
           const combined = combineDateTime(row[dateCol!], timeCol ? row[timeCol] : '')
           if (!combined) {
@@ -302,7 +316,8 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
     const rows = validRows.map((m) => ({
       season_id:       seasonId,
       match_number:    nextNumber++,
-      opponent_team: m.opponent_team,
+      our_team:        m.our_team || null,
+      opponent_team:   m.opponent_team,
       match_date:      m.matchDate!.toISOString(),
       venue:           m.venue || null,
       status:          'upcoming',
@@ -400,8 +415,9 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
             </div>
           </div>
           <p className="text-xs text-muted-foreground bg-[#f0f0f0] rounded-lg px-3 py-2">
-            💡 <strong>Opponent auto-detection:</strong> if one team name contains "Slough" the other team is used as the opponent.
-            Otherwise both names are stored as "<em>Home vs Away</em>" so you can edit afterwards.
+            💡 <strong>our_team / opponent_team auto-detection:</strong> if Home_Team or Away_Team contains "Slough",
+            that row becomes <strong>our_team</strong> and the other becomes <strong>opponent_team</strong>.
+            Rows where neither team contains "Slough" are flagged in the preview — home team is treated as ours.
           </p>
         </CardContent>
       </Card>
@@ -502,7 +518,9 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
                   <tr>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">#</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Date &amp; Time</th>
-                    <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Opponent</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Home Team</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Away Team</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Fixture</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Venue</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Type</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wide">Fixture ID</th>
@@ -519,8 +537,28 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
                           : <span className="text-red-500 text-xs italic">{m.rawDate} {m.rawTime}</span>
                         }
                       </td>
-                      <td className="px-4 py-2.5 font-medium max-w-[180px] truncate">
-                        {m.opponent_team || <span className="text-red-400 italic text-xs">missing</span>}
+                      {/* Home Team (raw) */}
+                      <td className="px-4 py-2.5 text-xs max-w-[150px] truncate">
+                        {m.homeTeam || <span className="text-red-400 italic">missing</span>}
+                      </td>
+                      {/* Away Team (raw) */}
+                      <td className="px-4 py-2.5 text-xs max-w-[150px] truncate">
+                        {m.awayTeam || <span className="text-red-400 italic">missing</span>}
+                      </td>
+                      {/* Derived fixture — our_team vs opponent_team */}
+                      <td className="px-4 py-2.5 max-w-[220px]">
+                        {m.our_team && m.opponent_team ? (
+                          <div>
+                            <span className="text-xs font-semibold text-[#C9A84C]">{m.our_team}</span>
+                            <span className="text-xs text-muted-foreground mx-1">vs</span>
+                            <span className="text-xs font-medium">{m.opponent_team}</span>
+                            {m.noSloughFound && (
+                              <p className="text-[10px] text-amber-600 mt-0.5">⚠ No "Slough" found — home treated as ours</p>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-red-400 italic text-xs">missing</span>
+                        )}
                       </td>
                       <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[140px] truncate">
                         {m.venue || '—'}
