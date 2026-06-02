@@ -73,7 +73,7 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-200 backdrop-blur-sm p-4"
           onClick={handleClose}
         >
           <div
@@ -96,7 +96,7 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="e.g. Season Champions League"
                       maxLength={60}
-                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#444444] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
                     />
                   </div>
 
@@ -127,7 +127,7 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
                     <select
                       value={maxTeams}
                       onChange={(e) => setMaxTeams(Number(e.target.value))}
-                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#d4d4d4] bg-[#f0f0f0] focus:outline-none focus:border-[#C9A84C] transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#444444] bg-[#f0f0f0] focus:outline-none focus:border-[#C9A84C] transition-colors"
                     >
                       {[10, 20, 50, 100, 200, 500].map((n) => (
                         <option key={n} value={n}>{n} teams</option>
@@ -145,7 +145,7 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
                       placeholder="e.g. Trophy + £50 bar tab for the winner"
                       rows={2}
                       maxLength={200}
-                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] transition-colors resize-none"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#444444] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] transition-colors resize-none"
                     />
                   </div>
 
@@ -167,9 +167,9 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
               ) : (
                 <div className="text-center space-y-4">
                   <div className="text-4xl">✅</div>
-                  <p className="font-bold text-[#d4d4d4]">{name} created!</p>
+                  <p className="font-bold text-[#444444]">{name} created!</p>
                   {type === 'private' && (
-                    <div className="bg-[#1c1c1c] rounded-xl p-4">
+                    <div className="bg-[#f0f0f0] rounded-xl p-4">
                       <p className="text-xs font-bold uppercase tracking-widest text-[#C9A84C]/60 mb-1">Invite Code</p>
                       <p className="text-3xl font-black tracking-[0.3em] text-[#C9A84C] font-mono">{done}</p>
                     </div>

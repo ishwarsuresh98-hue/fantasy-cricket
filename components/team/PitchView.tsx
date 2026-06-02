@@ -54,7 +54,7 @@ function CaptainModal({
   return (
     /* Backdrop */
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-200 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <div
@@ -220,7 +220,7 @@ export default function PitchView({
 
         {/* Locked overlay */}
         {isLocked && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px] rounded-2xl">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-gray-200 backdrop-blur-[2px] rounded-2xl">
             <div className="bg-[#f5f5f5]/90 rounded-xl px-5 py-3 text-center shadow-lg">
               <p className="text-2xl mb-1">🏏</p>
               <p className="text-sm font-bold text-[#C9A84C]">Match In Progress</p>
@@ -260,7 +260,7 @@ function PitchLines() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
       {/* Outer boundary */}
-      <div className="absolute inset-[6px] rounded-xl border border-white/10" />
+      <div className="absolute inset-[6px] rounded-xl border border-gray-200" />
       {/* Centre strip */}
       <div className="absolute left-1/2 top-[15%] bottom-[15%] w-[14%] -translate-x-1/2 bg-[#c8a84b]/15 rounded-sm" />
       {/* Crease lines */}

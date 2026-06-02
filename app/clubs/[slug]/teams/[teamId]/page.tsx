@@ -11,7 +11,7 @@ import { buildGameweeks } from '@/lib/gameweeks'
 const ROLE_BADGE: Record<string, string> = {
   batsman:       'bg-blue-100 text-blue-700',
   bowler:        'bg-[#fceaea] text-[#b5211e]',
-  all_rounder:   'bg-[#1c1c1c] text-[#C9A84C]',
+  all_rounder:   'bg-[#f0f0f0] text-[#C9A84C]',
   wicket_keeper: 'bg-[#fef9ee] text-[#C9A84C]',
 }
 
@@ -185,7 +185,7 @@ export default async function ClubTeamDetailPage({
                                   </div>
                                 </td>
                                 <td className="px-3 py-2.5">
-                                  <Badge className={cn('text-xs font-normal', ROLE_BADGE[row.playerRole] ?? 'bg-[#141414] text-gray-600')}>
+                                  <Badge className={cn('text-xs font-normal', ROLE_BADGE[row.playerRole] ?? 'bg-[#eeeeee] text-gray-600')}>
                                     {PLAYER_ROLE_LABELS[row.playerRole] ?? row.playerRole}
                                   </Badge>
                                 </td>

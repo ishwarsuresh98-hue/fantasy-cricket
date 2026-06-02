@@ -485,7 +485,7 @@ function ContestCard({ contest, walletBalance, fantasyTeamId, isLocked, expanded
             <span className={cn('transition-transform text-[#C9A84C]', expanded ? 'rotate-180' : '')}>▾</span>
           </button>
           {expanded && (
-            <div className="px-4 pb-4 border-t border-gray-100 bg-white/60">
+            <div className="px-4 pb-4 border-t border-gray-100 bg-gray-300">
               <div className="pt-3 space-y-2">
                 {payoutSlots.map((slot, i) => {
                   const prize = Math.round(prizePool * slot.pct / 100 * 100) / 100
@@ -535,7 +535,7 @@ function JoinModal({ contest, walletBalance, stage, error, fantasyTeamId, clubSl
     : `/clubs/${clubSlug}/contests?payment=confirmed`
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-gray-200 backdrop-blur-sm p-4"
       onClick={showStripe ? undefined : onCancel}>
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
         onClick={(e) => e.stopPropagation()}>

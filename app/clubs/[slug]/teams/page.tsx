@@ -30,7 +30,7 @@ export default async function ClubTeamsPage({
     return (
       <div className="text-center py-24">
         <div className="text-5xl mb-4">🏏</div>
-        <h2 className="text-2xl font-bold text-[#d4d4d4]">No Active Season</h2>
+        <h2 className="text-2xl font-bold text-[#444444]">No Active Season</h2>
         <p className="text-muted-foreground mt-2">Teams will appear once a season is active.</p>
       </div>
     )
@@ -213,7 +213,7 @@ export default async function ClubTeamsPage({
                   )}
                 </CardContent>
 
-                <div className="px-4 py-3 border-t border-[#1e1e1e]">
+                <div className="px-4 py-3 border-t border-gray-200">
                   <Link href={`${base}/teams/${team.id}`} className="flex items-center justify-center w-full px-4 py-2 rounded-lg bg-[#f0f0f0] text-[#0b0b0b] text-sm font-semibold hover:bg-[#fafafa] transition-colors">
                     View History
                   </Link>

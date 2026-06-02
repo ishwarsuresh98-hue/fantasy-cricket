@@ -103,7 +103,7 @@ export default function NotificationBell() {
 
         {/* Push opt-in banner — only when unsubscribed */}
         {(pushState === 'unsubscribed') && (
-          <div className="border-b bg-[#1c1c1c] px-4 py-3 flex items-center gap-2.5">
+          <div className="border-b bg-[#f0f0f0] px-4 py-3 flex items-center gap-2.5">
             <span className="text-lg">🔔</span>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-[#C9A84C]">Enable push notifications</p>
@@ -135,7 +135,7 @@ export default function NotificationBell() {
         ) : (
           <div className="divide-y">
             {notifications.map((n) => (
-              <div key={n.id} className={`px-4 py-3 ${n.is_read ? 'bg-[#f0f0f0]' : 'bg-[#1c1c1c]'}`}>
+              <div key={n.id} className={`px-4 py-3 ${n.is_read ? 'bg-[#f0f0f0]' : 'bg-[#f0f0f0]'}`}>
                 <div className="flex items-start gap-2">
                   <span className="text-base shrink-0 mt-0.5">
                     {n.type === 'rank_change'
@@ -143,7 +143,7 @@ export default function NotificationBell() {
                       : '⭐'}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className={`text-sm font-medium leading-snug ${n.is_read ? 'text-[#d4d4d4]' : 'text-[#C9A84C]'}`}>
+                    <p className={`text-sm font-medium leading-snug ${n.is_read ? 'text-[#444444]' : 'text-[#C9A84C]'}`}>
                       {n.title}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{n.body}</p>

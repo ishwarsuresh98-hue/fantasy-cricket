@@ -11,7 +11,7 @@ import type { MatchPerformance, Player } from '@/types'
 const ROLE_BADGE: Record<string, string> = {
   batsman:        'bg-blue-100 text-blue-700',
   bowler:         'bg-[#fceaea] text-[#b5211e]',
-  all_rounder:    'bg-[#1c1c1c] text-[#C9A84C]',
+  all_rounder:    'bg-[#f0f0f0] text-[#C9A84C]',
   wicket_keeper:  'bg-[#fef9ee] text-[#C9A84C]',
 }
 
@@ -98,7 +98,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <Badge variant="outline">Match {match.match_number}</Badge>
             {match.status === 'completed'
-              ? <Badge className="bg-[#141414] text-[#aaaaaa] hover:bg-[#141414]">Completed</Badge>
+              ? <Badge className="bg-[#eeeeee] text-[#aaaaaa] hover:bg-[#eeeeee]">Completed</Badge>
               : <Badge className="bg-[#fef9ee] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#fef9ee]">Upcoming</Badge>
             }
           </div>
@@ -165,7 +165,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
                           ) : (perf.players?.name ?? '—')}
                         </td>
                         <td className="px-3 py-3">
-                          <Badge className={cn('text-xs font-normal', ROLE_BADGE[role] ?? 'bg-[#141414] text-gray-600')}>
+                          <Badge className={cn('text-xs font-normal', ROLE_BADGE[role] ?? 'bg-[#eeeeee] text-gray-600')}>
                             {PLAYER_ROLE_LABELS[role] ?? role}
                           </Badge>
                         </td>

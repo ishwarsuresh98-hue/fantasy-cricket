@@ -24,7 +24,7 @@ export default async function RootPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0e1a] flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <header className="px-6 py-8 text-center">
         <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#0b0b0b]/40 mb-2">
@@ -51,7 +51,7 @@ export default async function RootPage() {
               <Link
                 key={club.id}
                 href={`/clubs/${club.slug}/dashboard`}
-                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#f5f5f5]/5 p-6 transition-all hover:border-[#C9A84C]/40 hover:bg-[#f5f5f5]/10 hover:shadow-xl hover:shadow-[#C9A84C]/10 active:scale-[0.98]"
+                className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-[#f5f5f5]/5 p-6 transition-all hover:border-[#C9A84C]/40 hover:bg-[#f5f5f5]/10 hover:shadow-xl hover:shadow-[#C9A84C]/10 active:scale-[0.98]"
               >
                 {/* Subtle gradient */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />

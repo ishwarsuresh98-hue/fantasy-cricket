@@ -38,7 +38,7 @@ export default async function ClubDashboardPage({
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
         <div className="text-5xl">🏏</div>
-        <h2 className="text-2xl font-bold text-[#d4d4d4]">No Active Season</h2>
+        <h2 className="text-2xl font-bold text-[#444444]">No Active Season</h2>
         <p className="text-gray-500">An admin needs to create and activate a season to get started.</p>
         {profile?.role === 'admin' && (
           <Link
@@ -250,7 +250,7 @@ export default async function ClubDashboardPage({
                 </p>
                 <p className="text-[11px] text-gray-400">{lastGw.label}</p>
               </div>
-              <Badge className="bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#fef9ee] font-semibold">GW{lastGw.gw}</Badge>
+              <Badge className="bg-[#f0f0f0] text-[#C9A84C] hover:bg-[#fef9ee] font-semibold">GW{lastGw.gw}</Badge>
             </div>
             <div>
               <p className="text-4xl font-black text-[#C9A84C] tabular-nums leading-none">
@@ -265,7 +265,7 @@ export default async function ClubDashboardPage({
                   <span>You</span>
                   <span>League avg {fmtPts(Math.round(lastGwAvg))}</span>
                 </div>
-                <div className="h-3 bg-[#141414] rounded-full overflow-hidden flex">
+                <div className="h-3 bg-[#eeeeee] rounded-full overflow-hidden flex">
                   {(() => {
                     const max   = Math.max(myLastGwPts, lastGwAvg, 1)
                     const myW   = (myLastGwPts / max) * 100
@@ -290,7 +290,7 @@ export default async function ClubDashboardPage({
               </div>
             )}
             {lastGwTopScorer && (
-              <div className="flex items-center gap-2.5 bg-[#1c1c1c] rounded-xl px-3 py-2.5">
+              <div className="flex items-center gap-2.5 bg-[#f0f0f0] rounded-xl px-3 py-2.5">
                 <span className="text-lg">⭐</span>
                 <div className="min-w-0">
                   <p className="text-[11px] font-bold uppercase tracking-wide text-[#C9A84C]/60">Top scorer</p>
@@ -409,7 +409,7 @@ export default async function ClubDashboardPage({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-y border-[#1e1e1e] bg-[#f8f8f8]">
+                <tr className="border-y border-gray-200 bg-[#f8f8f8]">
                   <th className="text-left px-5 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide min-w-[140px]">Team</th>
                   {gameweeks.map((gw) => (
                     <th key={gw.dateStr} title={gw.label} className="text-center px-3 py-3 font-medium text-gray-500 text-xs uppercase tracking-wide min-w-[52px]">
@@ -423,8 +423,8 @@ export default async function ClubDashboardPage({
                 {(allTeams as FantasyTeam[]).map((team) => {
                   const isMe = team.user_id === user!.id
                   return (
-                    <tr key={team.id} className={isMe ? 'bg-[#1c1c1c]' : 'hover:bg-[#f8f8f8] transition-colors'}>
-                      <td className="px-5 py-3 font-medium text-[#d4d4d4]">
+                    <tr key={team.id} className={isMe ? 'bg-[#f0f0f0]' : 'hover:bg-[#f8f8f8] transition-colors'}>
+                      <td className="px-5 py-3 font-medium text-[#444444]">
                         <span className="truncate block max-w-[160px]">{team.team_name}</span>
                         {isMe && (
                           <Badge className="mt-0.5 bg-[#C9A84C] text-[#0b0b0b] hover:bg-[#C9A84C] text-[10px] px-1.5">You</Badge>
@@ -449,7 +449,7 @@ export default async function ClubDashboardPage({
               </tbody>
             </table>
           </div>
-          <div className="border-t border-[#1e1e1e] px-5 py-3 flex flex-wrap gap-x-4 gap-y-1">
+          <div className="border-t border-gray-200 px-5 py-3 flex flex-wrap gap-x-4 gap-y-1">
             {gameweeks.map((gw) => (
               <span key={gw.dateStr} className="text-xs text-gray-400">
                 <span className="font-semibold text-gray-600">GW{gw.gw}</span> = {gw.label}

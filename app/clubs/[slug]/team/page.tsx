@@ -31,7 +31,7 @@ export default async function ClubTeamPage({
     return (
       <div className="text-center py-24">
         <div className="text-5xl mb-4">🏏</div>
-        <h2 className="text-2xl font-bold text-[#d4d4d4]">No Active Season</h2>
+        <h2 className="text-2xl font-bold text-[#444444]">No Active Season</h2>
         <p className="text-muted-foreground mt-2">An admin needs to activate a season first.</p>
       </div>
     )

@@ -89,7 +89,7 @@ export default function JoinWithCode({ myFantasyTeamId }: Props) {
           onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
           placeholder="6-character code"
           maxLength={6}
-          className="flex-1 px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm font-mono uppercase text-[#d4d4d4] placeholder:text-gray-400 placeholder:normal-case placeholder:font-sans tracking-widest focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
+          className="flex-1 px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm font-mono uppercase text-[#444444] placeholder:text-gray-400 placeholder:normal-case placeholder:font-sans tracking-widest focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
         />
         <button
           onClick={handleJoin}

@@ -356,7 +356,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Your <code className="bg-[#141414] px-1 py-0.5 rounded text-xs">.xlsx</code> file must contain these columns (exact names, case-insensitive):
+            Your <code className="bg-[#eeeeee] px-1 py-0.5 rounded text-xs">.xlsx</code> file must contain these columns (exact names, case-insensitive):
           </p>
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full text-xs">
@@ -399,7 +399,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
               </ul>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground bg-[#1c1c1c] rounded-lg px-3 py-2">
+          <p className="text-xs text-muted-foreground bg-[#f0f0f0] rounded-lg px-3 py-2">
             💡 <strong>Opponent auto-detection:</strong> if one team name contains "Slough" the other team is used as the opponent.
             Otherwise both names are stored as "<em>Home vs Away</em>" so you can edit afterwards.
           </p>

@@ -32,7 +32,7 @@ export default function JoinContestButton({
 
   if (isFull) {
     return (
-      <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#141414] text-gray-400 text-xs font-bold cursor-not-allowed">
+      <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#eeeeee] text-gray-400 text-xs font-bold cursor-not-allowed">
         Full
       </span>
     )
@@ -40,7 +40,7 @@ export default function JoinContestButton({
 
   if (!fantasyTeamId) {
     return (
-      <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#141414] text-gray-400 text-xs font-bold">
+      <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#eeeeee] text-gray-400 text-xs font-bold">
         Need a team
       </span>
     )
@@ -69,7 +69,7 @@ export default function JoinContestButton({
         className={cn(
           'px-4 py-1.5 rounded-lg text-xs font-bold transition-all',
           loading
-            ? 'bg-[#141414] text-gray-400 cursor-wait'
+            ? 'bg-[#eeeeee] text-gray-400 cursor-wait'
             : 'bg-[#f0f0f0] text-[#0b0b0b] hover:bg-[#fafafa]',
         )}
       >

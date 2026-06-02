@@ -206,7 +206,7 @@ export default function ContestDetailJoin({
           'w-full py-4 rounded-2xl font-black text-base transition-all shadow-sm hover:shadow-md',
           isFree || category === 'mega'
             ? `${accentBtn} text-black`
-            : `${accentBtn} text-white`,
+            : `${accentBtn} text-[#111111]`,
         )}
       >
         {gameweekId

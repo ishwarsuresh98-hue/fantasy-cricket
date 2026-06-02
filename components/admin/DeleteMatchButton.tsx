@@ -63,7 +63,7 @@ export default function DeleteMatchButton({ matchId, matchLabel }: Props) {
         >
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 bg-gray-200"
             onClick={() => !loading && setOpen(false)}
           />
 

@@ -176,7 +176,7 @@ export default function OnboardingTour({ userId }: Props) {
   return (
     <div
       className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-300 ${
-        visible && !exiting ? 'bg-black/60 backdrop-blur-sm' : 'bg-transparent'
+        visible && !exiting ? 'bg-gray-300 backdrop-blur-sm' : 'bg-transparent'
       }`}
       aria-modal="true"
       role="dialog"
@@ -267,7 +267,7 @@ export default function OnboardingTour({ userId }: Props) {
 
         {/* Keyboard hint — desktop only */}
         <p className="hidden sm:block text-center text-[10px] text-gray-300 pb-3">
-          Press <kbd className="bg-[#141414] text-gray-500 rounded px-1 font-mono text-[10px]">→</kbd> to advance, <kbd className="bg-[#141414] text-gray-500 rounded px-1 font-mono text-[10px]">Esc</kbd> to skip
+          Press <kbd className="bg-[#eeeeee] text-gray-500 rounded px-1 font-mono text-[10px]">→</kbd> to advance, <kbd className="bg-[#eeeeee] text-gray-500 rounded px-1 font-mono text-[10px]">Esc</kbd> to skip
         </p>
       </div>
     </div>

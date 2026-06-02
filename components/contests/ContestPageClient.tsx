@@ -109,7 +109,7 @@ export default function ContestPageClient({
               className={cn(
                 'flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all whitespace-nowrap',
                 sort === value
-                  ? 'bg-gray-900 border-gray-900 text-white'
+                  ? 'bg-gray-900 border-gray-900 text-[#111111]'
                   : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700',
               )}
             >

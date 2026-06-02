@@ -37,15 +37,15 @@ export default async function AdminPage() {
           <CardContent className="pt-4">
             <p className="text-xl font-bold text-[#C9A84C]">{season.name}</p>
             <div className="grid grid-cols-3 gap-4 mt-4">
-              <div className="text-center p-3 bg-[#1c1c1c] rounded-lg">
+              <div className="text-center p-3 bg-[#f0f0f0] rounded-lg">
                 <p className="text-2xl font-bold text-[#C9A84C]">{playerCount ?? 0}</p>
                 <p className="text-xs text-[#C9A84C]/70 mt-0.5">Players</p>
               </div>
-              <div className="text-center p-3 bg-[#1c1c1c] rounded-lg">
+              <div className="text-center p-3 bg-[#f0f0f0] rounded-lg">
                 <p className="text-2xl font-bold text-[#C9A84C]">{matchCount ?? 0}</p>
                 <p className="text-xs text-[#C9A84C]/70 mt-0.5">Matches</p>
               </div>
-              <div className="text-center p-3 bg-[#1c1c1c] rounded-lg">
+              <div className="text-center p-3 bg-[#f0f0f0] rounded-lg">
                 <p className="text-2xl font-bold text-[#C9A84C]">{teamCount ?? 0}</p>
                 <p className="text-xs text-[#C9A84C]/70 mt-0.5">Fantasy Teams</p>
               </div>

@@ -93,7 +93,7 @@ export default function ContestCreateModal({ seasonId, myFantasyTeamId, userId }
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-200 backdrop-blur-sm p-4"
           onClick={handleClose}
         >
           <div
@@ -122,7 +122,7 @@ export default function ContestCreateModal({ seasonId, myFantasyTeamId, userId }
                       onChange={(e) => setName(e.target.value)}
                       placeholder="e.g. Slough Cricket Legends"
                       maxLength={60}
-                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#444444] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
                     />
                   </div>
 
@@ -134,7 +134,7 @@ export default function ContestCreateModal({ seasonId, myFantasyTeamId, userId }
                     <select
                       value={maxTeams}
                       onChange={(e) => setMaxTeams(Number(e.target.value))}
-                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#d4d4d4] bg-[#f0f0f0] focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#444444] bg-[#f0f0f0] focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors"
                     >
                       {[5, 10, 15, 20, 30, 50, 100].map((n) => (
                         <option key={n} value={n}>{n} teams</option>
@@ -153,7 +153,7 @@ export default function ContestCreateModal({ seasonId, myFantasyTeamId, userId }
                       placeholder="e.g. Winner gets a free drink at the next home match"
                       rows={2}
                       maxLength={200}
-                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors resize-none"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#444444] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/20 transition-colors resize-none"
                     />
                   </div>
 
@@ -184,11 +184,11 @@ export default function ContestCreateModal({ seasonId, myFantasyTeamId, userId }
                 <div className="space-y-5 text-center">
                   <div className="text-4xl">🎉</div>
                   <div>
-                    <p className="font-bold text-[#d4d4d4] text-lg">{name}</p>
+                    <p className="font-bold text-[#444444] text-lg">{name}</p>
                     <p className="text-gray-500 text-sm mt-0.5">Your private league is ready.</p>
                   </div>
 
-                  <div className="bg-[#1c1c1c] rounded-2xl p-5">
+                  <div className="bg-[#f0f0f0] rounded-2xl p-5">
                     <p className="text-xs font-bold uppercase tracking-widest text-[#C9A84C]/60 mb-2">
                       Invite Code
                     </p>

@@ -53,11 +53,11 @@ function fmtDate(iso: string | null): string {
 
 const TYPE_BADGE: Record<TypeTab, { bg: string; text: string; label: string }> = {
   all:          { bg: 'bg-gray-200',       text: 'text-gray-700',  label: 'All'          },
-  mega:         { bg: 'bg-red-500',        text: 'text-white',     label: 'Mega'         },
-  h2h:          { bg: 'bg-blue-500',       text: 'text-white',     label: 'H2H'          },
+  mega:         { bg: 'bg-red-500',        text: 'text-[#111111]',     label: 'Mega'         },
+  h2h:          { bg: 'bg-blue-500',       text: 'text-[#111111]',     label: 'H2H'          },
   small_league: { bg: 'bg-gray-200',       text: 'text-gray-700',  label: 'Small League' },
   jackpot:      { bg: 'bg-[#C9A84C]',     text: 'text-black',     label: 'Jackpot'      },
-  practice:     { bg: 'bg-green-500',      text: 'text-white',     label: 'Practice'     },
+  practice:     { bg: 'bg-green-500',      text: 'text-[#111111]',     label: 'Practice'     },
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────

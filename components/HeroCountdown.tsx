@@ -28,7 +28,7 @@ function splitCountdown(ms: number) {
 function DigitBox({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex flex-col items-center">
-      <div className="bg-[#fafafa] rounded-xl px-5 py-4 min-w-[72px] sm:min-w-[88px] text-center shadow-inner border border-white/10">
+      <div className="bg-[#fafafa] rounded-xl px-5 py-4 min-w-[72px] sm:min-w-[88px] text-center shadow-inner border border-gray-200">
         <span className="text-4xl sm:text-5xl font-black tabular-nums text-[#C9A84C] tracking-tight leading-none">
           {String(value).padStart(2, '0')}
         </span>

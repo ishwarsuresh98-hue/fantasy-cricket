@@ -61,7 +61,7 @@ export default async function AdminContestsPage() {
         <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-[#f8f8f8] border-b border-[#1e1e1e]">
+              <tr className="bg-[#f8f8f8] border-b border-gray-200">
                 <th className="text-left text-xs font-bold uppercase tracking-widest text-gray-400 px-5 py-3">Name</th>
                 <th className="text-center text-xs font-bold uppercase tracking-widest text-gray-400 px-4 py-3">Type</th>
                 <th className="text-center text-xs font-bold uppercase tracking-widest text-gray-400 px-4 py-3">Code</th>
@@ -77,14 +77,14 @@ export default async function AdminContestsPage() {
                 return (
                   <tr key={contest.id} className="hover:bg-[#f8f8f8] transition-colors">
                     <td className="px-5 py-3">
-                      <p className="font-semibold text-[#d4d4d4]">{contest.name}</p>
+                      <p className="font-semibold text-[#444444]">{contest.name}</p>
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className={cn(
                         'text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full',
                         contest.type === 'private'
                           ? 'bg-[#fef9ee] text-[#C9A84C] border border-[#C9A84C]/40'
-                          : 'bg-[#1c1c1c] text-[#C9A84C]',
+                          : 'bg-[#f0f0f0] text-[#C9A84C]',
                       )}>
                         {contest.type}
                       </span>
@@ -100,7 +100,7 @@ export default async function AdminContestsPage() {
                         <span className="font-semibold text-[#aaaaaa] text-sm tabular-nums">
                           {count} / {contest.max_teams}
                         </span>
-                        <div className="w-16 h-1.5 bg-[#141414] rounded-full overflow-hidden">
+                        <div className="w-16 h-1.5 bg-[#eeeeee] rounded-full overflow-hidden">
                           <div
                             className={cn(
                               'h-full rounded-full',

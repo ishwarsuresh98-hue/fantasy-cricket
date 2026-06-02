@@ -342,7 +342,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#C9A84C]/30 text-sm font-medium text-[#C9A84C] bg-[#1c1c1c] hover:bg-[#e8e8e8] transition-colors"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#C9A84C]/30 text-sm font-medium text-[#C9A84C] bg-[#f0f0f0] hover:bg-[#e8e8e8] transition-colors"
       >
         <span>🏏</span> Import from Play-Cricket
       </button>
@@ -353,7 +353,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
   const activeErr = tab === 'url' ? urlErr : pdfErr
 
   return (
-    <Card className="border-[#C9A84C]/20 bg-[#1c1c1c]/40">
+    <Card className="border-[#C9A84C]/20 bg-[#f0f0f0]/40">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base text-[#C9A84C]">🏏 Import from Play-Cricket</CardTitle>
@@ -428,7 +428,7 @@ function PlayCricketImportPanel({ matchId, players, onApply }: ImportPanelProps)
               onDrop={onDrop}
               className={`flex flex-col items-center justify-center gap-2 w-full h-28 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${
                 dragOver
-                  ? 'border-[#C9A84C] bg-[#1c1c1c]'
+                  ? 'border-[#C9A84C] bg-[#f0f0f0]'
                   : 'border-[#C9A84C]/30 bg-[#f0f0f0] hover:border-[#C9A84C]/60 hover:bg-[#fef9ee]/40'
               }`}
             >
@@ -737,7 +737,7 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
                         <Badge className={`text-xs mt-0.5 ${
                           player.role === 'batsman' ? 'bg-blue-100 text-blue-700 hover:bg-blue-100' :
                           player.role === 'bowler' ? 'bg-[#fceaea] text-[#b5211e] hover:bg-[#fceaea]' :
-                          player.role === 'all_rounder' ? 'bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#fef9ee]' :
+                          player.role === 'all_rounder' ? 'bg-[#f0f0f0] text-[#C9A84C] hover:bg-[#fef9ee]' :
                           'bg-[#fef9ee] text-[#C9A84C] hover:bg-[#fef9ee]'
                         }`}>
                           {PLAYER_ROLE_LABELS[player.role]}
@@ -788,7 +788,7 @@ export default function StatsForm({ matchId, players, existingPerfs, matchStatus
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded-md">{error}</div>
       )}
       {savedMessage && (
-        <div className="bg-[#1c1c1c] border border-[#C9A84C]/20 text-[#C9A84C] text-sm px-3 py-2 rounded-md">{savedMessage}</div>
+        <div className="bg-[#f0f0f0] border border-[#C9A84C]/20 text-[#C9A84C] text-sm px-3 py-2 rounded-md">{savedMessage}</div>
       )}
 
       <div className="flex items-center justify-between">

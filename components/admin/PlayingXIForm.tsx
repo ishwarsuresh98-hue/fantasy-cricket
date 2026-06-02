@@ -11,7 +11,7 @@ const ROLE_ORDER = ['wicket_keeper', 'batsman', 'all_rounder', 'bowler']
 const ROLE_COLORS: Record<string, string> = {
   batsman: 'bg-blue-100 text-blue-700',
   bowler: 'bg-[#fceaea] text-[#b5211e]',
-  all_rounder: 'bg-[#1c1c1c] text-[#C9A84C]',
+  all_rounder: 'bg-[#f0f0f0] text-[#C9A84C]',
   wicket_keeper: 'bg-[#fef9ee] text-[#C9A84C]',
 }
 

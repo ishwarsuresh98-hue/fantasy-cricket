@@ -120,7 +120,7 @@ export default async function ContestDetailPage({
       <div className="flex items-center gap-2 text-sm text-gray-400">
         <Link href="/contests" className="hover:text-[#C9A84C] hover:underline">Contests</Link>
         <span>/</span>
-        <span className="text-[#d4d4d4] font-medium truncate">{c.name}</span>
+        <span className="text-[#444444] font-medium truncate">{c.name}</span>
       </div>
 
       {/* ── Contest header ─────────────────────────────────────────────────── */}
@@ -155,7 +155,7 @@ export default async function ContestDetailPage({
           <span className="text-2xl flex-shrink-0">🏆</span>
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-[#C9A84C]/60 mb-0.5">Prize Pool</p>
-            <p className="text-sm text-[#d4d4d4] leading-relaxed">{c.prize_description}</p>
+            <p className="text-sm text-[#444444] leading-relaxed">{c.prize_description}</p>
           </div>
         </div>
       )}
@@ -227,7 +227,7 @@ export default async function ContestDetailPage({
             const mvmt    = prevRnk != null ? prevRnk - (myIdx + 1) : null
             return (
               <div>
-                <div className="flex items-center gap-2 px-4 py-1.5 bg-[#1c1c1c]">
+                <div className="flex items-center gap-2 px-4 py-1.5 bg-[#f0f0f0]">
                   <div className="h-px flex-1 border-t-2 border-dashed border-[#C9A84C]/25" />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-[#C9A84C]/50">Your position</span>
                   <div className="h-px flex-1 border-t-2 border-dashed border-[#C9A84C]/25" />
@@ -254,7 +254,7 @@ export default async function ContestDetailPage({
 
           {/* GW date key */}
           {gameweeks.length > 0 && (
-            <div className="border-t border-[#1e1e1e] px-4 py-3 flex flex-wrap gap-x-4 gap-y-1">
+            <div className="border-t border-gray-200 px-4 py-3 flex flex-wrap gap-x-4 gap-y-1">
               {gameweeks.map((gw) => (
                 <span key={gw.dateStr} className="text-xs text-gray-400">
                   <span className="font-semibold text-gray-600">GW{gw.gw}</span> = {gw.label}
@@ -285,13 +285,13 @@ function LeaderboardRow({
   isEven:         boolean
   forceHighlight?: boolean
 }) {
-  const rowBg = forceHighlight || isMe ? 'bg-[#1c1c1c]' : isEven ? 'bg-[#f8f8f8]/60' : 'bg-[#f0f0f0]'
+  const rowBg = forceHighlight || isMe ? 'bg-[#f0f0f0]' : isEven ? 'bg-[#f8f8f8]/60' : 'bg-[#f0f0f0]'
 
   const rankBadge =
     rank === 1 ? <span className="text-xl">🥇</span> :
     rank === 2 ? <span className="text-xl">🥈</span> :
     rank === 3 ? <span className="text-xl">🥉</span> : (
-      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#141414] text-gray-600 text-xs font-bold">
+      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#eeeeee] text-gray-600 text-xs font-bold">
         {rank}
       </span>
     )
@@ -307,10 +307,10 @@ function LeaderboardRow({
     rank === 1 ? 'bg-[#C9A84C] text-[#0b0b0b]' :
     rank === 2 ? 'bg-gray-200 text-gray-600' :
     rank === 3 ? 'bg-orange-100 text-orange-700' :
-    isMe ? 'bg-[#f0f0f0] text-[#0b0b0b]' : 'bg-[#141414] text-gray-500'
+    isMe ? 'bg-[#f0f0f0] text-[#0b0b0b]' : 'bg-[#eeeeee] text-gray-500'
 
   return (
-    <tr className={cn('border-b border-[#1e1e1e] last:border-0 hover:brightness-[0.97] transition-colors', rowBg)}>
+    <tr className={cn('border-b border-gray-200 last:border-0 hover:brightness-[0.97] transition-colors', rowBg)}>
       <td className="px-4 py-3">
         <div className="flex flex-col items-center gap-0.5">{rankBadge}{movementEl}</div>
       </td>

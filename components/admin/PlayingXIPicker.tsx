@@ -12,7 +12,7 @@ const ROLE_ORDER = ['wicket_keeper', 'batsman', 'all_rounder', 'bowler'] as cons
 const ROLE_COLORS: Record<string, string> = {
   batsman:       'bg-blue-100 text-blue-700 border-blue-200',
   bowler:        'bg-[#fceaea] text-[#b5211e] border-red-200',
-  all_rounder:   'bg-[#1c1c1c] text-[#C9A84C] border-[#C9A84C]/20',
+  all_rounder:   'bg-[#f0f0f0] text-[#C9A84C] border-[#C9A84C]/20',
   wicket_keeper: 'bg-[#fef9ee] text-[#a16207] border-yellow-200',
 }
 const ROLE_SHORT: Record<string, string> = {
@@ -138,7 +138,7 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
               size="sm"
               onClick={handleClear}
               disabled={clearing || saving}
-              className="border-white/30 text-[#0b0b0b] hover:bg-[#f5f5f5]/10 hover:text-[#0b0b0b] bg-transparent"
+              className="border-gray-300 text-[#0b0b0b] hover:bg-[#f5f5f5]/10 hover:text-[#0b0b0b] bg-transparent"
             >
               {clearing ? 'Clearing…' : 'Clear XI'}
             </Button>
@@ -184,7 +184,7 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
               <span className={`ml-2 text-xs font-bold px-1.5 py-0.5 rounded-full ${
                 roleSelected > 0
                   ? isActive ? 'bg-[#C9A84C] text-[#0b0b0b]' : 'bg-[#f0f0f0] text-[#0b0b0b]'
-                  : isActive ? 'bg-[#f5f5f5]/20 text-[#0b0b0b]/60' : 'bg-[#141414] text-gray-400'
+                  : isActive ? 'bg-[#f5f5f5]/20 text-[#0b0b0b]/60' : 'bg-[#eeeeee] text-gray-400'
               }`}>
                 {roleSelected}/{total}
               </span>
@@ -206,7 +206,7 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={`Search ${ROLE_SHORT[activeRole]} players…`}
-          className="w-full pl-9 pr-9 py-2.5 text-sm rounded-lg border border-[#d8d8d8] bg-[#f0f0f0] text-[#d4d4d4] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/30 transition-colors"
+          className="w-full pl-9 pr-9 py-2.5 text-sm rounded-lg border border-[#d8d8d8] bg-[#f0f0f0] text-[#444444] placeholder:text-gray-400 focus:outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]/30 transition-colors"
         />
         {search && (
           <button
@@ -236,7 +236,7 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
                 isSelected
                   ? 'bg-green-50 border-green-500 shadow-sm shadow-green-100'
                   : wouldExceed
-                  ? 'bg-[#f8f8f8] border-[#1e1e1e] opacity-40 cursor-not-allowed'
+                  ? 'bg-[#f8f8f8] border-gray-200 opacity-40 cursor-not-allowed'
                   : 'bg-[#f0f0f0] border-[#d8d8d8] hover:border-[#C9A84C]/40 hover:bg-[#fef9ee] cursor-pointer'
               }`}
             >
@@ -252,7 +252,7 @@ export default function PlayingXIPicker({ matchId, matchLabel, players, existing
               </div>
 
               <div className="min-w-0 flex-1">
-                <p className={`font-semibold text-sm truncate ${isSelected ? 'text-green-800' : 'text-[#d4d4d4]'}`}>
+                <p className={`font-semibold text-sm truncate ${isSelected ? 'text-green-800' : 'text-[#444444]'}`}>
                   {player.name}
                 </p>
                 <div className="flex items-center gap-1.5 mt-0.5">

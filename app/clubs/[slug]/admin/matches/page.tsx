@@ -128,7 +128,7 @@ export default async function ClubAdminMatchesPage({
                   <div className="flex items-center gap-2 flex-wrap justify-end">
                     <Badge className={
                       match.status === 'completed'
-                        ? 'bg-[#141414] text-[#aaaaaa] hover:bg-[#141414]'
+                        ? 'bg-[#eeeeee] text-[#aaaaaa] hover:bg-[#eeeeee]'
                         : 'bg-[#fef9ee] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#fef9ee]'
                     }>
                       {match.status === 'completed' ? 'Completed' : 'Upcoming'}

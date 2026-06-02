@@ -268,7 +268,7 @@ export default function GameweekTeamBuilder({
                     disabled={isCap}
                     className={cn(
                       'w-9 h-9 rounded-full text-xs font-black border-2 transition-all',
-                      isVc ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-200 text-gray-500 hover:border-blue-400',
+                      isVc ? 'bg-blue-500 border-blue-500 text-[#111111]' : 'border-gray-200 text-gray-500 hover:border-blue-400',
                       isCap ? 'opacity-30 cursor-not-allowed' : '',
                     )}
                   >VC</button>
@@ -320,7 +320,7 @@ export default function GameweekTeamBuilder({
                   <p className="text-sm font-medium text-gray-800 flex-1 truncate">{p.name}</p>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     {isCap && <span className="text-[10px] font-black bg-[#C9A84C] text-black px-1.5 py-0.5 rounded">C</span>}
-                    {isVc  && <span className="text-[10px] font-black bg-blue-500 text-white px-1.5 py-0.5 rounded">VC</span>}
+                    {isVc  && <span className="text-[10px] font-black bg-blue-500 text-[#111111] px-1.5 py-0.5 rounded">VC</span>}
                     <span className="text-xs text-gray-400 tabular-nums">{p.price}cr</span>
                   </div>
                 </div>
@@ -443,7 +443,7 @@ export default function GameweekTeamBuilder({
               className={cn(
                 'flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all whitespace-nowrap',
                 roleFilter === value
-                  ? 'bg-gray-900 border-gray-900 text-white'
+                  ? 'bg-gray-900 border-gray-900 text-[#111111]'
                   : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300',
               )}
             >

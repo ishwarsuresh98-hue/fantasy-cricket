@@ -280,7 +280,7 @@ export default async function ContestDetailPage({
           <span>✅ You&apos;re entered{hasContestTeam ? ' with your gameweek team.' : '.'}</span>
           <Link
             href={`${base}/contests/${id}/pick-team`}
-            className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-black hover:bg-blue-700 transition-colors flex-shrink-0"
+            className="bg-blue-600 text-[#111111] px-3 py-1.5 rounded-lg text-xs font-black hover:bg-blue-700 transition-colors flex-shrink-0"
           >
             View Team
           </Link>
@@ -451,7 +451,7 @@ function WtaLayout({ entries, maxTeams, isLocked, myEntry }: {
             <div key={i} className={cn(
               'flex items-center gap-3 rounded-xl px-4 py-3 border',
               team ? isMe ? 'bg-red-100 border-red-300' : 'bg-white border-red-100'
-                   : 'bg-white/50 border-dashed border-red-200',
+                   : 'bg-gray-200 border-dashed border-red-200',
             )}>
               <span className={cn('text-lg font-black w-6 text-center flex-shrink-0',
                 i === 0 ? 'text-[#C9A84C]' : 'text-gray-300')}>
@@ -460,7 +460,7 @@ function WtaLayout({ entries, maxTeams, isLocked, myEntry }: {
               {team ? (
                 <>
                   <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0',
-                    isMe ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600')}>
+                    isMe ? 'bg-red-500 text-[#111111]' : 'bg-gray-200 text-gray-600')}>
                     {isLocked ? team.display_name.slice(0, 2).toUpperCase() : '?'}
                   </div>
                   <div className="min-w-0 flex-1">

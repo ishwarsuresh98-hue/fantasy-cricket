@@ -9,7 +9,7 @@ import type { PlayerRole } from '@/types'
 const ROLE_BADGE: Record<PlayerRole, string> = {
   batsman:       'bg-blue-100 text-blue-700',
   bowler:        'bg-[#fceaea] text-[#b5211e]',
-  all_rounder:   'bg-[#1c1c1c] text-[#C9A84C]',
+  all_rounder:   'bg-[#f0f0f0] text-[#C9A84C]',
   wicket_keeper: 'bg-[#fef9ee] text-[#a16207]',
 }
 
@@ -167,7 +167,7 @@ export default function PlayerCard({
           <div className="flex items-center gap-1.5 min-w-0">
             <span className={cn(
               'text-sm font-semibold truncate',
-              isSelected ? 'text-green-800' : 'text-[#d4d4d4]',
+              isSelected ? 'text-green-800' : 'text-[#444444]',
             )}>
               {name}
             </span>
@@ -258,7 +258,7 @@ export default function PlayerCard({
       <div className="w-full min-w-0">
         <p className={cn(
           'text-xs font-semibold leading-tight line-clamp-2',
-          isSelected ? 'text-green-800' : 'text-[#d4d4d4]',
+          isSelected ? 'text-green-800' : 'text-[#444444]',
         )}>
           {name}
         </p>

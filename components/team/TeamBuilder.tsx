@@ -41,7 +41,7 @@ interface TeamBuilderProps {
 const ROLE_COLORS: Record<string, string> = {
   batsman: 'bg-blue-100 text-blue-700',
   bowler: 'bg-[#fceaea] text-[#b5211e]',
-  all_rounder: 'bg-[#1c1c1c] text-[#C9A84C]',
+  all_rounder: 'bg-[#f0f0f0] text-[#C9A84C]',
   wicket_keeper: 'bg-[#fef9ee] text-[#C9A84C]',
 }
 
@@ -283,7 +283,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
             ? 'bg-orange-50 border-orange-200'
             : transfersRemaining <= 50
             ? 'bg-yellow-50 border-yellow-100'
-            : 'bg-[#1c1c1c] border-[#C9A84C]/20'
+            : 'bg-[#f0f0f0] border-[#C9A84C]/20'
         }`}>
           <div>
             <p className={`text-sm font-semibold ${wouldExceedLimit ? 'text-red-700' : 'text-[#C9A84C]'}`}>
@@ -371,7 +371,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                             : 'bg-[#f0f0f0] text-[#0b0b0b]'
                           : belowMin || aboveMax
                           ? 'bg-red-50 text-red-600 ring-1 ring-red-300'
-                          : 'bg-[#141414] text-gray-600 hover:bg-gray-200'
+                          : 'bg-[#eeeeee] text-gray-600 hover:bg-gray-200'
                       }`}
                     >
                       {SHORT_LABELS[r]} {roleSelectedCount}/{min}–{max}
@@ -390,7 +390,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                       key={opt}
                       onClick={() => setSortBy(opt)}
                       className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
-                        sortBy === opt ? 'bg-[#f0f0f0] text-[#0b0b0b]' : 'bg-[#141414] text-gray-500 hover:bg-gray-200'
+                        sortBy === opt ? 'bg-[#f0f0f0] text-[#0b0b0b]' : 'bg-[#eeeeee] text-gray-500 hover:bg-gray-200'
                       }`}
                     >
                       {opt === 'price' ? 'Price' : 'Ownership %'}
@@ -430,7 +430,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                       key={player.id}
                       onClick={() => !disabled && togglePlayer(player)}
                       className={`flex items-center justify-between px-4 py-3 transition-colors ${
-                        isSelected ? 'bg-[#1c1c1c]' : disabled ? 'opacity-50' : 'hover:bg-[#f8f8f8] cursor-pointer'
+                        isSelected ? 'bg-[#f0f0f0]' : disabled ? 'opacity-50' : 'hover:bg-[#f8f8f8] cursor-pointer'
                       } ${!disabled ? 'cursor-pointer' : 'cursor-not-allowed'}`}
                     >
                       <div className="flex items-center gap-3">
@@ -458,7 +458,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                                   Not Playing
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#141414] text-gray-400 border border-[#d8d8d8]">
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#eeeeee] text-gray-400 border border-[#d8d8d8]">
                                   Unconfirmed
                                 </span>
                               )
@@ -551,7 +551,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
             </div>
           )}
           {success && (
-            <div className="bg-[#1c1c1c] border border-[#C9A84C]/20 text-[#C9A84C] text-sm px-3 py-2 rounded-md">
+            <div className="bg-[#f0f0f0] border border-[#C9A84C]/20 text-[#C9A84C] text-sm px-3 py-2 rounded-md">
               Team saved successfully!
             </div>
           )}

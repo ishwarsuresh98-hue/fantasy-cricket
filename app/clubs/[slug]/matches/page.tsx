@@ -30,7 +30,7 @@ export default async function ClubMatchesPage({
     return (
       <div className="text-center py-24">
         <div className="text-5xl mb-4">📅</div>
-        <h2 className="text-2xl font-bold text-[#d4d4d4]">No Active Season</h2>
+        <h2 className="text-2xl font-bold text-[#444444]">No Active Season</h2>
       </div>
     )
   }
@@ -107,7 +107,7 @@ export default async function ClubMatchesPage({
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-xs">GW{gw.gw}</Badge><Badge variant="outline" className="text-xs">Match {match.match_number}</Badge>
                           {match.status === 'completed' ? (
-                            <Badge className="text-xs bg-[#141414] text-gray-600 hover:bg-[#141414]">Completed</Badge>
+                            <Badge className="text-xs bg-[#eeeeee] text-gray-600 hover:bg-[#eeeeee]">Completed</Badge>
                           ) : (
                             <Badge className="text-xs bg-[#fef9ee] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#fef9ee]">Upcoming</Badge>
                           )}

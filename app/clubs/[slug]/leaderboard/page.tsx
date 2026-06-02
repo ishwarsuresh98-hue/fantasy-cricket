@@ -56,12 +56,12 @@ function TableRow({
   movement: number | null; gameweeks: Gameweek[]; gwPoints: (gw: Gameweek) => number
   isEven: boolean; forceHighlight?: boolean
 }) {
-  const rowBg = forceHighlight || isMe ? 'bg-[#1c1c1c]' : isEven ? 'bg-[#f8f8f8]/60' : 'bg-[#f0f0f0]'
+  const rowBg = forceHighlight || isMe ? 'bg-[#fef9ee] border-l-2 border-[#C9A84C]/50' : isEven ? 'bg-[#f8f8f8]' : 'bg-white'
   const rankBadge = (() => {
     if (rank === 1) return <span className="text-xl leading-none">🥇</span>
     if (rank === 2) return <span className="text-xl leading-none">🥈</span>
     if (rank === 3) return <span className="text-xl leading-none">🥉</span>
-    return <span className={cn('inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold', isMe ? 'bg-[#C9A84C]/20 text-[#C9A84C]' : 'bg-[#141414] text-gray-600')}>{rank}</span>
+    return <span className={cn('inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold', isMe ? 'bg-[#C9A84C]/20 text-[#C9A84C]' : 'bg-[#eeeeee] text-gray-600')}>{rank}</span>
   })()
   const movementEl = (() => {
     if (movement === null || movement === 0) return <span className="text-gray-300 text-xs font-bold">→</span>
@@ -69,7 +69,7 @@ function TableRow({
     return <span className="inline-flex items-center gap-0.5 text-red-500 text-[11px] font-bold">↓<span className="tabular-nums">{Math.abs(movement)}</span></span>
   })()
   return (
-    <tr className={cn('border-b border-[#1e1e1e] last:border-0 transition-colors hover:brightness-[0.97]', rowBg)}>
+    <tr className={cn('border-b border-gray-200 last:border-0 transition-colors hover:brightness-[0.97]', rowBg)}>
       <td className="px-4 py-3">
         <div className="flex flex-col items-center gap-0.5">{rankBadge}{movementEl}</div>
       </td>
@@ -79,16 +79,16 @@ function TableRow({
             rank === 1 ? 'bg-[#C9A84C] text-[#0b0b0b]' :
             rank === 2 ? 'bg-gray-200 text-gray-600' :
             rank === 3 ? 'bg-orange-100 text-orange-700' :
-            isMe ? 'bg-[#f0f0f0] text-[#0b0b0b]' : 'bg-[#141414] text-gray-500',
+            isMe ? 'bg-[#f0f0f0] text-[#0b0b0b]' : 'bg-[#eeeeee] text-gray-500',
           )}>
             {initials(owner)}
           </div>
           <div className="min-w-0">
-            <p className={cn('font-semibold text-sm truncate flex items-center gap-1.5', isMe ? 'text-white' : 'text-[#0b0b0b]')}>
+            <p className={cn('font-semibold text-sm truncate flex items-center gap-1.5', isMe ? 'text-[#111111]' : 'text-[#0b0b0b]')}>
               {teamName}
               {isMe && <span className="inline-flex items-center px-1.5 py-0 rounded text-[9px] font-black bg-[#C9A84C] text-[#0b0b0b]">YOU</span>}
             </p>
-            <p className={cn('text-xs truncate', isMe ? 'text-white/50' : 'text-gray-400')}>{owner}</p>
+            <p className={cn('text-xs truncate', isMe ? 'text-[#111111]/50' : 'text-gray-400')}>{owner}</p>
           </div>
         </div>
       </td>
@@ -130,7 +130,7 @@ export default async function ClubLeaderboardPage({
     return (
       <div className="text-center py-24">
         <div className="text-5xl mb-4">🏆</div>
-        <h2 className="text-2xl font-bold text-[#d4d4d4]">No Active Season</h2>
+        <h2 className="text-2xl font-bold text-[#444444]">No Active Season</h2>
         <p className="text-gray-500 mt-2">The leaderboard will appear once a season is active.</p>
       </div>
     )
@@ -258,7 +258,7 @@ export default async function ClubLeaderboardPage({
           const movement = prevRank != null ? prevRank - (myIdx + 1) : null
           return (
             <div>
-              <div className="flex items-center gap-2 px-4 py-1.5 bg-[#1c1c1c]">
+              <div className="flex items-center gap-2 px-4 py-1.5 bg-[#f0f0f0]">
                 <div className="h-px flex-1 border-t-2 border-dashed border-[#C9A84C]/25" />
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#C9A84C]/50">Your position</span>
                 <div className="h-px flex-1 border-t-2 border-dashed border-[#C9A84C]/25" />
@@ -276,7 +276,7 @@ export default async function ClubLeaderboardPage({
         })()}
 
         {gameweeks.length > 0 && (
-          <div className="border-t border-[#1e1e1e] px-4 py-3 flex flex-wrap gap-x-4 gap-y-1">
+          <div className="border-t border-gray-200 px-4 py-3 flex flex-wrap gap-x-4 gap-y-1">
             {gameweeks.map((gw) => (
               <span key={gw.dateStr} className="text-xs text-gray-400">
                 <span className="font-semibold text-gray-600">GW{gw.gw}</span> = {gw.label}

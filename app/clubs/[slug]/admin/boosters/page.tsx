@@ -122,7 +122,7 @@ export default async function ClubAdminBoostersPage({
                             {used === 0 ? (
                               <Badge
                                 variant="secondary"
-                                className="text-xs font-normal text-gray-400 bg-[#141414]"
+                                className="text-xs font-normal text-gray-400 bg-[#eeeeee]"
                               >
                                 {remaining}/{booster.maxUses}
                               </Badge>

@@ -19,7 +19,7 @@ export default function ShareCodeButton({ code }: { code: string }) {
         'inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all',
         copied
           ? 'bg-green-100 text-green-700 border border-green-300'
-          : 'bg-[#1c1c1c] text-[#C9A84C] border border-[#C9A84C]/20 hover:bg-[#e8e8e8]',
+          : 'bg-[#f0f0f0] text-[#C9A84C] border border-[#C9A84C]/20 hover:bg-[#e8e8e8]',
       )}
     >
       {copied ? '✓ Copied!' : `📋 Copy Code: ${code}`}

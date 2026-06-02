@@ -21,7 +21,7 @@ const ROLE_LABELS: Record<string, string> = {
 const ROLE_COLORS: Record<string, string> = {
   batsman:       'bg-blue-100 text-blue-700 border-blue-200',
   bowler:        'bg-red-100 text-[#b5211e] border-red-200',
-  all_rounder:   'bg-[#1c1c1c] text-[#C9A84C] border-[#C9A84C]/20',
+  all_rounder:   'bg-[#f0f0f0] text-[#C9A84C] border-[#C9A84C]/20',
   wicket_keeper: 'bg-[#fef9ee] text-[#C9A84C] border-[#C9A84C]/30',
 }
 
@@ -120,7 +120,7 @@ export default function PlayerGrid({ players, seasonId }: Props) {
               className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
                 sortBy === opt.value
                   ? 'bg-[#f0f0f0] text-[#0b0b0b]'
-                  : 'bg-[#141414] text-gray-600 hover:bg-gray-200'
+                  : 'bg-[#eeeeee] text-gray-600 hover:bg-gray-200'
               }`}
             >
               {opt.label}
@@ -137,7 +137,7 @@ export default function PlayerGrid({ players, seasonId }: Props) {
           active={roleFilter === 'all'}
           onClick={() => handleFilterChange('all')}
           color="bg-[#f0f0f0] text-[#0b0b0b]"
-          inactiveColor="bg-[#141414] text-gray-600 hover:bg-gray-200"
+          inactiveColor="bg-[#eeeeee] text-gray-600 hover:bg-gray-200"
         />
         {ROLE_ORDER.map((role) => (
           <RoleTab
@@ -155,7 +155,7 @@ export default function PlayerGrid({ players, seasonId }: Props) {
             inactiveColor={{
               batsman:       'bg-blue-50 text-blue-700 hover:bg-blue-100',
               bowler:        'bg-red-50 text-[#b5211e] hover:bg-red-100',
-              all_rounder:   'bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#e8e8e8]',
+              all_rounder:   'bg-[#f0f0f0] text-[#C9A84C] hover:bg-[#e8e8e8]',
               wicket_keeper: 'bg-[#fef9ee] text-[#C9A84C] hover:bg-[#fef3d0]',
             }[role]}
           />
@@ -224,7 +224,7 @@ function RoleTab({
     >
       {label}
       <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
-        active ? 'bg-[#f5f5f5]/25 text-[#0b0b0b]' : 'bg-black/8 text-current'
+        active ? 'bg-[#f5f5f5]/25 text-[#0b0b0b]' : 'bg-white/8 text-current'
       }`}>
         {count}
       </span>
@@ -319,7 +319,7 @@ function PageBtn({
           ? 'bg-[#f0f0f0] text-[#0b0b0b]'
           : disabled
           ? 'text-gray-300 cursor-not-allowed'
-          : 'text-gray-600 hover:bg-[#141414]'
+          : 'text-gray-600 hover:bg-[#eeeeee]'
       }`}
     >
       {label}

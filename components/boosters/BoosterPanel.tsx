@@ -150,7 +150,7 @@ export default function BoosterPanel({
                   Used
                 </Badge>
               ) : (
-                <Badge className="bg-[#1c1c1c] text-[#C9A84C] hover:bg-[#fef9ee] text-[11px] justify-center">
+                <Badge className="bg-[#f0f0f0] text-[#C9A84C] hover:bg-[#fef9ee] text-[11px] justify-center">
                   {remaining}/{booster.maxUses} left
                 </Badge>
               )}
@@ -447,7 +447,7 @@ function TripleCaptainDialog({
                 onClick={() => setChosenId(p.id)}
                 className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors ${
                   chosenId === p.id
-                    ? 'bg-[#1c1c1c] text-[#C9A84C]'
+                    ? 'bg-[#f0f0f0] text-[#C9A84C]'
                     : 'hover:bg-[#f8f8f8]'
                 }`}
               >

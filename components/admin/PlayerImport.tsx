@@ -233,7 +233,7 @@ export default function PlayerImport({ seasonId }: PlayerImportProps) {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Your <code className="bg-[#141414] px-1 py-0.5 rounded text-xs">.xlsx</code> file must have these column headers in the first row:
+            Your <code className="bg-[#eeeeee] px-1 py-0.5 rounded text-xs">.xlsx</code> file must have these column headers in the first row:
           </p>
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full text-sm">

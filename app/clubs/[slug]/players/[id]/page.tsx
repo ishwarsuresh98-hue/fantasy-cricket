@@ -113,7 +113,7 @@ export default async function ClubPlayerProfilePage({
       <div className="flex items-center gap-2 text-sm text-gray-400">
         <Link href={`${base}/matches`} className="hover:text-[#C9A84C] hover:underline">Players</Link>
         <span>/</span>
-        <span className="text-[#d4d4d4] font-medium truncate">{player.name}</span>
+        <span className="text-[#444444] font-medium truncate">{player.name}</span>
       </div>
 
       {/* Hero card */}
@@ -194,11 +194,11 @@ export default async function ClubPlayerProfilePage({
       {/* Match log table */}
       {matches.length > 0 && (
         <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-[#1e1e1e]"><p className="text-sm font-bold text-[#C9A84C]">Match Log</p></div>
+          <div className="px-5 py-4 border-b border-gray-200"><p className="text-sm font-bold text-[#C9A84C]">Match Log</p></div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#f8f8f8] border-b border-[#1e1e1e]">
+                <tr className="bg-[#f8f8f8] border-b border-gray-200">
                   {['#', 'Opponent', 'R', 'B', '4s', '6s', 'W', 'Ct', 'Mdns', 'Pts', 'Cr'].map((h, i) => (
                     <th key={h} className={cn('text-[10px] font-bold uppercase tracking-widest text-gray-400 py-3',
                       i === 0 ? 'px-5 text-left' : i === 1 ? 'px-4 text-left' : i === 10 ? 'px-5 text-right' : 'px-3 text-center')}>{h}</th>
@@ -212,7 +212,7 @@ export default async function ClubPlayerProfilePage({
                   return (
                     <tr key={m.id} className={cn('transition-colors hover:bg-[#fef9ee]', dnp ? 'opacity-40' : '')}>
                       <td className="px-5 py-2.5 text-xs font-bold text-gray-400 tabular-nums">{m.match_number}</td>
-                      <td className="px-4 py-2.5 font-medium text-[#d4d4d4] max-w-[140px] truncate">
+                      <td className="px-4 py-2.5 font-medium text-[#444444] max-w-[140px] truncate">
                         <Link href={`${base}/matches/${m.id}`} className="hover:text-[#C9A84C] hover:underline">{m.opponent}</Link>
                       </td>
                       {dnp ? (
@@ -252,19 +252,19 @@ export default async function ClubPlayerProfilePage({
       {/* Ownership panel */}
       {owners.length > 0 && (
         <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-[#1e1e1e] flex items-center justify-between">
+          <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
             <p className="text-sm font-bold text-[#C9A84C]">Fantasy Ownership</p>
-            <span className="text-xs font-bold text-[#C9A84C] bg-[#1c1c1c] px-2.5 py-1 rounded-full">{ownerCount} / {totalTeams ?? '?'} teams · {ownerPct}%</span>
+            <span className="text-xs font-bold text-[#C9A84C] bg-[#f0f0f0] px-2.5 py-1 rounded-full">{ownerCount} / {totalTeams ?? '?'} teams · {ownerPct}%</span>
           </div>
           <div className="px-5 pt-3 pb-1">
-            <div className="h-2 bg-[#141414] rounded-full overflow-hidden">
+            <div className="h-2 bg-[#eeeeee] rounded-full overflow-hidden">
               <div className="h-full rounded-full bg-[#f0f0f0] transition-all" style={{ width: `${Math.min(100, ownerPct)}%` }} />
             </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#f8f8f8] border-b border-[#1e1e1e]">
+                <tr className="bg-[#f8f8f8] border-b border-gray-200">
                   <th className="text-left text-[10px] font-bold uppercase tracking-widest text-gray-400 px-5 py-3">Team</th>
                   <th className="text-left text-[10px] font-bold uppercase tracking-widest text-gray-400 px-4 py-3">Owner</th>
                   <th className="text-center text-[10px] font-bold uppercase tracking-widest text-gray-400 px-3 py-3">Role</th>
@@ -278,7 +278,7 @@ export default async function ClubPlayerProfilePage({
                   return (
                     <tr key={o.fantasy_team_id} className="hover:bg-[#fef9ee] transition-colors">
                       <td className="px-5 py-2.5">
-                        <Link href={`${base}/teams/${o.fantasy_team_id}`} className="font-semibold text-[#d4d4d4] hover:text-[#C9A84C] hover:underline">{ft.team_name}</Link>
+                        <Link href={`${base}/teams/${o.fantasy_team_id}`} className="font-semibold text-[#444444] hover:text-[#C9A84C] hover:underline">{ft.team_name}</Link>
                       </td>
                       <td className="px-4 py-2.5 text-gray-500 text-sm">{ownerName}</td>
                       <td className="px-3 py-2.5 text-center">

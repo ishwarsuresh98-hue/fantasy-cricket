@@ -77,15 +77,15 @@ const sections = [
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[#0f0e1a] text-white">
-      <header className="border-b border-white/10">
+    <div className="min-h-screen bg-white text-[#111111]">
+      <header className="border-b border-gray-200">
         <div className="max-w-3xl mx-auto px-6 py-6 flex items-center justify-between">
           <Link href="/" className="group">
-            <span className="text-2xl font-black tracking-tight text-white group-hover:text-[#C9A84C] transition-colors">
+            <span className="text-2xl font-black tracking-tight text-[#111111] group-hover:text-[#C9A84C] transition-colors">
               The <span className="text-[#C9A84C]">XI</span>
             </span>
           </Link>
-          <Link href="/terms" className="text-sm text-white/40 hover:text-[#C9A84C] transition-colors">
+          <Link href="/terms" className="text-sm text-[#111111]/40 hover:text-[#C9A84C] transition-colors">
             Terms of Service →
           </Link>
         </div>
@@ -93,40 +93,40 @@ export default function PrivacyPage() {
       <div className="max-w-3xl mx-auto px-6 pt-14 pb-10">
         <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#C9A84C] mb-3">Legal</p>
         <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-4">Privacy Policy</h1>
-        <p className="text-white/40 text-sm">Last updated: 2 June 2026</p>
+        <p className="text-[#111111]/40 text-sm">Last updated: 2 June 2026</p>
       </div>
       <div className="max-w-3xl mx-auto px-6 pb-8">
         <div className="rounded-2xl border border-[#C9A84C]/20 bg-[#C9A84C]/5 p-6">
-          <p className="text-white/70 text-sm leading-relaxed">
+          <p className="text-[#111111]/70 text-sm leading-relaxed">
             This Privacy Policy explains how The XI Fantasy Cricket collects, uses, and protects your personal data. We are committed to handling your data responsibly and in compliance with UK GDPR.
           </p>
         </div>
       </div>
       <div className="max-w-3xl mx-auto px-6 pb-24 space-y-10">
         {sections.map((section) => (
-          <div key={section.title} className="border-t border-white/10 pt-8">
+          <div key={section.title} className="border-t border-gray-200 pt-8">
             <h2 className="text-lg font-bold text-[#C9A84C] mb-4">{section.title}</h2>
-            {section.content && <p className="text-white/60 text-sm leading-relaxed mb-3">{section.content}</p>}
+            {section.content && <p className="text-[#111111]/60 text-sm leading-relaxed mb-3">{section.content}</p>}
             {section.items && (
               <ul className="space-y-2 mb-3">
                 {section.items.map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-sm text-white/60">
+                  <li key={item} className="flex items-start gap-3 text-sm text-[#111111]/60">
                     <span className="text-[#C9A84C] mt-0.5 flex-shrink-0">•</span>
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
             )}
-            {section.footer && <p className="text-white/40 text-sm leading-relaxed mt-3">{section.footer}</p>}
+            {section.footer && <p className="text-[#111111]/40 text-sm leading-relaxed mt-3">{section.footer}</p>}
           </div>
         ))}
       </div>
-      <footer className="border-t border-white/10">
+      <footer className="border-t border-gray-200">
         <div className="max-w-3xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-white/30 text-xs">© 2026 The XI Fantasy Cricket. All rights reserved.</p>
+          <p className="text-[#111111]/30 text-xs">© 2026 The XI Fantasy Cricket. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <Link href="/privacy" className="text-xs text-[#C9A84C]">Privacy Policy</Link>
-            <Link href="/terms" className="text-xs text-white/40 hover:text-white transition-colors">Terms of Service</Link>
+            <Link href="/terms" className="text-xs text-[#111111]/40 hover:text-[#111111] transition-colors">Terms of Service</Link>
           </div>
         </div>
       </footer>
