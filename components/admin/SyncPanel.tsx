@@ -278,6 +278,40 @@ export default function SyncPanel({ seasonId, seasonYear, matches }: Props) {
     }
   }
 
+  // ── Reset & Reimport ─────────────────────────────────────────────────────
+  const [resetSync,    setResetSync]    = useState<SyncResult>({ state: 'idle', message: '', ts: null })
+  const [resetConfirm, setResetConfirm] = useState(false)
+
+  async function resetAndReimport() {
+    if (!resetConfirm) { setResetConfirm(true); return }
+    setResetSync({ state: 'loading', message: 'Deleting existing matches & fetching fresh from Play Cricket…', ts: null })
+    setResetConfirm(false)
+    try {
+      const res = await fetch('/api/admin/reset-season-matches', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ season_id: seasonId, season_year: seasonYear, confirm: true }),
+      })
+      const j = await res.json() as {
+        deleted?: number; imported?: number; fetched_from_pc?: number
+        sample?: { match_number: number; our_team: string; opponent_team: string }[]
+        error?: string
+      }
+      if (res.ok) {
+        const sampleStr = j.sample?.slice(0, 2).map(s => `${s.our_team} vs ${s.opponent_team}`).join('; ') ?? ''
+        setResetSync({
+          state:   'done',
+          message: `Deleted ${j.deleted ?? 0}, imported ${j.imported ?? 0} fresh from PC${sampleStr ? ` · e.g. ${sampleStr}` : ''}`,
+          ts:      now(),
+        })
+      } else {
+        setResetSync({ state: 'error', message: j.error ?? 'Error', ts: now() })
+      }
+    } catch (e: unknown) {
+      setResetSync({ state: 'error', message: (e as Error).message, ts: now() })
+    }
+  }
+
   // ── Live Sync ─────────────────────────────────────────────────────────────
   const [liveSync, setLiveSync] = useState<SyncResult>({ state: 'idle', message: '', ts: null })
 
@@ -579,6 +613,41 @@ export default function SyncPanel({ seasonId, seasonYear, matches }: Props) {
         >
           {resultSync.state === 'loading' ? 'Syncing…' : '↓ Sync Results & Calc Points'}
         </button>
+      </SyncSection>
+
+      {/* ── 3b. Reset & Reimport ─────────────────────────────────────────── */}
+      <SyncSection
+        title="⚠️ Reset & Reimport All Fixtures"
+        description="DESTRUCTIVE — deletes every match for this season then re-imports a clean set from Play Cricket. our_team and opponent_team will be populated correctly on all rows. Use this to fix duplicate or incorrectly-named matches."
+      >
+        <StatusBadge result={resetSync} />
+        {resetSync.state === 'loading' && (
+          <p className="text-xs text-amber-700 font-semibold">⏳ {resetSync.message}</p>
+        )}
+        {(resetSync.state === 'idle' || resetSync.state === 'error') && (
+          resetConfirm ? (
+            <div className="space-y-2">
+              <p className="text-sm font-bold text-red-600">
+                ⚠️ This will permanently delete all {seasonYear} matches and re-import from Play Cricket. Are you sure?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => void resetAndReimport()}
+                  className="px-4 py-2.5 rounded-xl text-sm font-black bg-red-600 text-white hover:bg-red-700 transition-colors"
+                >
+                  Yes, Delete & Reimport
+                </button>
+                <button onClick={() => setResetConfirm(false)} className={btnClass('gray')}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => void resetAndReimport()} className={btnClass('gray')}>
+              🗑️ Reset & Reimport {seasonYear} Fixtures
+            </button>
+          )
+        )}
       </SyncSection>
 
       {/* ── 4. Force Live Sync ───────────────────────────────────────────── */}
