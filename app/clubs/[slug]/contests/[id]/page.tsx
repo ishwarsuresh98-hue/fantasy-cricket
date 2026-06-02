@@ -102,7 +102,7 @@ export default async function ContestDetailPage({
 
   // ── Match ──────────────────────────────────────────────────────────────────
   const { data: match } = c.match_id
-    ? await supabase.from('matches').select('id, match_number, opponent, match_date, venue, status').eq('id', c.match_id).single()
+    ? await supabase.from('matches').select('id, match_number, opponent_team, match_date, venue, status').eq('id', c.match_id).single()
     : { data: null }
 
   // ── Season (for wallet) + contest_team check ───────────────────────────────
@@ -214,7 +214,7 @@ export default async function ContestDetailPage({
           {match && (
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
               <span className="text-sm font-semibold text-gray-700">
-                🏏 vs {match.opponent}
+                🏏 vs {match.opponent_team}
               </span>
               <span className="text-sm text-gray-500">
                 📅 {fmtDate(match.match_date)} · {fmtTime(match.match_date)}
@@ -289,7 +289,7 @@ export default async function ContestDetailPage({
 
       {/* ── Entries section ────────────────────────────────────────────────── */}
       {category === 'h2h'
-        ? <H2HLayout myEntry={myEntry} opponent={h2hOpponent} isLocked={isLocked} isJoined={isJoined} maxTeams={maxTeams} />
+        ? <H2HLayout myEntry={myEntry} opponent_team={h2hOpponent} isLocked={isLocked} isJoined={isJoined} maxTeams={maxTeams} />
         : category === 'jackpot'
         ? <WtaLayout entries={enteredTeams} maxTeams={maxTeams} isLocked={isLocked} myEntry={myEntry} />
         : <StandardEntryList entries={enteredTeams} maxTeams={maxTeams} isLocked={isLocked} />
@@ -359,9 +359,9 @@ function StatBox({ label, value, gold, red }: { label: string; value: string; go
 
 // ── H2H layout ────────────────────────────────────────────────────────────────
 
-function H2HLayout({ myEntry, opponent, isLocked, isJoined, maxTeams }: {
+function H2HLayout({ myEntry, opponent_team: opp, isLocked, isJoined, maxTeams }: {
   myEntry:  EnteredTeam | null | undefined
-  opponent: EnteredTeam | null
+  opponent_team: EnteredTeam | null
   isLocked: boolean
   isJoined: boolean
   maxTeams: number
@@ -399,18 +399,18 @@ function H2HLayout({ myEntry, opponent, isLocked, isJoined, maxTeams }: {
 
         {/* Opponent side */}
         <div className="p-5 flex flex-col items-center text-center">
-          {opponent && (isLocked || !isJoined) ? (
+          {opp && (isLocked || !isJoined) ? (
             <>
               <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-black text-lg mb-2">
-                {opponent.display_name.slice(0, 2).toUpperCase()}
+                {opp.display_name.slice(0, 2).toUpperCase()}
               </div>
               <p className="text-sm font-black text-gray-800 truncate max-w-[120px]">
-                {isLocked ? opponent.team_name : '???'}
+                {isLocked ? opp.team_name : '???'}
               </p>
-              <p className="text-xs text-gray-500">{isLocked ? opponent.display_name : 'Hidden until lock'}</p>
-              {isLocked && <p className="text-base font-black text-gray-700 mt-1">{opponent.total_points} pts</p>}
+              <p className="text-xs text-gray-500">{isLocked ? opp.display_name : 'Hidden until lock'}</p>
+              {isLocked && <p className="text-base font-black text-gray-700 mt-1">{opp.total_points} pts</p>}
             </>
-          ) : opponent && !isLocked ? (
+          ) : opp && !isLocked ? (
             <>
               <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xl mb-2">🎭</div>
               <p className="text-xs text-gray-400 text-center">Team hidden<br/>until match starts</p>

@@ -19,7 +19,7 @@ const ROLE_BADGE: Record<string, string> = {
 type MatchMeta = {
   id: string
   match_number: number
-  opponent: string
+  opponent_team: string
   match_date: string
   status: string
   result: string | null
@@ -90,7 +90,7 @@ export default async function TeamDetailPage({
     .select(
       'match_id, player_id, is_captain, is_vice_captain, points_earned, ' +
       'players(id, name, role), ' +
-      'matches(id, match_number, opponent, match_date, status, result)',
+      'matches(id, match_number, opponent_team, match_date, status, result)',
     )
     .eq('fantasy_team_id', teamId)
 
@@ -250,7 +250,7 @@ export default async function TeamDetailPage({
               .map((id) => matchMetaMap.get(id)!)
               .sort((a, b) => a.match_number - b.match_number)
             const opponentLine = gwMatchMetas
-              .map((m) => `M${m.match_number} vs ${m.opponent}`)
+              .map((m) => `M${m.match_number} vs ${m.opponent_team}`)
               .join(' · ')
 
             return (

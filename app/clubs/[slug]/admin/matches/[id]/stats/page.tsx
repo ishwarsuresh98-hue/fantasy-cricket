@@ -60,7 +60,7 @@ export default async function ClubAdminStatsPage({
           <span>Match {match.match_number} Stats</span>
         </div>
         <h2 className="text-2xl font-bold text-[#0b0b0b]">
-          Match {match.match_number} — {match.opponent}
+          Match {match.match_number} — {match.opponent_team}
         </h2>
         <p className="text-muted-foreground">
           {new Date(match.match_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}

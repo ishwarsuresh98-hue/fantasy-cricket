@@ -150,7 +150,7 @@ function formatPreviewDate(d: Date): string {
 
 interface ParsedMatch {
   rowIndex: number
-  opponent: string
+  opponent_team: string
   matchDate: Date | null
   venue: string
   fixtureType: string
@@ -243,7 +243,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
 
           const m: ParsedMatch = {
             rowIndex: rowNum,
-            opponent: '',
+            opponent_team: '',
             matchDate: null,
             venue,
             fixtureType: ftType,
@@ -258,7 +258,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
             return m
           }
 
-          m.opponent = deriveOpponent(rawHome, rawAway)
+          m.opponent_team = deriveOpponent(rawHome, rawAway)
 
           const combined = combineDateTime(row[dateCol!], timeCol ? row[timeCol] : '')
           if (!combined) {
@@ -302,7 +302,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
     const rows = validRows.map((m) => ({
       season_id:       seasonId,
       match_number:    nextNumber++,
-      opponent:        m.opponent,
+      opponent_team: m.opponent_team,
       match_date:      m.matchDate!.toISOString(),
       venue:           m.venue || null,
       status:          'upcoming',
@@ -520,7 +520,7 @@ export default function MatchImport({ seasonId, currentMatchCount }: Props) {
                         }
                       </td>
                       <td className="px-4 py-2.5 font-medium max-w-[180px] truncate">
-                        {m.opponent || <span className="text-red-400 italic text-xs">missing</span>}
+                        {m.opponent_team || <span className="text-red-400 italic text-xs">missing</span>}
                       </td>
                       <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[140px] truncate">
                         {m.venue || '—'}

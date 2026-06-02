@@ -50,8 +50,8 @@ export default async function ClubTeamsPage({
   const refMatch: Match | undefined = nextMatch && deadlinePassed ? nextMatch : prevMatch
   const refLabel = refMatch
     ? deadlinePassed && refMatch.id === nextMatch?.id
-      ? `Match ${refMatch.match_number} vs ${refMatch.opponent} (locked)`
-      : `Match ${refMatch.match_number} vs ${refMatch.opponent}`
+      ? `Match ${refMatch.match_number} vs ${refMatch.opponent_team} (locked)`
+      : `Match ${refMatch.match_number} vs ${refMatch.opponent_team}`
     : null
   const hiddenBehindDeadline = !!nextMatch && !deadlinePassed
 
@@ -145,7 +145,7 @@ export default async function ClubTeamsPage({
         {hiddenBehindDeadline && (
           <p className="mt-2 text-sm text-[#C9A84C] bg-[#fef9ee] border border-[#C9A84C]/30 rounded-lg px-3 py-2 inline-flex items-center gap-1.5">
             🔒 Transfer changes for{' '}
-            <span className="font-medium">Match {nextMatch!.match_number} vs {nextMatch!.opponent}</span>{' '}
+            <span className="font-medium">Match {nextMatch!.match_number} vs {nextMatch!.opponent_team}</span>{' '}
             are hidden until the deadline passes. Showing last locked squads.
           </p>
         )}

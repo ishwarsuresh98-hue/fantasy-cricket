@@ -32,7 +32,7 @@ export async function POST(
   // Verify the match exists
   const { data: match } = await admin
     .from('matches')
-    .select('id, match_number, opponent')
+    .select('id, match_number,opponent_team')
     .eq('id', matchId)
     .single()
 
@@ -41,14 +41,14 @@ export async function POST(
   // Check no other match already uses this play_cricket_id
   const { data: clash } = await admin
     .from('matches')
-    .select('id, match_number, opponent')
+    .select('id, match_number,opponent_team')
     .eq('play_cricket_id', pcId)
     .neq('id', matchId)
     .maybeSingle()
 
   if (clash) {
     return NextResponse.json({
-      error: `play_cricket_id ${pcId} is already linked to Match ${clash.match_number as number} vs ${clash.opponent as string}`,
+      error: `play_cricket_id ${pcId} is already linked to Match ${clash.match_number as number} vs ${clash.opponent_team as string}`,
     }, { status: 409 })
   }
 
@@ -63,6 +63,6 @@ export async function POST(
     ok:              true,
     match_id:        matchId,
     play_cricket_id: pcId,
-    match:           `Match ${match.match_number as number} vs ${match.opponent as string}`,
+    match:           `Match ${match.match_number as number} vs ${match.opponent_team as string}`,
   })
 }

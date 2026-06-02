@@ -43,7 +43,7 @@ export default async function ClubPlayerProfilePage({
   if (!player) notFound()
 
   const { data: allMatches } = await supabase
-    .from('matches').select('id, match_number, match_date, opponent, status')
+    .from('matches').select('id, match_number, match_date,opponent_team, status')
     .eq('season_id', player.season_id).eq('status', 'completed').order('match_number', { ascending: true })
 
   const { data: performances } = await supabase
@@ -213,7 +213,7 @@ export default async function ClubPlayerProfilePage({
                     <tr key={m.id} className={cn('transition-colors hover:bg-[#fef9ee]', dnp ? 'opacity-40' : '')}>
                       <td className="px-5 py-2.5 text-xs font-bold text-gray-400 tabular-nums">{m.match_number}</td>
                       <td className="px-4 py-2.5 font-medium text-[#444444] max-w-[140px] truncate">
-                        <Link href={`${base}/matches/${m.id}`} className="hover:text-[#C9A84C] hover:underline">{m.opponent}</Link>
+                        <Link href={`${base}/matches/${m.id}`} className="hover:text-[#C9A84C] hover:underline">{m.opponent_team}</Link>
                       </td>
                       {dnp ? (
                         <td colSpan={8} className="px-3 py-2.5 text-center text-xs text-gray-400 italic">Did not play</td>

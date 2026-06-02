@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   // ── Load match ────────────────────────────────────────────────────────────
   const { data: match } = await admin
     .from('matches')
-    .select('id, season_id, opponent, play_cricket_id, status')
+    .select('id, season_id,opponent_team, play_cricket_id, status')
     .eq('id', body.match_id)
     .single()
 
@@ -240,21 +240,21 @@ export async function POST(req: Request) {
   if (upsertErr) return NextResponse.json({ error: upsertErr.message }, { status: 500 })
 
   // ── Refresh match row with latest Play Cricket data ──────────────────────
-  // Full match title: "Slough CC - 1st XI vs Harefield CC, Middx - 1st XI"
-  const homeLabel     = `${detail.home_club_name} - ${detail.home_team_name}`
-  const awayLabel     = `${detail.away_club_name} - ${detail.away_team_name}`
-  const freshOpponent = `${homeLabel} vs ${awayLabel}`
+  const sloughTeamName  = homeIsSlough ? detail.home_team_name : detail.away_team_name
+  const oppClubName     = homeIsSlough ? detail.away_club_name : detail.home_club_name
+  const oppTeamName     = homeIsSlough ? detail.away_team_name : detail.home_team_name
+  const oppXI           = oppTeamName.replace(/^.*?-\s*/i, '').trim()
 
-  // ── DEBUG: confirm what PC is returning for the result field ─────────────
+  const freshOurTeam    = `Slough CC - ${sloughTeamName.replace(/^.*?-\s*/i, '').trim()}`
+  const freshOppTeam    = `${oppClubName} - ${oppXI}`
+
+  // DEBUG: confirm result field value from PC
   console.log('[sync/results] match update payload:', {
-    match_id:         body.match_id,
-    pc_match_id:      pcMatchId,
-    opponent:         freshOpponent,
-    venue:            detail.ground_name || null,
-    result_raw:       detail.result_description,        // raw string from PC API
-    result_stored:    detail.result_description || null, // what will be written to DB
-    match_result_code: detail.match_result ?? 'n/a',    // numeric code if present
-    status:           'completed',
+    match_id:          body.match_id,
+    our_team:          freshOurTeam,
+    opponent_team:     freshOppTeam,
+    result_raw:        detail.result_description,
+    match_result_code: detail.match_result ?? 'n/a',
   })
 
   const { error: updateErr } = await admin
@@ -262,7 +262,8 @@ export async function POST(req: Request) {
     .update({
       status:          'completed',
       play_cricket_id: pcMatchId,
-      opponent:        freshOpponent,
+      our_team:        freshOurTeam,
+      opponent_team:   freshOppTeam,
       venue:           detail.ground_name || null,
       result:          detail.result_description || null,
     })

@@ -59,7 +59,7 @@ export default async function PlayerProfilePage({
   // ── All season matches (completed) ────────────────────────────────────────
   const { data: allMatches } = await supabase
     .from('matches')
-    .select('id, match_number, match_date, opponent, status')
+    .select('id, match_number, match_date,opponent_team, status')
     .eq('season_id', player.season_id)
     .eq('status', 'completed')
     .order('match_number', { ascending: true })
@@ -343,7 +343,7 @@ export default async function PlayerProfilePage({
                       <td className="px-5 py-2.5 text-xs font-bold text-gray-400 tabular-nums">{m.match_number}</td>
                       <td className="px-4 py-2.5 font-medium text-[#444444] max-w-[140px] truncate">
                         <Link href={`/matches/${m.id}`} className="hover:text-[#C9A84C] hover:underline">
-                          {m.opponent}
+                          {m.opponent_team}
                         </Link>
                       </td>
 

@@ -45,7 +45,7 @@ export default async function ClubAdminSyncPage({
   const { data: matches } = seasonIds.length > 0
     ? await supabase
         .from('matches')
-        .select('id, match_number, opponent, match_date, play_cricket_id')
+        .select('id, match_number, opponent_team, match_date, play_cricket_id')
         .in('season_id', seasonIds)
         .gte('match_date', windowStart.toISOString().split('T')[0])
         .lte('match_date', windowEnd.toISOString().split('T')[0])
@@ -90,7 +90,7 @@ export default async function ClubAdminSyncPage({
           seasonId={season.id}
           seasonYear={seasonYear}
           matches={(matches ?? []) as {
-            id: string; match_number: number; opponent: string; match_date: string; play_cricket_id: string | null
+            id: string; match_number: number; opponent_team: string; match_date: string; play_cricket_id: string | null
           }[]}
         />
       )}

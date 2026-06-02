@@ -247,7 +247,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
       <div>
         <h1 className="text-3xl font-bold text-[#C9A84C]">My Team</h1>
         <p className="text-muted-foreground mt-1">
-          Picking for Match {nextMatch.match_number} — {nextMatch.opponent} •{' '}
+          Picking for Match {nextMatch.match_number} — {nextMatch.opponent_team} •{' '}
           {new Date(nextMatch.match_date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
         </p>
       </div>

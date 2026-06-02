@@ -55,14 +55,14 @@ export default async function XiHomePage() {
     (rawContests ?? []).map((c) => c.match_id as string | null).filter(Boolean) as string[]
   )]
 
-  const matchMap = new Map<string, { opponent: string; match_date: string; season_id: string }>()
+  const matchMap = new Map<string, { opponent_team: string; match_date: string; season_id: string }>()
   if (matchIds.length > 0) {
     const { data: matches } = await supabase
       .from('matches')
-      .select('id, opponent, match_date, season_id')
+      .select('id, opponent_team, match_date, season_id')
       .in('id', matchIds)
     for (const m of matches ?? []) {
-      matchMap.set(m.id, { opponent: m.opponent, match_date: m.match_date, season_id: m.season_id })
+      matchMap.set(m.id, { opponent_team: m.opponent_team, match_date: m.match_date, season_id: m.season_id })
     }
   }
 
@@ -122,7 +122,7 @@ export default async function XiHomePage() {
 
     const clubName   = club?.name ?? 'Unknown Club'
     const matchLabel = match
-      ? `${clubName} vs ${match.opponent}`
+      ? `${clubName} vs ${match.opponent_team}`
       : clubName
 
     return {

@@ -15,7 +15,7 @@ const ROLE_BADGE: Record<string, string> = {
   wicket_keeper: 'bg-[#fef9ee] text-[#C9A84C]',
 }
 
-type MatchMeta = { id: string; match_number: number; opponent: string; match_date: string; status: string; result: string | null }
+type MatchMeta = { id: string; match_number: number; opponent_team: string; match_date: string; status: string; result: string | null }
 type SelRow    = { match_id: string; player_id: string; is_captain: boolean; is_vice_captain: boolean; points_earned: number; players: { id: string; name: string; role: string }; matches: MatchMeta }
 type PerfRow   = { match_id: string; player_id: string; runs_scored: number; wickets: number | null; catches: number | null; fours: number | null; sixes: number | null; maidens: number | null; base_points: number; did_not_bat: boolean }
 type GwPlayerRow = { playerId: string; playerName: string; playerRole: string; isCaptain: boolean; isViceCaptain: boolean; totalRuns: number; totalWickets: number; totalBasePoints: number; totalEarned: number }
@@ -42,7 +42,7 @@ export default async function ClubTeamDetailPage({
 
   const { data: selData } = await supabase
     .from('fantasy_selections')
-    .select('match_id, player_id, is_captain, is_vice_captain, points_earned, players(id, name, role), matches(id, match_number, opponent, match_date, status, result)')
+    .select('match_id, player_id, is_captain, is_vice_captain, points_earned, players(id, name, role), matches(id, match_number, opponent_team, match_date, status, result)')
     .eq('fantasy_team_id', teamId)
 
   const selections = (selData ?? []) as unknown as SelRow[]
@@ -137,7 +137,7 @@ export default async function ClubTeamDetailPage({
             const rows    = buildGwRows(gwMatchIds)
             const gwTotal = rows.reduce((s, r) => s + r.totalEarned, 0)
             const gwMatchMetas = gwMatchIds.map((id) => matchMetaMap.get(id)!).sort((a, b) => a.match_number - b.match_number)
-            const opponentLine = gwMatchMetas.map((m) => `M${m.match_number} vs ${m.opponent}`).join(' · ')
+            const opponentLine = gwMatchMetas.map((m) => `M${m.match_number} vs ${m.opponent_team}`).join(' · ')
 
             return (
               <div key={gw.dateStr}>

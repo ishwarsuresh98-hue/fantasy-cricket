@@ -40,7 +40,7 @@ export default async function PlayingXIPage({ params }: { params: Promise<{ id: 
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/admin/matches" className="hover:underline hover:text-[#C9A84C]">Matches</Link>
         <span>/</span>
-        <span>Match {match.match_number} — {match.opponent}</span>
+        <span>Match {match.match_number} — {match.opponent_team}</span>
         <span>/</span>
         <span className="font-medium text-[#C9A84C]">Playing XI</span>
       </div>
@@ -50,7 +50,7 @@ export default async function PlayingXIPage({ params }: { params: Promise<{ id: 
         <div>
           <h2 className="text-2xl font-bold text-[#0b0b0b]">Set Playing XI</h2>
           <p className="text-muted-foreground mt-0.5">
-            Match {match.match_number} — {match.opponent} &bull; {matchDate}
+            Match {match.match_number} — {match.opponent_team} &bull; {matchDate}
           </p>
           <p className="text-sm text-muted-foreground mt-1">
             Select exactly 11 players who will play in this match.
@@ -71,7 +71,7 @@ export default async function PlayingXIPage({ params }: { params: Promise<{ id: 
       ) : (
         <PlayingXIPicker
           matchId={id}
-          matchLabel={`Match ${match.match_number} — ${match.opponent}`}
+          matchLabel={`Match ${match.match_number} — ${match.opponent_team}`}
           players={players as Player[]}
           existingXI={existingXI}
         />

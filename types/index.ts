@@ -68,12 +68,13 @@ export interface Match {
   id: string
   season_id: string
   match_number: number
-  opponent: string
+  opponent_team: string          // opponent club + XI, e.g. "Wraysbury CC - 1st XI"
+  our_team?: string | null       // our XI, e.g. "Slough CC - 1st XI"
   match_date: string
   venue: string | null
   status: MatchStatus
   result: string | null
-  play_cricket_id?: string | null   // Play Cricket match ID for API sync
+  play_cricket_id?: string | null
   created_at: string
 }
 
@@ -243,7 +244,7 @@ export interface LobbyContest {
 export interface MatchGroup {
   matchId:     string
   matchNumber: number
-  opponent:    string
+  opponent_team: string
   matchDate:   string
   venue:       string | null
   isNext:      boolean

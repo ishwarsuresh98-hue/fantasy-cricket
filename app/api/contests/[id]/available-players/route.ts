@@ -12,7 +12,7 @@ import { createClient } from '@/lib/supabase/server'
 // Response shape:
 // {
 //   confirmed: boolean,                    // false if match_playing_xi is empty
-//   match: { id, number, opponent, date }, // the match this GW is for
+//   match: { id, number,opponent_team, date }, // the match this GW is for
 //   players: PlayerWithForm[]
 // }
 
@@ -46,7 +46,7 @@ export async function GET(
 
   const { data: match } = await supabase
     .from('matches')
-    .select('id, match_number, opponent, match_date, season_id')
+    .select('id, match_number, opponent_team, match_date, season_id')
     .eq('id', gw.match_id)
     .single()
 
@@ -61,7 +61,7 @@ export async function GET(
   if (!xiRows?.length) {
     return NextResponse.json({
       confirmed: false,
-      match: { id: match.id, number: match.match_number, opponent: match.opponent, date: match.match_date },
+      match: { id: match.id, number: match.match_number,opponent_team: match.opponent_team, date: match.match_date },
       players: [],
     })
   }
@@ -115,7 +115,7 @@ export async function GET(
 
   return NextResponse.json({
     confirmed: true,
-    match: { id: match.id, number: match.match_number, opponent: match.opponent, date: match.match_date },
+    match: { id: match.id, number: match.match_number,opponent_team: match.opponent_team, date: match.match_date },
     players,
   })
 }

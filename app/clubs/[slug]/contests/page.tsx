@@ -103,7 +103,7 @@ export default async function ClubContestsPage({
   // ── All upcoming matches ───────────────────────────────────────────────────
   const { data: upcomingMatches } = await supabase
     .from('matches')
-    .select('id, match_number, opponent, match_date, venue, status')
+    .select('id, match_number, opponent_team, match_date, venue, status')
     .eq('season_id', season.id)
     .eq('status', 'upcoming')
     .order('match_date', { ascending: true })
@@ -199,7 +199,7 @@ export default async function ClubContestsPage({
     .map((m, idx) => ({
       matchId:     m.id,
       matchNumber: m.match_number,
-      opponent:    m.opponent,
+      opponent_team: m.opponent_team,
       matchDate:   m.match_date,
       venue:       m.venue ?? null,
       isNext:      idx === 0,

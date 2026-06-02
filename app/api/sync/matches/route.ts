@@ -102,7 +102,7 @@ export async function POST(req: Request) {
   // ── Load existing matches for this season ─────────────────────────────────
   const { data: existing } = await admin
     .from('matches')
-    .select('id, play_cricket_id, match_number, match_date, opponent, status, result')
+    .select('id, play_cricket_id, match_number, match_date, opponent_team, our_team, status, result')
     .eq('season_id', body.season_id)
 
   type ExistingRow = NonNullable<typeof existing>[number]
@@ -129,14 +129,18 @@ export async function POST(req: Request) {
   let skipped  = 0
 
   for (const m of sloughSenior) {
-    const matchDate   = parsePCDate(m.match_date)
-    const isHome      = isSloughTeam(m.home_team_name)
-    const rawOpponent = isHome ? m.away_club_name : m.home_club_name
-    // Canonical name stored in DB: strip XI / county / suffix noise
-    const opponent    = rawOpponent
-      .replace(STRIP_SUFFIXES, '')
-      .replace(STRIP_AFTER_DASH, '')
-      .trim()
+    const matchDate    = parsePCDate(m.match_date)
+    const isHome       = isSloughTeam(m.home_club_name) || isSloughTeam(m.home_team_name)
+    const rawOpponent  = isHome ? m.away_club_name : m.home_club_name
+    const rawSloughTeam = isHome ? m.home_team_name : m.away_team_name
+
+    // our_team: "Slough CC - 1st XI" (exactly as PC returns the team name)
+    const our_team = `Slough CC - ${rawSloughTeam.replace(/^.*?-\s*/i, '').trim()}`
+
+    // opponent_team: opponent club + XI, e.g. "Wraysbury CC - 1st XI"
+    const rawOppTeam    = isHome ? m.away_team_name : m.home_team_name
+    const oppXI         = rawOppTeam.replace(/^.*?-\s*/i, '').trim()
+    const opponent_team = `${rawOpponent} - ${oppXI}`
 
     const isComplete = m.status === 'Completed'
     const status     = isComplete ? 'completed' : 'upcoming'
@@ -144,7 +148,8 @@ export async function POST(req: Request) {
 
     const payload = {
       season_id:       body.season_id,
-      opponent,
+      our_team,
+      opponent_team,
       match_date:      matchDate,
       venue:           m.ground_name || null,
       status,
@@ -160,7 +165,7 @@ export async function POST(req: Request) {
       const sameDay = byDate.get(matchDate) ?? []
       let bestScore = 0
       for (const row of sameDay) {
-        const score = wordSimilarity(rawOpponent, row.opponent as string)
+        const score = wordSimilarity(rawOpponent, row.opponent_team as string)
         if (score > bestScore) { bestScore = score; existingRow = row }
       }
       if (bestScore < FUZZY_THRESHOLD) existingRow = undefined
@@ -198,7 +203,7 @@ export async function POST(req: Request) {
   // newly-linked matches are picked up for XI auto-sync in the same request.
   const { data: upcomingRows } = await admin
     .from('matches')
-    .select('id, match_number, opponent, match_date, play_cricket_id, season_id')
+    .select('id, match_number, opponent_team, match_date, play_cricket_id, season_id')
     .eq('season_id', body.season_id)
     .gte('match_date', today)
     .order('match_date', { ascending: true })
@@ -292,7 +297,7 @@ export async function POST(req: Request) {
     await admin.from('match_playing_xi').delete().eq('match_id', match.id as string)
     await admin.from('match_playing_xi').insert(rows)
 
-    const matchLabel = `Match ${match.match_number as number} vs ${match.opponent as string} (${match.match_date as string})`
+    const matchLabel = `Match ${match.match_number as number} vs ${match.opponent_team as string} (${match.match_date as string})`
 
     xi_details.push({
       match_id:        match.id as string,
@@ -319,7 +324,7 @@ export async function POST(req: Request) {
           await broadcastPush({
             payload: {
               title: '🏏 Team sheet confirmed!',
-              body:  `The playing XI for ${match.opponent as string} on ${match.match_date as string} has been imported from Play Cricket.`,
+              body:  `The playing XI for ${match.opponent_team as string} on ${match.match_date as string} has been imported from Play Cricket.`,
               url:   `/clubs/admin/sync`,
               type:  'xi_confirmed',
             },

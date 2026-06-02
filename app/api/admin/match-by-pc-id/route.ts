@@ -31,7 +31,7 @@ export async function GET(req: Request) {
   // 1. Check if match already exists in DB
   const { data: existing } = await admin
     .from('matches')
-    .select('id, opponent, match_date')
+    .select('id, opponent_team, match_date')
     .eq('play_cricket_id', pc_id)
     .single()
 
@@ -56,16 +56,17 @@ export async function GET(req: Request) {
 
   if (!season) return NextResponse.json({ error: 'No active season found' }, { status: 400 })
 
-  // 4. Determine opponent title, date, venue, result, status
-  const homeIsSlough = isSloughTeam(detail.home_team_name) || isSloughTeam(detail.home_club_name)
-  // Full match title stored in opponent field: "Slough CC - 1st XI vs Harefield CC, Middx - 1st XI"
-  const homeLabel    = `${detail.home_club_name} - ${detail.home_team_name}`
-  const awayLabel    = `${detail.away_club_name} - ${detail.away_team_name}`
-  const opponent     = `${homeLabel} vs ${awayLabel}`
-  const matchDate    = parsePlayCricketDate(detail.match_date)
-  const venue        = detail.ground_name || null
-  const result       = detail.result_description || null
-  const status       = result ? 'completed' : 'upcoming'
+  // 4. Determine our_team, opponent_team, date, venue, result, status
+  const homeIsSlough  = isSloughTeam(detail.home_team_name) || isSloughTeam(detail.home_club_name)
+  const sloughTeam    = homeIsSlough ? detail.home_team_name : detail.away_team_name
+  const oppClubName   = homeIsSlough ? detail.away_club_name : detail.home_club_name
+  const oppTeamName   = homeIsSlough ? detail.away_team_name : detail.home_team_name
+  const our_team      = `Slough CC - ${sloughTeam.replace(/^.*?-\s*/i, '').trim()}`
+  const opponent_team = `${oppClubName} - ${oppTeamName.replace(/^.*?-\s*/i, '').trim()}`
+  const matchDate     = parsePlayCricketDate(detail.match_date)
+  const venue         = detail.ground_name || null
+  const result        = detail.result_description || null
+  const status        = result ? 'completed' : 'upcoming'
 
   // 5. Get next match number
   const { data: lastMatch } = await admin
@@ -84,14 +85,15 @@ export async function GET(req: Request) {
     .insert({
       season_id:       season.id,
       match_number:    nextNumber,
-      opponent,
+      our_team,
+      opponent_team,
       match_date:      matchDate,
       venue,
       result,
       status,
       play_cricket_id: pc_id,
     })
-    .select('id, opponent, match_date')
+    .select('id, opponent_team, match_date')
     .single()
 
   if (insertErr) return NextResponse.json({ error: insertErr.message }, { status: 500 })

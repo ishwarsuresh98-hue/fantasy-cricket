@@ -56,7 +56,7 @@ export default async function ClubPublicHomePage({
   const upcomingMatches = season
     ? await supabase
         .from('matches')
-        .select('id, match_number, opponent, match_date, venue, status')
+        .select('id, match_number, opponent_team, match_date, venue, status')
         .eq('season_id', season.id)
         .eq('status', 'upcoming')
         .order('match_date', { ascending: true })
@@ -159,7 +159,7 @@ export default async function ClubPublicHomePage({
                       Next Match
                     </p>
                   )}
-                  <p className="font-black text-gray-900 text-lg">vs {match.opponent}</p>
+                  <p className="font-black text-gray-900 text-lg">vs {match.opponent_team}</p>
                   <p className="text-gray-500 text-sm mt-0.5">
                     GW{match.match_number} ·{' '}
                     {new Date(match.match_date).toLocaleDateString('en-GB', {
@@ -181,7 +181,7 @@ export default async function ClubPublicHomePage({
         {openContests.length > 0 && (
           <section>
             <SectionHeader
-              title={nextMatch ? `Contests — GW${nextMatch.match_number} vs ${nextMatch.opponent}` : 'Open Contests'}
+              title={nextMatch ? `Contests — GW${nextMatch.match_number} vs ${nextMatch.opponent_team}` : 'Open Contests'}
               icon="🏆"
             />
             <div className="grid sm:grid-cols-2 gap-3">

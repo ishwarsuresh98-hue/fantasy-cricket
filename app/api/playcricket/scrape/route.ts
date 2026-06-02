@@ -222,7 +222,7 @@ function parsePrintPage(html: string): ScrapeResult {
   const elements = root.querySelectorAll('h1,h2,h3,h4,h5,h6,table')
 
   type TableRole    = 'batting' | 'bowling' | 'unknown'
-  type SectionKind  = 'none' | 'slough' | 'opponent'
+  type SectionKind  = 'none' | 'slough' | 'opponent_team'
 
   function classifyTable(el: typeof elements[number]): TableRole {
     const ths = el.querySelectorAll('th').map(th => th.text.trim().toLowerCase())
@@ -261,7 +261,7 @@ function parsePrintPage(html: string): ScrapeResult {
       if (/\b(batting|bowling|innings|fall\s+of|extras?)\b/i.test(low)) continue
 
       // Any other substantial heading = opponent / other section
-      if (text.length > 3) section = 'opponent'
+      if (text.length > 3) section = 'opponent_team'
       continue
     }
 
@@ -273,7 +273,7 @@ function parsePrintPage(html: string): ScrapeResult {
         // Under the Slough heading: batting = Slough's batting.
         // The bowling table here belongs to the OPPONENT's bowlers — ignore it.
         if (role === 'batting' && !sloughBatTable) sloughBatTable = el
-      } else if (section === 'opponent') {
+      } else if (section === 'opponent_team') {
         // Under the opponent heading: batting = their batting (Slough is fielding).
         //                             bowling = SLOUGH's bowling figures.
         if (role === 'batting' && !oppBatTable)     oppBatTable    = el

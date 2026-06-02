@@ -28,7 +28,7 @@ const STATUS_BADGE: Record<string, string> = {
 }
 
 type MatchRow = {
-  id: string; match_number: number; opponent: string
+  id: string; match_number: number; opponent_team: string
   match_date: string; venue: string | null; status: string
 }
 
@@ -169,7 +169,7 @@ export default async function ClubAdminContestsPage({
   const { data: matchesData } = seasonIds.length > 0
     ? await supabase
         .from('matches')
-        .select('id, season_id, match_number, opponent, match_date, venue, status')
+        .select('id, season_id, match_number, opponent_team, match_date, venue, status')
         .in('season_id', seasonIds)
         .order('match_date', { ascending: false })
     : { data: [] as MatchRow[] }
@@ -303,7 +303,7 @@ export default async function ClubAdminContestsPage({
                       <p className="font-black text-base leading-none">{m.match_number}</p>
                     </div>
                     <div>
-                      <p className="font-bold text-sm text-gray-800">vs {m.opponent}</p>
+                      <p className="font-bold text-sm text-gray-800">vs {m.opponent_team}</p>
                       <p className="text-xs text-gray-500">
                         {new Date(m.match_date).toLocaleDateString('en-GB', {
                           day: 'numeric', month: 'short', year: 'numeric',

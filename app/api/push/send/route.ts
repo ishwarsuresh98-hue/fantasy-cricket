@@ -9,7 +9,7 @@ type NotifType = 'score_update' | 'new_match' | 'deadline'
 interface SendBody {
   type:         NotifType
   matchId?:     string      // score_update
-  opponent?:    string      // new_match
+  opponent_team?: string    // new_match
   matchDate?:   string      // new_match
   matchNumber?: number      // new_match | deadline
   userId?:      string      // optional: target a single user
@@ -98,13 +98,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, ...counts })
   }
 
-  if (body.type === 'new_match' && body.opponent && body.matchDate) {
+  if (body.type === 'new_match' && body.opponent_team && body.matchDate) {
     const fmtDate = new Date(body.matchDate).toLocaleDateString('en-GB', {
       weekday: 'short', day: 'numeric', month: 'short',
     })
     const counts = await broadcastPush({
       payload: {
-        title: `📅 New match: vs ${body.opponent}`,
+        title: `📅 New match: vs ${body.opponent_team}`,
         body:  `Match ${body.matchNumber ?? ''} added — ${fmtDate}. Get your team ready!`,
         icon:  '/icon-192.png',
         badge: '/icon-192.png',

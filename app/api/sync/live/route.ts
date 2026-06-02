@@ -37,7 +37,7 @@ export async function POST(req: Request) {
   // ── Find all live matches ─────────────────────────────────────────────────
   const { data: liveMatches } = await admin
     .from('matches')
-    .select('id, season_id, play_cricket_id, opponent')
+    .select('id, season_id, play_cricket_id,opponent_team')
     .eq('status', 'live')
 
   if (!liveMatches?.length) {

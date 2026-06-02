@@ -115,7 +115,7 @@ export default async function ClubAdminMatchesPage({
                       <p className="font-bold text-lg leading-none">{match.match_number}</p>
                     </div>
                     <div>
-                      <p className="font-semibold">{match.opponent}</p>
+                      <p className="font-semibold">{match.opponent_team}</p>
                       {match.venue && <p className="text-sm text-muted-foreground">{match.venue}</p>}
                       <p className="text-sm text-muted-foreground">
                         {new Date(match.match_date).toLocaleDateString('en-AU', {
@@ -170,19 +170,19 @@ export default async function ClubAdminMatchesPage({
                     {match.status === 'upcoming' && (
                       <GenerateContestsButton
                         matchId={match.id}
-                        matchLabel={`GW${match.match_number} vs ${match.opponent}`}
+                        matchLabel={`GW${match.match_number} vs ${match.opponent_team}`}
                       />
                     )}
                     {match.status === 'upcoming' && gwByMatch[match.id] && (
                       <GenerateGWContestsButton
                         gameweekId={gwByMatch[match.id].id}
-                        gameweekLabel={`${gwByMatch[match.id].name} vs ${match.opponent}`}
+                        gameweekLabel={`${gwByMatch[match.id].name} vs ${match.opponent_team}`}
                       />
                     )}
                     <MatchForm seasonId={season.id} match={match} nextMatchNumber={match.match_number} />
                     <DeleteMatchButton
                       matchId={match.id}
-                      matchLabel={`Match ${match.match_number} vs ${match.opponent}`}
+                      matchLabel={`Match ${match.match_number} vs ${match.opponent_team}`}
                     />
                   </div>
                 </div>

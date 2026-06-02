@@ -15,7 +15,7 @@ import type { ContestTemplate } from '@/types'
 interface Match {
   id:           string
   match_number: number
-  opponent:     string
+  opponent_team: string
   match_date:   string
 }
 
@@ -216,7 +216,7 @@ export default function ContestTemplatesAdmin({
               >
                 <div>
                   <p className="font-semibold text-gray-800 text-sm">
-                    GW{m.match_number} vs {m.opponent}
+                    GW{m.match_number} vs {m.opponent_team}
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">
                     {new Date(m.match_date).toLocaleDateString('en-GB', {

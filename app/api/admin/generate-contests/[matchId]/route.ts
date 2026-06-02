@@ -35,7 +35,7 @@ export async function POST(
   // ── Verify match exists ───────────────────────────────────────────────────
   const { data: match } = await supabase
     .from('matches')
-    .select('id, match_number, opponent')
+    .select('id, match_number,opponent_team')
     .eq('id', matchId)
     .single()
 
@@ -65,6 +65,6 @@ export async function POST(
   return NextResponse.json({
     ok:      true,
     created: count,
-    match:   `GW${match.match_number} vs ${match.opponent}`,
+    match:   `GW${match.match_number} vs ${match.opponent_team}`,
   })
 }

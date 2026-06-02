@@ -19,7 +19,7 @@ interface MatchFormProps {
 export default function MatchForm({ seasonId, nextMatchNumber, match }: MatchFormProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [opponent, setOpponent] = useState(match?.opponent ?? '')
+  const [opponent, setOpponent] = useState(match?.opponent_team ?? '')
   const [venue, setVenue] = useState(match?.venue ?? '')
   const [matchDate, setMatchDate] = useState(
     match?.match_date ? new Date(match.match_date).toISOString().slice(0, 16) : ''
@@ -35,7 +35,7 @@ export default function MatchForm({ seasonId, nextMatchNumber, match }: MatchFor
 
     const supabase = createClient()
     const payload = {
-      opponent: opponent.trim(),
+      opponent_team: opponent.trim(),
       venue: venue.trim() || null,
       match_date: new Date(matchDate).toISOString(),
       match_number: parseInt(matchNumber),
@@ -55,7 +55,7 @@ export default function MatchForm({ seasonId, nextMatchNumber, match }: MatchFor
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
           type:        'new_match',
-          opponent:    payload.opponent,
+          opponent_team: payload.opponent_team,
           matchDate:   payload.match_date,
           matchNumber: payload.match_number,
         }),

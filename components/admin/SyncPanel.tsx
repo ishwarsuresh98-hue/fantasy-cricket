@@ -6,7 +6,7 @@ import { cn }       from '@/lib/utils'
 interface MatchOption {
   id:             string
   match_number:   number
-  opponent:       string
+  opponent_team: string
   match_date:     string
   play_cricket_id: string | null
 }
@@ -254,7 +254,7 @@ export default function SyncPanel({ seasonId, seasonYear, matches }: Props) {
     const date = new Date(m.match_date).toLocaleDateString('en-GB', {
       day: 'numeric', month: 'short', year: 'numeric',
     })
-    return `${ordinal(m.match_number)} XI vs ${m.opponent} · ${date}`
+    return `${ordinal(m.match_number)} XI vs ${m.opponent_team} · ${date}`
   }
 
   function selectClass() {

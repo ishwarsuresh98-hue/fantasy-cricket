@@ -47,7 +47,7 @@ export default async function PickTeamPage({
 
   let players: Player[] = []
   let playingXIConfirmed = false
-  let matchInfo: { opponent: string; match_date: string } | null = null
+  let matchInfo: { opponent_team: string; match_date: string } | null = null
 
   if (matchId) {
     const { data: xiRows } = await supabase
@@ -64,7 +64,7 @@ export default async function PickTeamPage({
       // Get match info for the caption
       const { data: m } = await supabase
         .from('matches')
-        .select('opponent, match_date')
+        .select('opponent_team, match_date')
         .eq('id', matchId)
         .single()
       matchInfo = m
@@ -160,7 +160,7 @@ export default async function PickTeamPage({
         </p>
         {matchInfo && (
           <p className="text-xs opacity-60 mt-1">
-            {playingXIConfirmed ? '✓ Team sheet confirmed' : '⏳ Team sheet pending'} · vs {matchInfo.opponent}
+            {playingXIConfirmed ? '✓ Team sheet confirmed' : '⏳ Team sheet pending'} · vs {matchInfo.opponent_team}
           </p>
         )}
       </div>

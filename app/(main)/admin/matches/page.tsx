@@ -88,7 +88,7 @@ export default async function AdminMatchesPage() {
                       <p className="font-bold text-lg leading-none">{match.match_number}</p>
                     </div>
                     <div>
-                      <p className="font-semibold">{match.opponent}</p>
+                      <p className="font-semibold">{match.opponent_team}</p>
                       {match.venue && <p className="text-sm text-muted-foreground">{match.venue}</p>}
                       <p className="text-sm text-muted-foreground">
                         {new Date(match.match_date).toLocaleDateString('en-AU', {
@@ -144,7 +144,7 @@ export default async function AdminMatchesPage() {
                     <MatchForm seasonId={season.id} match={match} nextMatchNumber={match.match_number} />
                     <DeleteMatchButton
                       matchId={match.id}
-                      matchLabel={`Match ${match.match_number} vs ${match.opponent}`}
+                      matchLabel={`Match ${match.match_number} vs ${match.opponent_team}`}
                     />
                   </div>
                 </div>

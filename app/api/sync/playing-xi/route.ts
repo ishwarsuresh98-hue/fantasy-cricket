@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 
   const { data: match } = await admin
     .from('matches')
-    .select('id, season_id, opponent')
+    .select('id, season_id,opponent_team')
     .eq('id', body.match_id)
     .single()
 

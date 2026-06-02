@@ -146,7 +146,7 @@ export default async function ClubTransfersPage({
   }) as TransferLog[]
 
   const adminLogs = (transferLogs ?? []).filter((log: TransferLog) => log.admin_adjustment) as TransferLog[]
-  const nextMatchLabel = nextMatch ? `Match ${nextMatch.match_number} vs ${nextMatch.opponent}` : null
+  const nextMatchLabel = nextMatch ? `Match ${nextMatch.match_number} vs ${nextMatch.opponent_team}` : null
 
   return (
     <div className="space-y-6">
@@ -236,7 +236,7 @@ export default async function ClubTransfersPage({
                 <div key={log.id} className="px-5 py-3 flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-[#111111]/80">
-                      {logMatch ? `Match ${logMatch.match_number} — ${logMatch.opponent}` : 'Unknown Match'}
+                      {logMatch ? `Match ${logMatch.match_number} — ${logMatch.opponent_team}` : 'Unknown Match'}
                     </p>
                     <p className="text-xs text-[#111111]/30 mt-0.5">
                       {new Date(log.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}

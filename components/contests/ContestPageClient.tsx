@@ -188,7 +188,7 @@ function MatchSection({ group, walletBalance, fantasyTeamId, clubSlug }: {
           </p>
         )}
         <p className={cn('text-lg font-black', group.isNext ? '' : 'text-gray-800')}>
-          vs {group.opponent}
+          vs {group.opponent_team}
         </p>
         <p className={cn('text-sm mt-0.5', group.isNext ? 'opacity-80' : 'text-gray-500')}>
           {date}{group.venue ? ` · ${group.venue}` : ''}

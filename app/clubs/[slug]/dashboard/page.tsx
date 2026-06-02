@@ -150,7 +150,7 @@ export default async function ClubDashboardPage({
   }))
   const maxGwPts = Math.max(...myGwHistory.map((g) => g.pts), 1)
 
-  const nextMatchLabel = nextMatch ? `vs ${nextMatch.opponent}` : null
+  const nextMatchLabel = nextMatch ? `vs ${nextMatch.opponent_team}` : null
   const nextMatchDate  = nextMatch
     ? new Date(nextMatch.match_date).toLocaleDateString('en-AU', {
         weekday: 'short', day: 'numeric', month: 'long', year: 'numeric',

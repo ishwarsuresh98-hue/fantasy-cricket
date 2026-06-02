@@ -42,7 +42,7 @@ export default async function ContestTemplatesPage({
   const { data: matches } = season
     ? await supabase
         .from('matches')
-        .select('id, match_number, opponent, match_date')
+        .select('id, match_number, opponent_team, match_date')
         .eq('season_id', season.id)
         .eq('status', 'upcoming')
         .order('match_date', { ascending: true })
