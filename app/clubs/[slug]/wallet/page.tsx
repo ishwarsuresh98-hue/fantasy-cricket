@@ -28,6 +28,7 @@ async function confirmTopupFallback(
   admin: ReturnType<typeof createAdminClient>,
 ): Promise<'already_done' | string | null> {
   console.log(`[wallet/fallback] Starting for PI: ${paymentIntentId}`)
+  console.log(`[wallet/fallback] Env check — STRIPE_SECRET_KEY set: ${!!process.env.STRIPE_SECRET_KEY}, SUPABASE_SERVICE_ROLE_KEY set: ${!!process.env.SUPABASE_SERVICE_ROLE_KEY}, NEXT_PUBLIC_SUPABASE_URL set: ${!!process.env.NEXT_PUBLIC_SUPABASE_URL}`)
 
   const stripe = getStripe()
   if (!stripe) {
@@ -159,9 +160,15 @@ export default async function WalletPage({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Admin client bypasses RLS for reads/writes done server-side.
-  // Safe because we've already verified the user via Supabase auth above.
-  const admin = createAdminClient()
+  // Admin client uses SUPABASE_SERVICE_ROLE_KEY to bypass RLS for server-side writes.
+  // If this throws, SUPABASE_SERVICE_ROLE_KEY is not set in Vercel environment variables.
+  let admin: ReturnType<typeof createAdminClient>
+  try {
+    admin = createAdminClient()
+  } catch (e: unknown) {
+    console.error('[wallet/page] createAdminClient FAILED — is SUPABASE_SERVICE_ROLE_KEY set in Vercel env vars?', (e as Error).message)
+    throw e
+  }
 
   // ── Fallback confirmation when Stripe redirects back ──────────────────────
   // Stripe appends ?payment_intent=pi_xxx&redirect_status=succeeded to the returnUrl.
