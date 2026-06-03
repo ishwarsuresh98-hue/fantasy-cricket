@@ -52,9 +52,11 @@ function MatchList({ matches }: { matches: GameweekMatch[] }) {
         const label = m.our_team
           ? `${m.our_team} vs ${m.opponent_team}`
           : `vs ${m.opponent_team}`
-        const time = new Date(m.match_date).toLocaleTimeString('en-AU', {
-          hour: '2-digit', minute: '2-digit', hour12: true,
-        })
+        // Use UTC-based formatting to avoid Node/browser locale differences
+        const d = new Date(m.match_date)
+        const hh = d.getHours()
+        const mm = String(d.getMinutes()).padStart(2, '0')
+        const time = `${hh % 12 || 12}:${mm}${hh < 12 ? 'am' : 'pm'}`
         return (
           <div key={i} className="flex items-start justify-between gap-2 px-3 py-2 rounded-lg bg-[#fafafa] border border-gray-200 text-left">
             <div className="min-w-0">
@@ -70,11 +72,43 @@ function MatchList({ matches }: { matches: GameweekMatch[] }) {
 }
 
 export default function HeroCountdown({ deadline, lockUntil, gameweekLabel, gameweekMatches }: Props) {
+  const [mounted, setMounted] = useState(false)
   const [, setTick] = useState(0)
+
   useEffect(() => {
+    setMounted(true)
     const id = setInterval(() => setTick((t) => t + 1), 1000)
     return () => clearInterval(id)
   }, [])
+
+  // ── Pre-hydration: render a stable skeleton that matches the server output ──
+  // Date.now() differs between server and client, so we must not call
+  // getRemainingMs() until after mount. This eliminates hydration error #418.
+  if (!mounted) {
+    return (
+      <div className="w-full rounded-2xl bg-[#f0f0f0] px-6 py-6 flex flex-col items-center gap-5 shadow-lg">
+        <div className="flex flex-col items-center gap-1 text-center w-full">
+          <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#0b0b0b]/50">🏏 Current Gameweek</p>
+          {gameweekLabel && (
+            <p className="text-base font-black uppercase tracking-wider text-[#0b0b0b]">{gameweekLabel}</p>
+          )}
+        </div>
+        {gameweekMatches && gameweekMatches.length > 0 && <MatchList matches={gameweekMatches} />}
+        <div>
+          <p className="text-center text-[10px] font-bold uppercase tracking-widest mb-3 text-[#C9A84C]/70">
+            Gameweek locks in
+          </p>
+          <div className="flex items-end gap-3 sm:gap-5">
+            <DigitBox value={0} label="Hours" />
+            <span className="text-3xl font-black text-[#C9A84C]/60 mb-5">:</span>
+            <DigitBox value={0} label="Minutes" />
+            <span className="text-3xl font-black text-[#C9A84C]/60 mb-5">:</span>
+            <DigitBox value={0} label="Seconds" />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // ── No upcoming matches ─────────────────────────────────────────────────────
   if (!deadline) {
