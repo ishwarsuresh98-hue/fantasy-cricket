@@ -40,14 +40,15 @@ async function confirmTopupFallback(
 
   if (intent.status !== 'succeeded') return null
 
-  const { wallet_id, amount: amountStr, user_id } = intent.metadata ?? {}
-  if (!wallet_id || !amountStr || !user_id) {
+  const { wallet_id, user_id } = intent.metadata ?? {}
+  if (!wallet_id || !user_id) {
     console.warn('[wallet/fallback] Missing metadata on PaymentIntent', intent.id)
     return null
   }
 
-  const amount = Number(amountStr)
-  if (isNaN(amount) || amount <= 0) return null
+  // Use intent.amount (authoritative, in pence) divided by 100 for pounds.
+  const amount = intent.amount / 100
+  if (amount <= 0) return null
 
   // Idempotency check — fast path before attempting insert
   const { data: existing } = await admin

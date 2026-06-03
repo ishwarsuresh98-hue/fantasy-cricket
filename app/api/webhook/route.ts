@@ -163,15 +163,17 @@ async function handleWalletTopup(
   admin: ReturnType<typeof createAdminClient>,
   stripeIntent: Stripe.PaymentIntent,
 ) {
-  const { wallet_id, amount: amountStr, user_id } = stripeIntent.metadata ?? {}
-  if (!wallet_id || !amountStr || !user_id) {
+  const { wallet_id, user_id } = stripeIntent.metadata ?? {}
+  if (!wallet_id || !user_id) {
     console.warn('[webhook/stripe] wallet_topup missing metadata fields', stripeIntent.metadata)
     return
   }
 
-  const amount = Number(amountStr)
-  if (isNaN(amount) || amount <= 0) {
-    console.warn('[webhook/stripe] wallet_topup invalid amount:', amountStr)
+  // Use stripeIntent.amount (authoritative, in pence) divided by 100 for pounds.
+  // metadata.amount is unreliable — the PaymentIntent amount field cannot be tampered with.
+  const amount = stripeIntent.amount / 100
+  if (amount <= 0) {
+    console.warn('[webhook/stripe] wallet_topup invalid amount:', stripeIntent.amount)
     return
   }
 
