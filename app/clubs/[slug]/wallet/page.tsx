@@ -27,35 +27,50 @@ async function confirmTopupFallback(
   paymentIntentId: string,
   admin: ReturnType<typeof createAdminClient>,
 ): Promise<'already_done' | string | null> {
+  console.log(`[wallet/fallback] Starting for PI: ${paymentIntentId}`)
+
   const stripe = getStripe()
-  if (!stripe) return 'Stripe is not configured on the server.'
+  if (!stripe) {
+    console.error('[wallet/fallback] STRIPE_SECRET_KEY not set')
+    return 'Stripe is not configured on the server.'
+  }
 
   let intent: Stripe.PaymentIntent
   try {
     intent = await stripe.paymentIntents.retrieve(paymentIntentId)
+    console.log(`[wallet/fallback] PI status: ${intent.status}, amount: ${intent.amount}p, metadata:`, intent.metadata)
   } catch (e: unknown) {
     console.error('[wallet/fallback] Failed to retrieve PaymentIntent:', e)
     return 'Could not verify payment with Stripe.'
   }
 
-  if (intent.status !== 'succeeded') return null
-
-  const { wallet_id, user_id } = intent.metadata ?? {}
-  if (!wallet_id || !user_id) {
-    console.warn('[wallet/fallback] Missing metadata on PaymentIntent', intent.id)
+  if (intent.status !== 'succeeded') {
+    console.log(`[wallet/fallback] PI not succeeded (${intent.status}) — skipping`)
     return null
   }
 
-  // Use intent.amount (authoritative, in pence) divided by 100 for pounds.
+  const { wallet_id, user_id } = intent.metadata ?? {}
+  if (!wallet_id || !user_id) {
+    console.error('[wallet/fallback] Missing wallet_id or user_id in metadata', intent.metadata)
+    return null
+  }
+
+  // Use intent.amount (authoritative pence) ÷ 100 = pounds
   const amount = intent.amount / 100
+  console.log(`[wallet/fallback] Amount: £${amount}, wallet_id: ${wallet_id}, user_id: ${user_id}`)
   if (amount <= 0) return null
 
-  // Idempotency check — fast path before attempting insert
-  const { data: existing } = await admin
+  // Idempotency check — has this PI already been recorded?
+  const { data: existing, error: idempotencyErr } = await admin
     .from('wallet_transactions')
     .select('id')
     .eq('reference_id', intent.id)
     .maybeSingle()
+
+  if (idempotencyErr) {
+    // reference_id column may not exist yet — log but continue (migration will fix it)
+    console.warn('[wallet/fallback] Idempotency check error (reference_id column may be missing):', idempotencyErr)
+  }
 
   if (existing) {
     console.log(`[wallet/fallback] ${intent.id} already processed — skipping`)
@@ -63,53 +78,62 @@ async function confirmTopupFallback(
   }
 
   // Fetch wallet
-  const { data: wallet } = await admin
+  const { data: wallet, error: walletErr } = await admin
     .from('wallets')
     .select('id, balance')
     .eq('id', wallet_id)
     .eq('user_id', user_id)
     .maybeSingle()
 
-  if (!wallet) {
-    console.error('[wallet/fallback] Wallet not found:', wallet_id)
+  if (walletErr) {
+    console.error('[wallet/fallback] Wallet lookup error:', walletErr)
     return 'Wallet not found.'
   }
+  if (!wallet) {
+    console.error('[wallet/fallback] Wallet not found for wallet_id:', wallet_id, 'user_id:', user_id)
+    return 'Wallet not found.'
+  }
+  console.log(`[wallet/fallback] Found wallet id=${wallet.id}, balance=£${wallet.balance}`)
 
-  // INSERT transaction first — if this fails (e.g. duplicate reference_id), we abort
-  // and do NOT touch the balance. This makes the operation safe to retry.
+  // INSERT transaction first — if this fails (duplicate reference_id), abort without touching balance
   const { error: txnErr } = await admin.from('wallet_transactions').insert({
     wallet_id:    wallet.id,
     type:         'credit',
     amount,
-    description:  `Wallet top-up via card — £${amount}`,
+    description:  `Wallet top-up via card — £${amount.toFixed(2)}`,
     reference_id: intent.id,
   })
 
   if (txnErr) {
-    // A unique-constraint violation means already processed (race condition or
-    // concurrent request). Treat as idempotent success.
     if (txnErr.code === '23505') {
+      // Unique constraint violation — already processed concurrently
       console.log(`[wallet/fallback] Duplicate insert blocked for ${intent.id} — already done`)
       return 'already_done'
     }
-    console.error('[wallet/fallback] Transaction insert error:', txnErr)
+    console.error('[wallet/fallback] Transaction insert FAILED — code:', txnErr.code, 'message:', txnErr.message, 'details:', txnErr.details, 'hint:', txnErr.hint)
     return 'Failed to record transaction.'
   }
+  console.log(`[wallet/fallback] Transaction row inserted OK`)
 
-  // Only update the balance AFTER the transaction row is committed
+  // Update balance AFTER transaction is committed
   const newBalance = Math.round((Number(wallet.balance) + amount) * 100) / 100
+  console.log(`[wallet/fallback] Updating balance from £${wallet.balance} → £${newBalance}`)
+
+  // Note: updated_at omitted — column may not exist on all deployments.
+  // Migration 019 adds it; but the balance update must not fail because of it.
   const { error: updateErr } = await admin
     .from('wallets')
-    .update({ balance: newBalance, updated_at: new Date().toISOString() })
+    .update({ balance: newBalance })
     .eq('id', wallet.id)
 
   if (updateErr) {
-    console.error('[wallet/fallback] Balance update error:', updateErr)
-    // Transaction row exists but balance wasn't updated — log for manual fix.
-    // Don't return an error to the user since the transaction is recorded.
+    console.error('[wallet/fallback] Balance update FAILED — code:', updateErr.code, 'message:', updateErr.message, 'details:', updateErr.details)
+    // Transaction row is already committed; balance mismatch needs manual fix.
+    // Return null so user sees the success banner — the money IS recorded.
+  } else {
+    console.log(`[wallet/fallback] Balance updated OK to £${newBalance}`)
   }
 
-  console.log(`[wallet/fallback] Credited £${amount} to wallet ${wallet.id} (balance: £${newBalance})`)
   return null
 }
 
