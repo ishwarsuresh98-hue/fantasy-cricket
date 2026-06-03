@@ -1,6 +1,7 @@
 import { createClient }   from '@/lib/supabase/server'
 import { getClubBySlug }  from '@/lib/club'
 import { notFound }       from 'next/navigation'
+import { headers }        from 'next/headers'
 import WalletTopup        from '@/components/WalletTopup'
 
 export default async function WalletPage({
@@ -34,9 +35,13 @@ export default async function WalletPage({
         .limit(30)
     : { data: [] }
 
-  // Build return URL for Stripe redirect (server-side: use env or relative path)
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
-  const returnUrl = `${appUrl}/clubs/${slug}/wallet?payment=confirmed`
+  // Build an absolute return URL for Stripe — it rejects relative paths.
+  // Priority: NEXT_PUBLIC_APP_URL env var → request host header → production fallback.
+  const hdrs = await headers()
+  const host = hdrs.get('host') ?? 'the-xi.app'
+  const proto = host.startsWith('localhost') ? 'http' : 'https'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? `${proto}://${host}`
+  const returnUrl = `${baseUrl}/clubs/${slug}/wallet?payment=confirmed`
 
   return (
     <div className="space-y-8 max-w-lg mx-auto">
