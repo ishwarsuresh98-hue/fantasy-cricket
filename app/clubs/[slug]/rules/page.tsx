@@ -16,7 +16,7 @@ const BOOSTERS_CONTENT = [
   {
     icon: '⚡',
     name: 'Bowling Surge',
-    what: 'Every bowler and all-rounder in your team earns 2× points — wickets, dots, maidens, all doubled.',
+    what: 'Every bowler and all-rounder in your team earns 2× points — wickets, maidens, all doubled.',
     when: 'when conditions suit your attack and your bowlers are set to run riot on a green top.',
   },
   {
@@ -77,7 +77,7 @@ export default function RulesPage() {
           </span>
         </h1>
         <p className="relative mt-5 text-[#111111]/35 text-sm max-w-lg mx-auto leading-relaxed">
-          Every run, wicket, catch and dot ball earns your fantasy team points.
+          Every run, wicket, catch and maiden earns your fantasy team points.
           Master this and you&apos;ll master the game.
         </p>
       </div>
@@ -149,7 +149,6 @@ export default function RulesPage() {
             <StatTile label="3-wicket haul" pts="+4"  unit="pts" color="green"   sub="bonus" />
             <StatTile label="4-wicket haul" pts="+8"  unit="pts" color="gold"    sub="bonus" />
             <StatTile label="5-wicket haul" pts="+16" unit="pts" color="emerald" sub="bonus" />
-            <StatTile label="Dot ball"      pts="+1"  unit="pt"  color="green-dim" />
             <StatTile label="Maiden over"   pts="+8"  unit="pts" color="gold" />
           </div>
           <p className="mt-3 text-xs text-[#111111]/25 italic">

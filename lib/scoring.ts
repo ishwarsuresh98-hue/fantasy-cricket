@@ -11,7 +11,6 @@ export function computeBasePoints(perf: Partial<MatchPerformance>): number {
   const catches = perf.catches ?? 0
   const stumpings = perf.stumpings ?? 0
   const runOuts = perf.run_outs ?? 0
-  const dotBalls = perf.dot_balls ?? 0
   const maidens = perf.maidens ?? 0
   const didNotBat = perf.did_not_bat ?? false
 
@@ -44,8 +43,7 @@ export function computeBasePoints(perf: Partial<MatchPerformance>): number {
   else if (wickets >= 4) points += 8       // 4-wicket bonus
   else if (wickets >= 3) points += 4       // 3-wicket bonus
 
-  // Dot balls + maidens
-  points += dotBalls                        // 1pt per dot ball
+  // Maidens
   points += maidens * 8                     // 8pt bonus per maiden
 
   // Fielding

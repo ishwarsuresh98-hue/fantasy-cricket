@@ -26,12 +26,12 @@ function srBonus(runs: number, balls: number, didNotBat: boolean): number | null
   return -2
 }
 
-function bowlBonus(wickets: number, maidens: number, dotBalls: number): number {
+function bowlBonus(wickets: number, maidens: number): number {
   let milestone = 0
   if      (wickets >= 5) milestone = 16
   else if (wickets >= 4) milestone =  8
   else if (wickets >= 3) milestone =  4
-  return milestone + maidens * 8 + dotBalls
+  return milestone + maidens * 8
 }
 
 function BonusCell({ value }: { value: number | null }) {
@@ -185,7 +185,7 @@ export default async function ClubMatchDetailPage({
                           <BonusCell value={srBonus(perf.runs_scored, perf.balls_faced ?? 0, perf.did_not_bat)} />
                         </td>
                         <td className="px-3 py-3 text-center">
-                          <BonusCell value={bowlBonus(perf.wickets ?? 0, perf.maidens ?? 0, perf.dot_balls ?? 0) || null} />
+                          <BonusCell value={bowlBonus(perf.wickets ?? 0, perf.maidens ?? 0) || null} />
                         </td>
                         <td className="px-4 py-3 text-right font-bold text-[#C9A84C]">
                           {Number(perf.base_points).toFixed(1)}
