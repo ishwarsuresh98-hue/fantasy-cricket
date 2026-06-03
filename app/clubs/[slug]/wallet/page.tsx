@@ -1,11 +1,12 @@
 import { createClient }      from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getClubBySlug }     from '@/lib/club'
-import { notFound }          from 'next/navigation'
-import { headers }           from 'next/headers'
-import Stripe                from 'stripe'
-import WalletTopup           from '@/components/WalletTopup'
-import CleanUrl              from '@/components/CleanUrl'
+import { notFound, redirect } from 'next/navigation'
+import { headers }            from 'next/headers'
+import Stripe                 from 'stripe'
+import WalletTopup            from '@/components/WalletTopup'
+import WalletBanner           from '@/components/WalletBanner'
+import CleanUrl               from '@/components/CleanUrl'
 
 function getStripe(): Stripe | null {
   const key = process.env.STRIPE_SECRET_KEY
@@ -173,23 +174,17 @@ export default async function WalletPage({
 
   // ── Fallback confirmation when Stripe redirects back ──────────────────────
   // Stripe appends ?payment_intent=pi_xxx&redirect_status=succeeded to the returnUrl.
-  // Only run the fallback when BOTH params are present and redirect_status=succeeded —
-  // never on clean visits or any other param combination.
+  // Only run when BOTH params are explicitly present — never on clean visits.
   const paymentIntentId = typeof sp.payment_intent  === 'string' ? sp.payment_intent  : null
   const redirectStatus  = typeof sp.redirect_status === 'string' ? sp.redirect_status : null
-  const isStripeReturn  = !!(paymentIntentId && redirectStatus === 'succeeded')
 
-  let topupResult: 'success' | 'error' | null = null
-
-  if (isStripeReturn) {
-    const result = await confirmTopupFallback(paymentIntentId!, admin)
-    topupResult = (result === null || result === 'already_done') ? 'success' : 'error'
-  } else if (sp.topup === 'success') {
-    topupResult = 'success'
-  } else if (sp.topup === 'error') {
-    topupResult = 'error'
+  if (paymentIntentId && redirectStatus === 'succeeded') {
+    const result = await confirmTopupFallback(paymentIntentId, admin)
+    // Server-side redirect to a clean URL — the ?topup= param is picked up by
+    // WalletBanner (client component), then CleanUrl strips it from the address bar.
+    const suffix = (result === null || result === 'already_done') ? 'success' : 'error'
+    redirect(`/clubs/${slug}/wallet?topup=${suffix}`)
   }
-  // No topup param at all → topupResult stays null → no banner shown
 
   // ── Wallet balance ─────────────────────────────────────────────────────────
   const { data: wallet } = await admin
@@ -224,25 +219,10 @@ export default async function WalletPage({
   return (
     <div className="space-y-8 max-w-lg mx-auto">
 
-      {/* Strip payment params from URL after render so refresh doesn't re-trigger fallback */}
-      {topupResult !== null && <CleanUrl />}
-
-      {/* ── Payment result banner ─────────────────────────────────────────── */}
-      {topupResult === 'success' && (
-        <div className="rounded-2xl bg-green-50 border border-green-200 px-5 py-4 flex items-center gap-3">
-          <span className="text-2xl">✅</span>
-          <div>
-            <p className="text-sm font-black text-green-800">Payment successful!</p>
-            <p className="text-xs text-green-600 mt-0.5">Your wallet balance has been updated.</p>
-          </div>
-        </div>
-      )}
-      {topupResult === 'error' && (
-        <div className="rounded-2xl bg-red-50 border border-red-200 px-5 py-4 flex items-center gap-3">
-          <span className="text-2xl">⚠️</span>
-          <p className="text-sm text-red-700">Payment was received but we couldn&apos;t update your balance automatically. Please contact support.</p>
-        </div>
-      )}
+      {/* Banner reads ?topup= from the live URL (client-side) — never shows on clean visits */}
+      <WalletBanner />
+      {/* Strips ?topup= from the address bar after mount so refresh doesn't re-show the banner */}
+      <CleanUrl />
 
       {/* ── Balance card ──────────────────────────────────────────────────── */}
       <div className="rounded-2xl bg-gradient-to-br from-[#C9A84C] to-[#a8892e] p-6 text-black shadow-lg shadow-[#C9A84C]/20">
