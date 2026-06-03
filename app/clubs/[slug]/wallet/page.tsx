@@ -82,13 +82,17 @@ async function confirmTopupFallback(paymentIntentId: string): Promise<string | n
     return null
   }
 
-  await admin.from('wallet_transactions').insert({
+  const { error: txnErr } = await admin.from('wallet_transactions').insert({
     wallet_id,
     type:         'credit',
     amount,
     description:  `Wallet top-up via card — £${amount}`,
     reference_id: intent.id,
   })
+
+  if (txnErr) {
+    console.error('[wallet/fallback] Transaction insert error:', txnErr)
+  }
 
   console.log(`[wallet/fallback] Credited £${amount} to wallet ${wallet_id} via fallback`)
   return null
@@ -110,6 +114,16 @@ export default async function WalletPage({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Admin client used for reads that may be blocked by RLS (e.g. wallet_transactions
+  // inserted server-side), since we've already verified the user via Supabase auth.
+  let admin: ReturnType<typeof createAdminClient>
+  try {
+    admin = createAdminClient()
+  } catch (e: unknown) {
+    console.error('[wallet/page] Admin client error:', e)
+    throw e
+  }
+
   // ── Fallback confirmation when Stripe redirects back ──────────────────────
   // Stripe appends ?payment_intent=pi_xxx&redirect_status=succeeded to the returnUrl.
   const paymentIntentId  = typeof sp.payment_intent  === 'string' ? sp.payment_intent  : null
@@ -120,7 +134,7 @@ export default async function WalletPage({
   }
 
   // ── Wallet balance (read after potential fallback credit) ─────────────────
-  const { data: wallet } = await supabase
+  const { data: wallet } = await admin
     .from('wallets')
     .select('id, balance')
     .eq('user_id', user!.id)
@@ -128,9 +142,9 @@ export default async function WalletPage({
 
   const balance = (wallet?.balance ?? 0) as number
 
-  // ── Transaction history ────────────────────────────────────────────────────
+  // ── Transaction history (admin client bypasses RLS so server-inserted rows show up) ──
   const { data: txns } = wallet
-    ? await supabase
+    ? await admin
         .from('wallet_transactions')
         .select('id, type, amount, description, created_at')
         .eq('wallet_id', wallet.id)
