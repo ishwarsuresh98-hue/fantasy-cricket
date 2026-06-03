@@ -16,6 +16,7 @@ const PUBLIC_PREFIXES = [
   '/club-home',    // Public club landing pages
   '/api/webhook',  // Stripe webhook — must be publicly accessible
   '/api/webhooks', // Additional webhook endpoints
+  '/api/wise',     // Wise API routes — handle their own auth internally
 ]
 
 export async function proxy(request: NextRequest) {
