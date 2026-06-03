@@ -2,8 +2,12 @@
  * Wise (TransferWise) API helpers.
  *
  * Env vars required:
- *   WISE_API_TOKEN   — API token from Wise dashboard (Settings → API tokens)
- *   WISE_BASE_URL    — optional override, defaults to https://api.wise.com
+ *   WISE_API_TOKEN            — API token from Wise dashboard (Settings → API tokens)
+ *   WISE_BASE_URL             — optional override, defaults to https://api.wise.com
+ *   WISE_OWN_ACCOUNT_NUMBER   — 8-digit account number for the platform's own Wise account
+ *   WISE_OWN_SORT_CODE        — sort code (XX-XX-XX) for the platform's own Wise account
+ *   WISE_OWN_ACCOUNT_NAME     — account holder name for the platform's own Wise account
+ *   WISE_PLATFORM_FEE_PCT     — optional platform fee percentage (0-100, default 0)
  *
  * Sandbox: use https://api.sandbox.transferwise.tech and a sandbox token.
  */
@@ -189,4 +193,64 @@ export async function sendWisePayout(opts: {
   const transfer    = await createTransfer(profileId, recipient.id, quote.id, opts.reference)
   await fundTransfer(profileId, transfer.id)
   return { transferId: transfer.id, status: transfer.status }
+}
+
+// ── Revenue sweep: Stripe → platform Wise account ─────────────────────────────
+
+/**
+ * Transfers net Stripe revenue to the platform's own Wise account.
+ *
+ * Call this after each successful wallet top-up so that Stripe's held
+ * balance is swept to Wise, which then has funds available to pay out
+ * user withdrawal requests.
+ *
+ * Env vars used:
+ *   WISE_OWN_ACCOUNT_NUMBER  — platform's own bank account number
+ *   WISE_OWN_SORT_CODE       — platform's own sort code (XX-XX-XX)
+ *   WISE_OWN_ACCOUNT_NAME    — platform's own account holder name
+ *   WISE_PLATFORM_FEE_PCT    — optional fee % to retain (default 0)
+ *
+ * @param grossAmountGbp  The full payment amount received from the user (£)
+ * @param reference       Idempotency/audit reference (e.g. Stripe PI id)
+ * @returns The Wise transfer ID and status, or null if not configured / skipped
+ */
+export async function transferStripeRevenueToWise(
+  grossAmountGbp: number,
+  reference: string,
+): Promise<WisePayoutResult | null> {
+  const accountNumber = process.env.WISE_OWN_ACCOUNT_NUMBER
+  const sortCode      = process.env.WISE_OWN_SORT_CODE
+  const accountName   = process.env.WISE_OWN_ACCOUNT_NAME ?? 'The XI Fantasy Cricket'
+
+  if (!accountNumber || !sortCode) {
+    console.warn('[wise] transferStripeRevenueToWise: WISE_OWN_ACCOUNT_NUMBER or WISE_OWN_SORT_CODE not set — skipping sweep')
+    return null
+  }
+
+  if (!process.env.WISE_API_TOKEN) {
+    console.warn('[wise] transferStripeRevenueToWise: WISE_API_TOKEN not set — skipping sweep')
+    return null
+  }
+
+  // Deduct platform fee before sweeping (default 0%)
+  const feePct  = Math.min(100, Math.max(0, Number(process.env.WISE_PLATFORM_FEE_PCT ?? 0)))
+  const netAmount = Math.round(grossAmountGbp * (1 - feePct / 100) * 100) / 100
+
+  if (netAmount <= 0) {
+    console.warn(`[wise] transferStripeRevenueToWise: net amount £${netAmount} is zero after fee — skipping`)
+    return null
+  }
+
+  console.log(`[wise] Sweeping £${netAmount} (gross £${grossAmountGbp}, fee ${feePct}%) to platform Wise account (ref: ${reference})`)
+
+  const result = await sendWisePayout({
+    amountGbp:         netAmount,
+    accountHolderName: accountName,
+    sortCode,
+    accountNumber,
+    reference:         `stripe-sweep-${reference}`,
+  })
+
+  console.log(`[wise] Sweep transfer created: id=${result.transferId} status=${result.status}`)
+  return result
 }

@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server'
-import Stripe from 'stripe'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { NextResponse }                   from 'next/server'
+import Stripe                             from 'stripe'
+import { createAdminClient }             from '@/lib/supabase/admin'
+import { transferStripeRevenueToWise }   from '@/lib/wise'
 
 // Force dynamic — this route must never be cached or statically rendered.
 export const dynamic = 'force-dynamic'
@@ -226,6 +227,12 @@ async function handleWalletTopup(
   }
 
   console.log(`[webhook/stripe] Credited £${amount} to wallet ${wallet_id} (balance: £${newBalance})`)
+
+  // ── Sweep revenue to platform Wise account (best-effort, non-blocking) ────
+  // Failures here are logged but do NOT affect the user's wallet credit.
+  transferStripeRevenueToWise(amount, stripeIntent.id).catch((e: unknown) => {
+    console.error('[webhook/stripe] Wise revenue sweep failed:', (e as Error).message)
+  })
 }
 
 // ── Handler: payment failed ───────────────────────────────────────────────────
