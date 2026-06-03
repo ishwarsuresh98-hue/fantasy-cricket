@@ -1,22 +1,125 @@
-import { createClient }   from '@/lib/supabase/server'
-import { getClubBySlug }  from '@/lib/club'
-import { notFound }       from 'next/navigation'
-import { headers }        from 'next/headers'
-import WalletTopup        from '@/components/WalletTopup'
+import { createClient }      from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getClubBySlug }     from '@/lib/club'
+import { notFound }          from 'next/navigation'
+import { headers }           from 'next/headers'
+import Stripe                from 'stripe'
+import WalletTopup           from '@/components/WalletTopup'
+
+function getStripe(): Stripe | null {
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) return null
+  return new Stripe(key)
+}
+
+/**
+ * Fallback for when the Stripe webhook hasn't fired yet (or isn't configured).
+ * Called server-side when Stripe redirects back with ?payment=confirmed.
+ * Retrieves the PaymentIntent directly from Stripe and credits the wallet
+ * if it hasn't been credited already.
+ */
+async function confirmTopupFallback(paymentIntentId: string): Promise<string | null> {
+  const stripe = getStripe()
+  if (!stripe) return 'Stripe is not configured on the server.'
+
+  let intent: Stripe.PaymentIntent
+  try {
+    intent = await stripe.paymentIntents.retrieve(paymentIntentId)
+  } catch (e: unknown) {
+    console.error('[wallet/fallback] Failed to retrieve PaymentIntent:', e)
+    return 'Could not verify payment with Stripe.'
+  }
+
+  if (intent.status !== 'succeeded') return null // not yet succeeded — do nothing
+
+  const { wallet_id, amount: amountStr, user_id } = intent.metadata ?? {}
+  if (!wallet_id || !amountStr || !user_id) {
+    console.warn('[wallet/fallback] Missing metadata on PaymentIntent', intent.id)
+    return null
+  }
+
+  const amount = Number(amountStr)
+  if (isNaN(amount) || amount <= 0) return null
+
+  let admin: ReturnType<typeof createAdminClient>
+  try {
+    admin = createAdminClient()
+  } catch (e: unknown) {
+    console.error('[wallet/fallback] Admin client error:', e)
+    return null
+  }
+
+  // Idempotency: only credit if this PaymentIntent hasn't been recorded yet
+  const { data: existing } = await admin
+    .from('wallet_transactions')
+    .select('id')
+    .eq('reference_id', intent.id)
+    .maybeSingle()
+
+  if (existing) return null // already credited (webhook already ran)
+
+  // Fetch wallet and credit it
+  const { data: wallet } = await admin
+    .from('wallets')
+    .select('id, balance')
+    .eq('id', wallet_id)
+    .eq('user_id', user_id)
+    .maybeSingle()
+
+  if (!wallet) {
+    console.error('[wallet/fallback] Wallet not found:', wallet_id)
+    return null
+  }
+
+  const newBalance = Math.round((Number(wallet.balance) + amount) * 100) / 100
+  const { error: updateErr } = await admin
+    .from('wallets')
+    .update({ balance: newBalance, updated_at: new Date().toISOString() })
+    .eq('id', wallet_id)
+
+  if (updateErr) {
+    console.error('[wallet/fallback] Balance update error:', updateErr)
+    return null
+  }
+
+  await admin.from('wallet_transactions').insert({
+    wallet_id,
+    type:         'credit',
+    amount,
+    description:  `Wallet top-up via card — £${amount}`,
+    reference_id: intent.id,
+  })
+
+  console.log(`[wallet/fallback] Credited £${amount} to wallet ${wallet_id} via fallback`)
+  return null
+}
 
 export default async function WalletPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const { slug } = await params
+  const sp = await searchParams
+
   const club = await getClubBySlug(slug)
   if (!club) notFound()
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // ── Wallet balance ─────────────────────────────────────────────────────────
+  // ── Fallback confirmation when Stripe redirects back ──────────────────────
+  // Stripe appends ?payment_intent=pi_xxx&redirect_status=succeeded to the returnUrl.
+  const paymentIntentId  = typeof sp.payment_intent  === 'string' ? sp.payment_intent  : null
+  const redirectStatus   = typeof sp.redirect_status  === 'string' ? sp.redirect_status  : null
+  let fallbackError: string | null = null
+  if (paymentIntentId && redirectStatus === 'succeeded') {
+    fallbackError = await confirmTopupFallback(paymentIntentId)
+  }
+
+  // ── Wallet balance (read after potential fallback credit) ─────────────────
   const { data: wallet } = await supabase
     .from('wallets')
     .select('id, balance')
@@ -36,15 +139,33 @@ export default async function WalletPage({
     : { data: [] }
 
   // Build an absolute return URL for Stripe — it rejects relative paths.
-  // Priority: NEXT_PUBLIC_APP_URL env var → request host header → production fallback.
   const hdrs = await headers()
   const host = hdrs.get('host') ?? 'the-xi.app'
   const proto = host.startsWith('localhost') ? 'http' : 'https'
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? `${proto}://${host}`
-  const returnUrl = `${baseUrl}/clubs/${slug}/wallet?payment=confirmed`
+  const returnUrl = `${baseUrl}/clubs/${slug}/wallet`
+
+  const paymentConfirmed = redirectStatus === 'succeeded' && !!paymentIntentId
 
   return (
     <div className="space-y-8 max-w-lg mx-auto">
+
+      {/* ── Payment confirmed banner ───────────────────────────────────────── */}
+      {paymentConfirmed && !fallbackError && (
+        <div className="rounded-2xl bg-green-50 border border-green-200 px-5 py-4 flex items-center gap-3">
+          <span className="text-2xl">✅</span>
+          <div>
+            <p className="text-sm font-black text-green-800">Payment successful!</p>
+            <p className="text-xs text-green-600 mt-0.5">Your wallet balance has been updated.</p>
+          </div>
+        </div>
+      )}
+      {fallbackError && (
+        <div className="rounded-2xl bg-red-50 border border-red-200 px-5 py-4 flex items-center gap-3">
+          <span className="text-2xl">⚠️</span>
+          <p className="text-sm text-red-700">{fallbackError}</p>
+        </div>
+      )}
 
       {/* ── Balance card ──────────────────────────────────────────────────── */}
       <div className="rounded-2xl bg-gradient-to-br from-[#C9A84C] to-[#a8892e] p-6 text-black shadow-lg shadow-[#C9A84C]/20">
