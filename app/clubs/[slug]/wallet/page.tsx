@@ -6,6 +6,7 @@ import { headers }            from 'next/headers'
 import Stripe                 from 'stripe'
 import WalletTopup            from '@/components/WalletTopup'
 import WalletBanner           from '@/components/WalletBanner'
+import WithdrawForm           from '@/components/WithdrawForm'
 import CleanUrl               from '@/components/CleanUrl'
 
 function getStripe(): Stripe | null {
@@ -293,6 +294,21 @@ export default async function WalletPage({
               )
             })}
           </ul>
+        )}
+      </div>
+
+      {/* ── Withdraw Funds ────────────────────────────────────────────────── */}
+      <div className="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm space-y-4">
+        <div>
+          <h2 className="text-lg font-black text-gray-900">Withdraw Funds</h2>
+          <p className="text-sm text-gray-500 mt-0.5">Request a bank transfer to your account.</p>
+        </div>
+        {balance >= 10 ? (
+          <WithdrawForm balance={balance} slug={slug} />
+        ) : (
+          <p className="text-sm text-gray-400 py-4 text-center">
+            You need at least £10 in your wallet to make a withdrawal.
+          </p>
         )}
       </div>
 
