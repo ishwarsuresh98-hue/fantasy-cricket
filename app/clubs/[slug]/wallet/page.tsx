@@ -71,8 +71,7 @@ async function confirmTopupFallback(
     .maybeSingle()
 
   if (idempotencyErr) {
-    // reference_id column may not exist yet — log but continue (migration will fix it)
-    console.warn('[wallet/fallback] Idempotency check error (reference_id column may be missing):', idempotencyErr)
+    console.error('[wallet/fallback] STEP: idempotency check FAILED', JSON.stringify({ code: idempotencyErr.code, message: idempotencyErr.message, details: idempotencyErr.details, hint: idempotencyErr.hint }))
   }
 
   if (existing) {
@@ -89,11 +88,11 @@ async function confirmTopupFallback(
     .maybeSingle()
 
   if (walletErr) {
-    console.error('[wallet/fallback] Wallet lookup error:', walletErr)
+    console.error('[wallet/fallback] STEP: wallet lookup FAILED', JSON.stringify({ code: walletErr.code, message: walletErr.message, details: walletErr.details, hint: walletErr.hint }))
     return 'Wallet not found.'
   }
   if (!wallet) {
-    console.error('[wallet/fallback] Wallet not found for wallet_id:', wallet_id, 'user_id:', user_id)
+    console.error(`[wallet/fallback] STEP: wallet lookup — no row found for wallet_id=${wallet_id} user_id=${user_id}`)
     return 'Wallet not found.'
   }
   console.log(`[wallet/fallback] Found wallet id=${wallet.id}, balance=£${wallet.balance}`)
@@ -120,7 +119,7 @@ async function confirmTopupFallback(
       console.log(`[wallet/fallback] Duplicate insert blocked for ${intent.id} — already done`)
       return 'already_done'
     }
-    console.error('[wallet/fallback] Transaction insert FAILED — code:', txnErr.code, 'message:', txnErr.message, 'details:', txnErr.details, 'hint:', txnErr.hint)
+    console.error('[wallet/fallback] STEP: transaction insert FAILED', JSON.stringify({ code: txnErr.code, message: txnErr.message, details: txnErr.details, hint: txnErr.hint }))
     return 'Failed to record transaction.'
   }
   console.log(`[wallet/fallback] Transaction row inserted OK`)
@@ -136,7 +135,7 @@ async function confirmTopupFallback(
     .eq('id', wallet.id)
 
   if (updateErr) {
-    console.error('[wallet/fallback] Balance update FAILED — code:', updateErr.code, 'message:', updateErr.message, 'details:', updateErr.details)
+    console.error('[wallet/fallback] STEP: wallet balance update FAILED', JSON.stringify({ code: updateErr.code, message: updateErr.message, details: updateErr.details, hint: updateErr.hint }))
     // Transaction row is already committed; balance mismatch needs manual fix.
     // Return null so user sees the success banner — the money IS recorded.
   } else {
