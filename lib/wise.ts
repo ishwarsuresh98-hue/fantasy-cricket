@@ -113,8 +113,19 @@ export interface WiseRecipient {
 }
 
 /**
+ * Normalises a sort code to XX-XX-XX format regardless of input format.
+ * Accepts "123456", "12-34-56", "12 34 56", etc.
+ */
+function normaliseSortCode(raw: string): string {
+  const digits = raw.replace(/\D/g, '')
+  if (digits.length !== 6) throw new Error(`Invalid sort code "${raw}" — expected 6 digits, got ${digits.length}`)
+  return `${digits.slice(0, 2)}-${digits.slice(2, 4)}-${digits.slice(4, 6)}`
+}
+
+/**
  * Creates a one-time UK bank account recipient.
- * sort_code: "12-34-56" format — dashes are stripped automatically.
+ * sort_code: accepts any format ("XX-XX-XX", "XXXXXX", "XX XX XX") —
+ * always sent to Wise as XX-XX-XX with dashes.
  */
 export async function createRecipient(
   profileId: number,
@@ -122,6 +133,7 @@ export async function createRecipient(
   sortCode: string,
   accountNumber: string,
 ): Promise<WiseRecipient> {
+  const formattedSortCode = normaliseSortCode(sortCode)
   return wisePost<WiseRecipient>('/v1/accounts', {
     currency:          'GBP',
     type:              'sort_code',
@@ -130,7 +142,7 @@ export async function createRecipient(
     accountHolderName,
     details: {
       legalType:     'PRIVATE',
-      sortCode:      sortCode.replace(/-/g, ''),
+      sortCode:      formattedSortCode,
       accountNumber,
     },
   })
@@ -197,7 +209,7 @@ export async function sendWisePayout(opts: {
   const quote = await createQuote(profileId, opts.amountGbp)
   console.log(`[wise/sendWisePayout] Step 2 OK: quoteId=${quote.id} source=${quote.sourceAmount} target=${quote.targetAmount}`)
 
-  console.log(`[wise/sendWisePayout] Step 3: createRecipient accountName="${opts.accountHolderName}" sortCode=${opts.sortCode} accountNumber=${opts.accountNumber.slice(0, 4)}****`)
+  console.log(`[wise/sendWisePayout] Step 3: createRecipient accountName="${opts.accountHolderName}" sortCode(raw)=${opts.sortCode} sortCode(formatted)=${normaliseSortCode(opts.sortCode)} accountNumber=${opts.accountNumber.slice(0, 4)}****`)
   const recipient = await createRecipient(profileId, opts.accountHolderName, opts.sortCode, opts.accountNumber)
   console.log(`[wise/sendWisePayout] Step 3 OK: recipientId=${recipient.id}`)
 
