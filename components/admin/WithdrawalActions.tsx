@@ -19,9 +19,9 @@ export default function WithdrawalActions({ id, slug }: { id: string; slug: stri
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ action, admin_notes: notes || undefined }),
       })
-      const data = await res.json() as { ok?: boolean; status?: string; stripe_payout_id?: string; error?: string }
+      const data = await res.json() as { ok?: boolean; status?: string; wise_transfer_id?: string; error?: string }
       if (!res.ok || !data.ok) throw new Error(data.error ?? 'Failed')
-      setResult({ status: data.status ?? action, stripe_payout_id: data.stripe_payout_id })
+      setResult({ status: data.status ?? action, stripe_payout_id: data.wise_transfer_id })
       router.refresh()
     } catch (e: unknown) {
       setError((e as Error).message)

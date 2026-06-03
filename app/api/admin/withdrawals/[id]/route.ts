@@ -1,12 +1,7 @@
 import { NextResponse }       from 'next/server'
-import Stripe                from 'stripe'
 import { createClient }      from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-
-function getStripe(): Stripe | null {
-  const key = process.env.STRIPE_SECRET_KEY
-  return key ? new Stripe(key) : null
-}
+import { sendWisePayout }    from '@/lib/wise'
 
 // POST /api/admin/withdrawals/[id]
 // Body: { action: 'approve' | 'reject', admin_notes?: string }
@@ -81,42 +76,38 @@ export async function POST(
     return NextResponse.json({ ok: true, status: 'rejected' })
   }
 
-  // ── APPROVE — attempt Stripe payout, fall back to manual ─────────────────
-  const stripe = getStripe()
-  let stripePayoutId: string | null = null
+  // ── APPROVE — attempt Wise payout, fall back to manual_required ──────────
+  let wiseTransferId: string | null = null
   let finalStatus: string = 'manual_required'
 
-  if (stripe) {
+  if (process.env.WISE_API_TOKEN) {
     try {
-      // Sort code: "12-34-56" → "123456"
-      const routingNumber = req.sort_code.replace(/-/g, '')
-      // Create an external account (bank account) and immediately payout
-      const payout = await stripe.payouts.create({
-        amount:   Math.round(Number(req.amount) * 100), // pence
-        currency: 'gbp',
-        method:   'standard',
-        metadata: { withdrawal_request_id: id, user_id: req.user_id },
-        description: `Withdrawal for request ${id}`,
+      const result = await sendWisePayout({
+        amountGbp:         Number(req.amount),
+        accountHolderName: req.account_name,
+        sortCode:          req.sort_code,
+        accountNumber:     req.account_number,
+        reference:         `withdrawal-${id}`,
       })
-      stripePayoutId = payout.id
+      wiseTransferId = String(result.transferId)
       finalStatus    = 'completed'
-      console.log(`[admin/withdrawals] Stripe payout created: ${payout.id}`)
+      console.log(`[admin/withdrawals] Wise transfer created: ${result.transferId} (${result.status})`)
     } catch (e: unknown) {
-      console.warn('[admin/withdrawals] Stripe payout failed (marking manual_required):', (e as Error).message)
+      console.warn('[admin/withdrawals] Wise payout failed (marking manual_required):', (e as Error).message)
       finalStatus = 'manual_required'
     }
   } else {
-    console.warn('[admin/withdrawals] Stripe not configured — marking manual_required')
+    console.warn('[admin/withdrawals] WISE_API_TOKEN not set — marking manual_required')
   }
 
   await admin.from('withdrawal_requests').update({
     status:           finalStatus,
-    stripe_payout_id: stripePayoutId,
+    stripe_payout_id: wiseTransferId,  // reusing column to store Wise transfer ID
     admin_notes:      admin_notes ?? null,
     updated_at:       new Date().toISOString(),
   }).eq('id', id)
 
-  return NextResponse.json({ ok: true, status: finalStatus, stripe_payout_id: stripePayoutId })
+  return NextResponse.json({ ok: true, status: finalStatus, wise_transfer_id: wiseTransferId })
 }
 
 // PATCH /api/admin/withdrawals/[id]
