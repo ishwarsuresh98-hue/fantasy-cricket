@@ -303,11 +303,11 @@ export default async function WalletPage({
           <h2 className="text-lg font-black text-gray-900">Withdraw Funds</h2>
           <p className="text-sm text-gray-500 mt-0.5">Request a bank transfer to your account.</p>
         </div>
-        {balance >= 10 ? (
+        {balance >= 5 ? (
           <WithdrawForm balance={balance} slug={slug} />
         ) : (
           <p className="text-sm text-gray-400 py-4 text-center">
-            You need at least £10 in your wallet to make a withdrawal.
+            You need at least £5 in your wallet to make a withdrawal.
           </p>
         )}
       </div>

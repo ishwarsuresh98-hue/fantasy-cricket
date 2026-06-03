@@ -30,7 +30,7 @@ export default function WithdrawForm({ balance, slug }: Props) {
     setError(null)
 
     const amt = parseFloat(amount)
-    if (isNaN(amt) || amt < 10) { setError('Minimum withdrawal is £10.'); return }
+    if (isNaN(amt) || amt < 5) { setError('Minimum withdrawal is £5.'); return }
     if (amt > balance)           { setError(`Maximum is your balance of £${balance.toFixed(2)}.`); return }
     if (!accountName.trim())     { setError('Account holder name is required.'); return }
     if (!/^\d{2}-\d{2}-\d{2}$/.test(sortCode)) { setError('Sort code must be in XX-XX-XX format.'); return }
@@ -75,17 +75,17 @@ export default function WithdrawForm({ balance, slug }: Props) {
           <span className="pl-4 pr-2 text-base font-black text-gray-400 select-none">£</span>
           <input
             type="number"
-            min={10}
+            min={5}
             max={balance}
             step="any"
-            placeholder={`10.00 – ${balance.toFixed(2)}`}
+            placeholder={`5.00 – ${balance.toFixed(2)}`}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             disabled={loading}
             className="flex-1 py-3 pr-4 text-base font-semibold text-gray-900 placeholder:text-gray-300 placeholder:font-normal bg-transparent outline-none disabled:opacity-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
         </div>
-        <p className="text-xs text-gray-400 mt-1">Min £10 · Max £{balance.toFixed(2)}</p>
+        <p className="text-xs text-gray-400 mt-1">Min £5 · Max £{balance.toFixed(2)}</p>
       </div>
 
       {/* Account holder name */}
@@ -136,7 +136,7 @@ export default function WithdrawForm({ balance, slug }: Props) {
 
       <button
         type="submit"
-        disabled={loading || !amount || parseFloat(amount) < 10 || parseFloat(amount) > balance}
+        disabled={loading || !amount || parseFloat(amount) < 5 || parseFloat(amount) > balance}
         className={cn(
           'w-full py-4 rounded-2xl font-black text-base transition-colors disabled:opacity-40 disabled:cursor-not-allowed',
           'bg-[#0b0b0b] text-white hover:bg-[#333] shadow-sm',
@@ -147,7 +147,7 @@ export default function WithdrawForm({ balance, slug }: Props) {
             <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin inline-block" />
             Submitting…
           </span>
-        ) : amount && parseFloat(amount) >= 10 ? (
+        ) : amount && parseFloat(amount) >= 5 ? (
           `Request withdrawal of £${parseFloat(amount) % 1 === 0 ? parseFloat(amount) : parseFloat(amount).toFixed(2)}`
         ) : (
           'Request Withdrawal'

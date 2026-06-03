@@ -15,8 +15,8 @@ export async function POST(request: Request) {
   const { amount, account_name, sort_code, account_number } = body
 
   // ── Validation ────────────────────────────────────────────────────────────
-  if (!amount || !Number.isFinite(amount) || amount < 10) {
-    return NextResponse.json({ error: 'Minimum withdrawal is £10.' }, { status: 400 })
+  if (!amount || !Number.isFinite(amount) || amount < 5) {
+    return NextResponse.json({ error: 'Minimum withdrawal is £5.' }, { status: 400 })
   }
   if (!account_name?.trim()) {
     return NextResponse.json({ error: 'Account holder name is required.' }, { status: 400 })
