@@ -196,7 +196,7 @@ async function handleWalletTopup(
   // INSERT transaction first — idempotency guard; duplicate reference_id rejected with 23505
   const { error: txnErr } = await admin.from('wallet_transactions').insert({
     user_id:        user_id,
-    type:           'topup',
+    type:           'deposit',
     amount,
     balance_before: balanceBefore,
     balance_after:  newBalance,

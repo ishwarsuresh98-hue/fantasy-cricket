@@ -103,7 +103,7 @@ async function confirmTopupFallback(
   // INSERT transaction first — if this fails (duplicate reference_id), abort without touching balance
   const { error: txnErr } = await admin.from('wallet_transactions').insert({
     user_id:        user_id,
-    type:           'topup',
+    type:           'deposit',
     amount,
     balance_before: balanceBefore,
     balance_after:  newBalance,
@@ -253,8 +253,23 @@ export default async function WalletPage({
         ) : (
           <ul className="divide-y divide-gray-100">
             {txns.map((t) => {
-              const isCredit = t.type === 'topup' || t.type === 'credit'
-              const typeLabel = t.type === 'topup' ? 'Top-up' : t.type === 'credit' ? 'Top-up' : 'Debit'
+              const CREDIT_TYPES: Record<string, string> = {
+                deposit:      'Top-up',
+                contest_win:  'Winnings',
+                bonus:        'Bonus',
+                referral:     'Referral',
+                refund:       'Refund',
+                // legacy values
+                topup:        'Top-up',
+                credit:       'Top-up',
+              }
+              const DEBIT_TYPES: Record<string, string> = {
+                withdrawal:   'Withdrawal',
+                contest_entry:'Contest Entry',
+                debit:        'Debit',
+              }
+              const isCredit = t.type in CREDIT_TYPES
+              const typeLabel = CREDIT_TYPES[t.type] ?? DEBIT_TYPES[t.type] ?? t.type
               const date = new Date(t.created_at).toLocaleDateString('en-GB', {
                 day: 'numeric', month: 'short', year: 'numeric',
               })
