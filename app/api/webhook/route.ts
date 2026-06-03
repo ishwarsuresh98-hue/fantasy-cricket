@@ -230,8 +230,12 @@ async function handleWalletTopup(
 
   // ── Sweep revenue to platform Wise account (best-effort, non-blocking) ────
   // Failures here are logged but do NOT affect the user's wallet credit.
+  console.log(`[webhook/stripe] Triggering Wise revenue sweep for £${amount} (PI: ${stripeIntent.id})`)
   transferStripeRevenueToWise(amount, stripeIntent.id).catch((e: unknown) => {
-    console.error('[webhook/stripe] Wise revenue sweep failed:', (e as Error).message)
+    const err = e as Error & { cause?: unknown }
+    console.error('[webhook/stripe] Wise revenue sweep FAILED:', err.message)
+    console.error('[webhook/stripe] Wise error stack:', err.stack ?? '(no stack)')
+    if (err.cause) console.error('[webhook/stripe] Wise error cause:', err.cause)
   })
 }
 

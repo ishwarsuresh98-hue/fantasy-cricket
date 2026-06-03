@@ -187,11 +187,29 @@ export async function sendWisePayout(opts: {
   accountNumber: string
   reference: string
 }): Promise<WisePayoutResult> {
-  const profileId   = await getProfileId()
-  const quote       = await createQuote(profileId, opts.amountGbp)
-  const recipient   = await createRecipient(profileId, opts.accountHolderName, opts.sortCode, opts.accountNumber)
-  const transfer    = await createTransfer(profileId, recipient.id, quote.id, opts.reference)
+  console.log(`[wise/sendWisePayout] START ref=${opts.reference} amount=£${opts.amountGbp}`)
+
+  console.log(`[wise/sendWisePayout] Step 1: getProfileId`)
+  const profileId = await getProfileId()
+  console.log(`[wise/sendWisePayout] Step 1 OK: profileId=${profileId}`)
+
+  console.log(`[wise/sendWisePayout] Step 2: createQuote profileId=${profileId} amount=£${opts.amountGbp}`)
+  const quote = await createQuote(profileId, opts.amountGbp)
+  console.log(`[wise/sendWisePayout] Step 2 OK: quoteId=${quote.id} source=${quote.sourceAmount} target=${quote.targetAmount}`)
+
+  console.log(`[wise/sendWisePayout] Step 3: createRecipient accountName="${opts.accountHolderName}" sortCode=${opts.sortCode} accountNumber=${opts.accountNumber.slice(0, 4)}****`)
+  const recipient = await createRecipient(profileId, opts.accountHolderName, opts.sortCode, opts.accountNumber)
+  console.log(`[wise/sendWisePayout] Step 3 OK: recipientId=${recipient.id}`)
+
+  console.log(`[wise/sendWisePayout] Step 4: createTransfer recipientId=${recipient.id} quoteId=${quote.id}`)
+  const transfer = await createTransfer(profileId, recipient.id, quote.id, opts.reference)
+  console.log(`[wise/sendWisePayout] Step 4 OK: transferId=${transfer.id} status=${transfer.status}`)
+
+  console.log(`[wise/sendWisePayout] Step 5: fundTransfer transferId=${transfer.id}`)
   await fundTransfer(profileId, transfer.id)
+  console.log(`[wise/sendWisePayout] Step 5 OK: transfer funded`)
+
+  console.log(`[wise/sendWisePayout] DONE transferId=${transfer.id} status=${transfer.status}`)
   return { transferId: transfer.id, status: transfer.status }
 }
 
