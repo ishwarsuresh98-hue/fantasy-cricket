@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server'
-import Stripe from 'stripe'
+import { NextResponse }       from 'next/server'
+import Stripe                from 'stripe'
 import { createClient }      from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { calcStripeFee }     from '@/lib/stripeFee'
 
 // ── Stripe client ─────────────────────────────────────────────────────────────
 // Env vars required:
@@ -80,18 +81,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: (e as Error).message }, { status: 503 })
   }
 
+  // Calculate fee server-side independently — don't trust client-sent totals
+  const { fee, total } = calcStripeFee(amount)
+
   let stripeIntent: Stripe.PaymentIntent
   try {
     stripeIntent = await stripe.paymentIntents.create({
-      amount:   amount * 100,   // Stripe expects pence
+      amount:   Math.round(total * 100), // charge total (amount + fee) in pence
       currency: 'gbp',
       metadata: {
         type:      'wallet_topup',
         user_id:   user.id,
         wallet_id: walletId,
-        amount:    String(amount),
+        amount:    String(amount), // base amount credited to wallet (not the total charged)
+        fee:       String(fee),
+        total:     String(total),
       },
-      description:               `Wallet top-up — £${amount}`,
+      description:               `Wallet top-up — £${amount} (+ £${fee} fee)`,
       automatic_payment_methods: { enabled: true },
     })
   } catch (e: unknown) {

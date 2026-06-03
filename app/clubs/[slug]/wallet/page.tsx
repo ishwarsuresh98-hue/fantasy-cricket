@@ -54,16 +54,17 @@ async function confirmTopupFallback(
     return null
   }
 
-  const { wallet_id, user_id } = intent.metadata ?? {}
-  if (!wallet_id || !user_id) {
-    console.error('[wallet/fallback] Missing wallet_id or user_id in metadata', intent.metadata)
+  const { wallet_id, user_id, amount: amountStr } = intent.metadata ?? {}
+  if (!wallet_id || !user_id || !amountStr) {
+    console.error('[wallet/fallback] Missing wallet_id, user_id or amount in metadata', intent.metadata)
     return null
   }
 
-  // Use intent.amount (authoritative pence) ÷ 100 = pounds
-  const amount = intent.amount / 100
-  console.log(`[wallet/fallback] Amount: £${amount}, wallet_id: ${wallet_id}, user_id: ${user_id}`)
-  if (amount <= 0) return null
+  // Credit the base amount from metadata — NOT intent.amount, which includes
+  // the processing fee. metadata.amount is the amount added to the wallet.
+  const amount = Number(amountStr)
+  console.log(`[wallet/fallback] Amount: £${amount} (from metadata), wallet_id: ${wallet_id}, user_id: ${user_id}`)
+  if (isNaN(amount) || amount <= 0) return null
 
   // Idempotency check — has this PI already been recorded?
   const { data: existing, error: idempotencyErr } = await admin

@@ -6,12 +6,16 @@
  *   1. POSTs to /api/wallet/topup to get a Stripe client_secret.
  *   2. Shows inline Stripe Elements checkout.
  *   3. On success Stripe redirects back to returnUrl; webhook credits the wallet.
+ *
+ * The Stripe charge is amount + processing fee.
+ * Only the base amount is credited to the wallet.
  */
 
 import { useState } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements }   from '@stripe/react-stripe-js'
 import CheckoutForm   from '@/components/CheckoutForm'
+import { calcStripeFee } from '@/lib/stripeFee'
 import { cn }         from '@/lib/utils'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '')
@@ -23,6 +27,10 @@ interface WalletTopupProps {
   returnUrl: string
 }
 
+function fmt(n: number) {
+  return n % 1 === 0 ? String(n) : n.toFixed(2)
+}
+
 export default function WalletTopup({ returnUrl }: WalletTopupProps) {
   const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null)
   const [customAmount,   setCustomAmount]   = useState('')
@@ -31,9 +39,12 @@ export default function WalletTopup({ returnUrl }: WalletTopupProps) {
   const [loading,        setLoading]        = useState(false)
   const [error,          setError]          = useState<string | null>(null)
 
-  // Whichever source is active determines the amount
   const customNum = customAmount !== '' ? parseFloat(customAmount) : NaN
   const effectiveAmount: number | null = !isNaN(customNum) ? customNum : selectedPreset
+
+  const feeInfo = effectiveAmount && effectiveAmount >= 1 && effectiveAmount <= 500
+    ? calcStripeFee(effectiveAmount)
+    : null
 
   function handlePresetClick(amount: Preset) {
     setSelectedPreset(amount)
@@ -48,7 +59,7 @@ export default function WalletTopup({ returnUrl }: WalletTopupProps) {
   }
 
   async function handleAddFunds() {
-    if (!effectiveAmount) return
+    if (!effectiveAmount || !feeInfo) return
 
     if (effectiveAmount < 1 || effectiveAmount > 500) {
       setError('Amount must be between £1 and £500.')
@@ -63,6 +74,7 @@ export default function WalletTopup({ returnUrl }: WalletTopupProps) {
     setLoading(true)
 
     try {
+      // Send the base amount — the API calculates the fee independently
       const res  = await fetch('/api/wallet/topup', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -90,10 +102,16 @@ export default function WalletTopup({ returnUrl }: WalletTopupProps) {
 
   // ── Stripe checkout view ───────────────────────────────────────────────────
   if (clientSecret && activeAmount !== null) {
+    const { fee, total } = calcStripeFee(activeAmount)
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-black text-gray-900">Top up £{activeAmount % 1 === 0 ? activeAmount : activeAmount.toFixed(2)}</h3>
+          <div>
+            <h3 className="font-black text-gray-900">Top up £{fmt(activeAmount)}</h3>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Processing fee £{fee.toFixed(2)} · Total charged £{total.toFixed(2)}
+            </p>
+          </div>
           <button
             onClick={handleReset}
             className="text-sm text-gray-400 hover:text-gray-600 underline"
@@ -155,7 +173,7 @@ export default function WalletTopup({ returnUrl }: WalletTopupProps) {
       </div>
 
       {/* Custom amount input */}
-      <div className="flex items-center gap-0 rounded-2xl border-2 overflow-hidden transition-colors focus-within:border-[#C9A84C] border-gray-200 bg-white">
+      <div className="flex items-center rounded-2xl border-2 overflow-hidden transition-colors focus-within:border-[#C9A84C] border-gray-200 bg-white">
         <span className="pl-4 pr-2 text-lg font-black text-gray-400 select-none">£</span>
         <input
           type="number"
@@ -171,6 +189,14 @@ export default function WalletTopup({ returnUrl }: WalletTopupProps) {
       </div>
       <p className="text-xs text-gray-400 -mt-2">Min £1 · Max £500</p>
 
+      {/* Fee breakdown */}
+      {feeInfo && (
+        <div className="flex justify-between text-xs text-gray-400 px-1 -mt-1">
+          <span>Processing fee: <span className="font-semibold text-gray-500">£{feeInfo.fee.toFixed(2)}</span></span>
+          <span>Total charged: <span className="font-semibold text-gray-500">£{feeInfo.total.toFixed(2)}</span></span>
+        </div>
+      )}
+
       {error && (
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
           {error}
@@ -180,7 +206,7 @@ export default function WalletTopup({ returnUrl }: WalletTopupProps) {
       {/* Add Funds button */}
       <button
         onClick={handleAddFunds}
-        disabled={loading || !effectiveAmount || (effectiveAmount < 1) || (effectiveAmount > 500)}
+        disabled={loading || !effectiveAmount || effectiveAmount < 1 || effectiveAmount > 500}
         className="w-full py-4 rounded-2xl font-black text-base bg-[#C9A84C] text-black hover:bg-[#a8892e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#C9A84C]/20"
       >
         {loading ? (
@@ -188,8 +214,8 @@ export default function WalletTopup({ returnUrl }: WalletTopupProps) {
             <span className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin inline-block" />
             Preparing checkout…
           </span>
-        ) : effectiveAmount && effectiveAmount >= 1 && effectiveAmount <= 500 ? (
-          `Add £${effectiveAmount % 1 === 0 ? effectiveAmount : effectiveAmount.toFixed(2)}`
+        ) : feeInfo ? (
+          `Pay £${feeInfo.total.toFixed(2)} → add £${fmt(effectiveAmount!)} to wallet`
         ) : (
           'Add Funds'
         )}
