@@ -245,16 +245,16 @@ export default async function ClubDashboardPage({
         </div>
       </div>
 
-      {/* ── Middle row: countdown + last GW ──────────────────────────────── */}
-      <div className="grid md:grid-cols-2 gap-5">
-        <HeroCountdown
-          deadline={deadline?.toISOString() ?? null}
-          lockUntil={lockUntil}
-          gameweekLabel={gameweekLabel ?? undefined}
-          gameweekMatches={currentGwMatches}
-        />
+      {/* ── Current Gameweek — full width ───────────────────────────────── */}
+      <HeroCountdown
+        deadline={deadline?.toISOString() ?? null}
+        lockUntil={lockUntil}
+        gameweekLabel={gameweekLabel ?? undefined}
+        gameweekMatches={currentGwMatches}
+      />
 
-        {lastGw ? (
+      {/* ── Last GW results — full width ─────────────────────────────────── */}
+      {lastGw ? (
           <div className="rounded-2xl bg-[#f0f0f0] border border-[#d8d8d8] shadow-sm p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div>
@@ -322,7 +322,6 @@ export default async function ClubDashboardPage({
             <p className="text-xs text-gray-400 text-center">GW summaries will appear once matches are completed.</p>
           </div>
         )}
-      </div>
 
       {/* ── Quick action buttons ─────────────────────────────────────────── */}
       <div className="grid grid-cols-3 gap-3">
