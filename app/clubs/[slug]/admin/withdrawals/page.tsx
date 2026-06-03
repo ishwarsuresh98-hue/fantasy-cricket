@@ -29,10 +29,12 @@ export default async function AdminWithdrawalsPage({
 
   const admin = createAdminClient()
 
-  const { data: requests } = await admin
+  const { data: requests, error: reqErr } = await admin
     .from('withdrawal_requests')
-    .select('*, profiles:user_id(display_name, email:id)')
+    .select('*')
     .order('created_at', { ascending: false })
+
+  if (reqErr) console.error('[admin/withdrawals] fetch error:', reqErr)
 
   // Fetch profile display names separately (simpler than a join)
   const userIds = [...new Set((requests ?? []).map((r) => r.user_id))]
