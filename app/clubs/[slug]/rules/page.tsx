@@ -224,10 +224,6 @@ export default function RulesPage() {
                   <div className="min-w-0">
                     <p className="text-base font-black text-[#111111] leading-tight">{b.name}</p>
                     <p className="text-sm text-[#111111]/55 mt-1 leading-snug">{b.what}</p>
-                    <div className="mt-3 flex items-start gap-1.5">
-                      <span className="text-[#C9A84C] text-xs font-black uppercase tracking-wider shrink-0 mt-0.5">Best used</span>
-                      <p className="text-xs text-[#C9A84C]/70 leading-snug">{b.when}</p>
-                    </div>
                   </div>
                 </div>
               </div>
