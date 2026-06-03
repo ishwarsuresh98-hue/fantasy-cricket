@@ -93,7 +93,7 @@ export default async function AdminWithdrawalsPage({
                   <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Amount</th>
                   <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Status</th>
                   <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Date</th>
-                  <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Stripe Payout</th>
+                  <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Wise Payout</th>
                   <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Actions</th>
                 </tr>
               </thead>
@@ -111,7 +111,7 @@ export default async function AdminWithdrawalsPage({
                       {new Date(req.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>
                     <td className="px-4 py-3 text-gray-400 text-xs font-mono truncate max-w-[160px]">
-                      {req.stripe_payout_id ?? '—'}
+                      {req.stripe_payout_id ? `Transfer #${req.stripe_payout_id}` : '—'}
                     </td>
                     <td className="px-4 py-3">
                       {req.status === 'manual_required' && (

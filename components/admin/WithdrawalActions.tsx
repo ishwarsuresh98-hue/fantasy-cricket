@@ -38,7 +38,7 @@ export default function WithdrawalActions({ id, slug }: { id: string; slug: stri
         result.status === 'rejected'        ? 'bg-red-50 text-red-600 border border-red-200' :
         'bg-gray-50 text-gray-600 border border-gray-200'
       }`}>
-        {result.status === 'completed'       && `✅ Approved — Stripe payout ${result.stripe_payout_id ?? 'initiated'}`}
+        {result.status === 'completed'       && `✅ Approved — Wise transfer ${result.stripe_payout_id ? `#${result.stripe_payout_id}` : 'initiated'}`}
         {result.status === 'manual_required' && '⚠️ Approved — Stripe payout failed, manual bank transfer required'}
         {result.status === 'rejected'        && '❌ Rejected — balance refunded to user'}
       </div>
