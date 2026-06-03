@@ -12,8 +12,10 @@ const PUBLIC_PREFIXES = [
   '/login',
   '/signup',
   '/auth/callback',
-  '/xi',          // The XI platform hub
-  '/club-home',   // Public club landing pages
+  '/xi',           // The XI platform hub
+  '/club-home',    // Public club landing pages
+  '/api/webhook',  // Stripe webhook — must be publicly accessible
+  '/api/webhooks', // Additional webhook endpoints
 ]
 
 export async function proxy(request: NextRequest) {
