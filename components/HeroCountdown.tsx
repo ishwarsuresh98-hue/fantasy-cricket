@@ -2,15 +2,22 @@
 
 import { useState, useEffect } from 'react'
 
+interface GameweekMatch {
+  our_team?: string | null
+  opponent_team: string
+  venue: string | null
+  match_date: string
+}
+
 interface Props {
   /** ISO string — lockStart (1 hour before earliest match). null = no upcoming matches. */
   deadline: string | null
   /** ISO string — lockEnd (30 min after latest match starts). */
   lockUntil: string | null
-  /** e.g. "Match 3 vs Marlow Cricket Club" — shown above the clock */
-  matchLabel?: string
-  /** Human-readable date string — shown below the match label */
-  matchDate?: string
+  /** e.g. "GAMEWEEK 1 — 6 June 2026" */
+  gameweekLabel?: string
+  /** All matches in the current gameweek */
+  gameweekMatches?: GameweekMatch[]
 }
 
 function getRemainingMs(iso: string) {
@@ -38,7 +45,31 @@ function DigitBox({ value, label }: { value: number; label: string }) {
   )
 }
 
-export default function HeroCountdown({ deadline, lockUntil, matchLabel, matchDate }: Props) {
+function MatchList({ matches }: { matches: GameweekMatch[] }) {
+  return (
+    <div className="w-full space-y-1.5">
+      {matches.map((m, i) => {
+        const label = m.our_team
+          ? `${m.our_team} vs ${m.opponent_team}`
+          : `vs ${m.opponent_team}`
+        const time = new Date(m.match_date).toLocaleTimeString('en-AU', {
+          hour: '2-digit', minute: '2-digit', hour12: true,
+        })
+        return (
+          <div key={i} className="flex items-start justify-between gap-2 px-3 py-2 rounded-lg bg-[#fafafa] border border-gray-200 text-left">
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold text-[#0b0b0b]/80 leading-tight truncate">{label}</p>
+              {m.venue && <p className="text-[10px] text-[#0b0b0b]/40 truncate">{m.venue}</p>}
+            </div>
+            <span className="text-[10px] font-semibold text-[#C9A84C] whitespace-nowrap flex-shrink-0 mt-0.5">{time}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+export default function HeroCountdown({ deadline, lockUntil, gameweekLabel, gameweekMatches }: Props) {
   const [, setTick] = useState(0)
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 1000)
@@ -95,31 +126,27 @@ export default function HeroCountdown({ deadline, lockUntil, matchLabel, matchDa
   const urgent = toDeadline < 30 * 60 * 1000
 
   return (
-    <div className={`w-full rounded-2xl px-6 py-8 flex flex-col items-center gap-6 shadow-lg transition-colors ${
+    <div className={`w-full rounded-2xl px-6 py-6 flex flex-col items-center gap-5 shadow-lg transition-colors ${
       urgent ? 'bg-[#3d1a1a]' : 'bg-[#f0f0f0]'
     }`}>
-      <div className="flex flex-col items-center gap-1 text-center">
+      <div className="flex flex-col items-center gap-1 text-center w-full">
         <p className={`text-xs font-bold uppercase tracking-[0.25em] ${urgent ? 'text-orange-300' : 'text-[#0b0b0b]/50'}`}>
-          {urgent ? '⚠️ Transfers Closing Soon' : '🏏 Next Match'}
+          {urgent ? '⚠️ Gameweek Closing Soon' : '🏏 Current Gameweek'}
         </p>
-        {matchLabel && (
-          <p className="text-xl sm:text-2xl font-black text-[#0b0b0b]">
-            {matchLabel}
-          </p>
-        )}
-        {matchDate && (
-          <p className="text-sm text-[#0b0b0b]/50">{matchDate}</p>
-        )}
-        {!matchLabel && (
-          <p className="text-2xl sm:text-3xl font-black text-[#0b0b0b] uppercase tracking-wider">
-            Gameweek Locks In
+        {gameweekLabel && (
+          <p className={`text-base font-black uppercase tracking-wider ${urgent ? 'text-orange-100' : 'text-[#0b0b0b]'}`}>
+            {gameweekLabel}
           </p>
         )}
       </div>
 
+      {gameweekMatches && gameweekMatches.length > 0 && (
+        <MatchList matches={gameweekMatches} />
+      )}
+
       <div>
         <p className={`text-center text-[10px] font-bold uppercase tracking-widest mb-3 ${urgent ? 'text-orange-300' : 'text-[#C9A84C]/70'}`}>
-          Transfers close in
+          Gameweek locks in
         </p>
         <div className="flex items-end gap-3 sm:gap-5">
           <DigitBox value={h} label="Hours" />

@@ -62,7 +62,17 @@ export default async function ClubDashboardPage({
 
   const upcomingMatches  = (matches ?? []).filter((m: Match) => m.status === 'upcoming')
   const completedMatches = (matches ?? []).filter((m: Match) => m.status === 'completed')
-  const nextMatch        = upcomingMatches[0] as Match | undefined
+
+  // Find all matches in the current (next upcoming) gameweek — same calendar date as earliest upcoming
+  const currentGwDayStr = upcomingMatches[0]
+    ? new Date(upcomingMatches[0].match_date).toISOString().slice(0, 10)
+    : null
+  const currentGwMatches = currentGwDayStr
+    ? upcomingMatches.filter(
+        (m: Match) => new Date(m.match_date).toISOString().slice(0, 10) === currentGwDayStr
+      )
+    : []
+  const nextMatch = upcomingMatches[0] as Match | undefined
 
   const { data: boosterUsage } = myTeam
     ? await supabase.from('team_boosters').select('*').eq('fantasy_team_id', myTeam.id)
@@ -150,15 +160,14 @@ export default async function ClubDashboardPage({
   }))
   const maxGwPts = Math.max(...myGwHistory.map((g) => g.pts), 1)
 
-  const nextMatchLabel = nextMatch
-    ? nextMatch.our_team
-      ? `${nextMatch.our_team} vs ${nextMatch.opponent_team}`
-      : `vs ${nextMatch.opponent_team}`
-    : null
-  const nextMatchDate  = nextMatch
-    ? new Date(nextMatch.match_date).toLocaleDateString('en-AU', {
-        weekday: 'short', day: 'numeric', month: 'long', year: 'numeric',
+  const currentGwNumber = gameweeks.length + 1
+  const currentGwDateLabel = currentGwDayStr
+    ? new Date(currentGwDayStr).toLocaleDateString('en-AU', {
+        day: 'numeric', month: 'long', year: 'numeric',
       })
+    : null
+  const gameweekLabel = currentGwDateLabel
+    ? `Gameweek ${currentGwNumber} — ${currentGwDateLabel}`
     : null
 
   return (
@@ -241,8 +250,8 @@ export default async function ClubDashboardPage({
         <HeroCountdown
           deadline={deadline?.toISOString() ?? null}
           lockUntil={lockUntil}
-          matchLabel={nextMatchLabel ?? undefined}
-          matchDate={nextMatchDate ?? undefined}
+          gameweekLabel={gameweekLabel ?? undefined}
+          gameweekMatches={currentGwMatches}
         />
 
         {lastGw ? (
