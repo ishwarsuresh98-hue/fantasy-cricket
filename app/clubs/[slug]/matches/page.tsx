@@ -112,7 +112,11 @@ export default async function ClubMatchesPage({
                             <Badge className="text-xs bg-[#fef9ee] text-[#C9A84C] border border-[#C9A84C] hover:bg-[#fef9ee]">Upcoming</Badge>
                           )}
                         </div>
-                        <p className="font-semibold text-[#0b0b0b] group-hover:text-[#C9A84C]">{match.opponent_team}</p>
+                        <p className="font-semibold text-[#0b0b0b] group-hover:text-[#C9A84C]">
+                          {match.our_team
+                            ? `${match.our_team} vs ${match.opponent_team}`
+                            : match.opponent_team}
+                        </p>
                         {match.venue  && <p className="text-sm text-muted-foreground">{match.venue}</p>}
                         {match.result && <p className="text-sm font-medium text-[#b5211e]">{match.result}</p>}
                       </div>
