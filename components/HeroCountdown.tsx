@@ -58,8 +58,8 @@ function MatchList({ matches }: { matches: GameweekMatch[] }) {
         return (
           <div key={i} className="flex items-start justify-between gap-2 px-3 py-2 rounded-lg bg-[#fafafa] border border-gray-200 text-left">
             <div className="min-w-0">
-              <p className="text-[11px] font-bold text-[#0b0b0b]/80 leading-tight truncate">{label}</p>
-              {m.venue && <p className="text-[10px] text-[#0b0b0b]/40 truncate">{m.venue}</p>}
+              <p className="text-base font-bold text-[#0b0b0b]/80 leading-tight truncate">{label}</p>
+              {m.venue && <p className="text-sm text-[#0b0b0b]/40 truncate">{m.venue}</p>}
             </div>
             <span className="text-[10px] font-semibold text-[#C9A84C] whitespace-nowrap flex-shrink-0 mt-0.5">{time}</span>
           </div>
