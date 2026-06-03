@@ -162,6 +162,14 @@ export interface WiseTransfer {
   status: string
 }
 
+/** Sanitise a reference string to only the chars Wise allows: A-Za-z0-9 -./?(,)+* */
+function sanitiseWiseReference(ref: string): string {
+  return ref
+    .replace(/_/g, '-')                     // underscores → hyphens
+    .replace(/[^A-Za-z0-9\-./?(,)+*]/g, '') // strip anything else disallowed
+    .slice(0, 140)                           // Wise max reference length
+}
+
 export async function createTransfer(
   profileId: number,
   targetAccountId: number,
@@ -170,11 +178,12 @@ export async function createTransfer(
 ): Promise<WiseTransfer> {
   // customerTransactionId must be a unique UUID v4 — Wise rejects non-UUID values
   const customerTransactionId = crypto.randomUUID()
+  const safeReference = sanitiseWiseReference(reference)
   return wisePost<WiseTransfer>('/v1/transfers', {
     targetAccount:         targetAccountId,
     quoteUuid,
     customerTransactionId,
-    details: { reference },
+    details: { reference: safeReference },
   })
 }
 
