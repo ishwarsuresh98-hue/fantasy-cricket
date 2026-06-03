@@ -1,10 +1,11 @@
 import { createClient }      from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getClubBySlug }     from '@/lib/club'
-import { notFound, redirect } from 'next/navigation'
+import { notFound }          from 'next/navigation'
 import { headers }           from 'next/headers'
 import Stripe                from 'stripe'
 import WalletTopup           from '@/components/WalletTopup'
+import CleanUrl              from '@/components/CleanUrl'
 
 function getStripe(): Stripe | null {
   const key = process.env.STRIPE_SECRET_KEY
@@ -172,18 +173,23 @@ export default async function WalletPage({
 
   // ── Fallback confirmation when Stripe redirects back ──────────────────────
   // Stripe appends ?payment_intent=pi_xxx&redirect_status=succeeded to the returnUrl.
-  const paymentIntentId = typeof sp.payment_intent   === 'string' ? sp.payment_intent   : null
-  const redirectStatus  = typeof sp.redirect_status  === 'string' ? sp.redirect_status  : null
+  // Only run the fallback when BOTH params are present and redirect_status=succeeded —
+  // never on clean visits or any other param combination.
+  const paymentIntentId = typeof sp.payment_intent  === 'string' ? sp.payment_intent  : null
+  const redirectStatus  = typeof sp.redirect_status === 'string' ? sp.redirect_status : null
+  const isStripeReturn  = !!(paymentIntentId && redirectStatus === 'succeeded')
 
-  if (paymentIntentId && redirectStatus === 'succeeded') {
-    const result = await confirmTopupFallback(paymentIntentId, admin)
-    // Redirect to a clean URL regardless of outcome — this strips the Stripe params
-    // from the address bar so refreshing never re-triggers the fallback.
-    const suffix = (result === null || result === 'already_done') ? '?topup=success' : '?topup=error'
-    redirect(`/clubs/${slug}/wallet${suffix}`)
+  let topupResult: 'success' | 'error' | null = null
+
+  if (isStripeReturn) {
+    const result = await confirmTopupFallback(paymentIntentId!, admin)
+    topupResult = (result === null || result === 'already_done') ? 'success' : 'error'
+  } else if (sp.topup === 'success') {
+    topupResult = 'success'
+  } else if (sp.topup === 'error') {
+    topupResult = 'error'
   }
-
-  const topupResult = typeof sp.topup === 'string' ? sp.topup : null
+  // No topup param at all → topupResult stays null → no banner shown
 
   // ── Wallet balance ─────────────────────────────────────────────────────────
   const { data: wallet } = await admin
@@ -217,6 +223,9 @@ export default async function WalletPage({
 
   return (
     <div className="space-y-8 max-w-lg mx-auto">
+
+      {/* Strip payment params from URL after render so refresh doesn't re-trigger fallback */}
+      {topupResult !== null && <CleanUrl />}
 
       {/* ── Payment result banner ─────────────────────────────────────────── */}
       {topupResult === 'success' && (
