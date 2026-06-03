@@ -1,5 +1,62 @@
 // ── The XI — Scoring Rules (premium redesign) ─────────────────────────────────
 
+const BOOSTERS_CONTENT = [
+  {
+    icon: '🏏',
+    name: 'Batting Surge',
+    what: 'Doubles the points earned by every batsman and all-rounder in your squad for that gameweek.',
+    when: 'when you\'ve packed your team with top-order batters and a batting-friendly pitch is on the cards.',
+  },
+  {
+    icon: '🧤',
+    name: 'Keeping Surge',
+    what: 'Your wicketkeeper\'s points are doubled — runs, stumpings, catches, all of it.',
+    when: 'when your keeper is in blistering form or facing a spinner-friendly surface where stumpings are likely.',
+  },
+  {
+    icon: '⚡',
+    name: 'Bowling Surge',
+    what: 'Every bowler and all-rounder in your team earns 2× points — wickets, dots, maidens, all doubled.',
+    when: 'when conditions suit your attack and your bowlers are set to run riot on a green top.',
+  },
+  {
+    icon: '🆓',
+    name: 'Free Hit',
+    what: 'No budget cap this gameweek — pick any players you want. Your squad reverts back afterwards.',
+    when: 'when a superstar you can\'t normally afford is in unmissable form and you need them right now.',
+  },
+  {
+    icon: '👑',
+    name: 'Triple Captain',
+    what: 'One chosen player earns a massive 3× points multiplier. Your captain still gets 2×, VC still 1.5×.',
+    when: 'when your best player is facing a weak attack and you need a single performance to blow the league apart.',
+  },
+  {
+    icon: '🔄',
+    name: 'Mega Transfer',
+    what: 'Make as many transfers as you like within your budget — zero point penalties, no questions asked.',
+    when: 'after a run of bad luck or injuries and you need to blow up and rebuild your squad from scratch.',
+  },
+  {
+    icon: '💥',
+    name: 'Double Power',
+    what: 'Every single player in your team earns 2× points for the entire gameweek. The ultimate multiplier.',
+    when: 'when your squad is firing on all cylinders and you\'re confident every player will perform.',
+  },
+  {
+    icon: '🧊',
+    name: 'Score Freeze',
+    what: 'Lock in your current season total as a guaranteed floor. Bad gameweek? Keep the frozen score. Good one? Take the higher number.',
+    when: 'when you\'re ahead in the final stretch and need to protect your lead from a single bad result undoing everything.',
+  },
+  {
+    icon: '🎲',
+    name: 'Underdog',
+    what: 'If your team scores below the gameweek average, your points are doubled. Score above average and it\'s business as usual.',
+    when: 'when you\'re behind and need variance — a high-risk high-reward gamble that could flip the entire contest.',
+  },
+]
+
 export default function RulesPage() {
   return (
     <div className="min-h-screen bg-white -mx-4 sm:-mx-6 px-4 sm:px-6 pb-16">
@@ -143,6 +200,42 @@ export default function RulesPage() {
           </div>
           <p className="mt-4 text-xs text-[#111111]/25 text-center italic">
             Choose wisely — your captain can single-handedly win you the contest.
+          </p>
+        </Section>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            BOOSTERS
+        ══════════════════════════════════════════════════════════════════ */}
+        <Section
+          icon="🚀"
+          label="Boosters"
+          color="from-[#C9A84C]/25 to-transparent"
+          borderColor="border-[#C9A84C]/40"
+          accentColor="text-[#C9A84C]"
+        >
+          <p className="text-sm text-[#111111]/40 mb-5 leading-relaxed">
+            Each manager gets a set of one-time power-ups to deploy across the season. Use them at the right moment and they can be the difference between winning and losing.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {BOOSTERS_CONTENT.map((b) => (
+              <div key={b.name} className="relative rounded-2xl border border-[#C9A84C]/25 bg-gradient-to-br from-[#C9A84C]/8 to-transparent p-5 overflow-hidden">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#C9A84C]/40 to-transparent" />
+                <div className="flex items-start gap-3">
+                  <span className="text-3xl shrink-0">{b.icon}</span>
+                  <div className="min-w-0">
+                    <p className="text-base font-black text-[#111111] leading-tight">{b.name}</p>
+                    <p className="text-sm text-[#111111]/55 mt-1 leading-snug">{b.what}</p>
+                    <div className="mt-3 flex items-start gap-1.5">
+                      <span className="text-[#C9A84C] text-xs font-black uppercase tracking-wider shrink-0 mt-0.5">Best used</span>
+                      <p className="text-xs text-[#C9A84C]/70 leading-snug">{b.when}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-xs text-[#111111]/25 text-center italic">
+            Boosters are activated before the gameweek locks — plan ahead and strike when it matters most.
           </p>
         </Section>
 
