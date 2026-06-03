@@ -15,15 +15,13 @@ function getStripe(): Stripe {
 
 // ── POST /api/wallet/topup ────────────────────────────────────────────────────
 //
-// Body: { amount: number }   (amount in pounds, e.g. 5 | 10 | 20 | 50)
+// Body: { amount: number }   (amount in pounds, £1–£500)
 //
 // Responses:
 //   200  { clientSecret: string }
 //   400  validation error
 //   401  unauthenticated
 //   503  Stripe or DB unavailable
-
-const ALLOWED_AMOUNTS = [5, 10, 20, 50]
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -41,9 +39,9 @@ export async function POST(request: Request) {
   }
 
   const amount = Number(body.amount)
-  if (!ALLOWED_AMOUNTS.includes(amount)) {
+  if (!Number.isFinite(amount) || amount < 1 || amount > 500) {
     return NextResponse.json(
-      { error: `amount must be one of: ${ALLOWED_AMOUNTS.join(', ')}` },
+      { error: 'Amount must be between £1 and £500.' },
       { status: 400 },
     )
   }
