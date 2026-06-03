@@ -177,19 +177,7 @@ async function handleWalletTopup(
     return
   }
 
-  // Idempotency: skip if we've already recorded this Stripe PI as a credit
-  const { data: existing } = await admin
-    .from('wallet_transactions')
-    .select('id')
-    .eq('reference_id', stripeIntent.id)
-    .maybeSingle()
-
-  if (existing) {
-    console.log(`[webhook/stripe] wallet_topup ${stripeIntent.id} already processed — skip`)
-    return
-  }
-
-  // Increment wallet balance atomically
+  // Fetch wallet
   const { data: wallet } = await admin
     .from('wallets')
     .select('id, balance')
@@ -202,25 +190,40 @@ async function handleWalletTopup(
     return
   }
 
-  const newBalance = Math.round((Number(wallet.balance) + amount) * 100) / 100
+  const balanceBefore = Number(wallet.balance)
+  const newBalance    = Math.round((balanceBefore + amount) * 100) / 100
+
+  // INSERT transaction first — idempotency guard; duplicate reference_id rejected with 23505
+  const { error: txnErr } = await admin.from('wallet_transactions').insert({
+    user_id:        user_id,
+    type:           'credit',
+    amount,
+    balance_before: balanceBefore,
+    balance_after:  newBalance,
+    reference:      stripeIntent.id,
+    reference_id:   stripeIntent.id,
+    description:    'Wallet top-up',
+    status:         'completed',
+  })
+
+  if (txnErr) {
+    if (txnErr.code === '23505') {
+      console.log(`[webhook/stripe] wallet_topup ${stripeIntent.id} already processed — skip`)
+      return
+    }
+    console.error('[webhook/stripe] transaction insert error:', txnErr)
+    return
+  }
+
   const { error: updateErr } = await admin
     .from('wallets')
-    .update({ balance: newBalance, updated_at: new Date().toISOString() })
+    .update({ balance: newBalance })
     .eq('id', wallet_id)
 
   if (updateErr) {
     console.error('[webhook/stripe] wallet balance update error:', updateErr)
     return
   }
-
-  // Record the transaction
-  await admin.from('wallet_transactions').insert({
-    wallet_id,
-    type:         'credit',
-    amount,
-    description:  `Wallet top-up via card — £${amount}`,
-    reference_id: stripeIntent.id,
-  })
 
   console.log(`[webhook/stripe] Credited £${amount} to wallet ${wallet_id} (balance: £${newBalance})`)
 }

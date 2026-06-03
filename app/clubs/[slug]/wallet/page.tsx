@@ -95,13 +95,20 @@ async function confirmTopupFallback(
   }
   console.log(`[wallet/fallback] Found wallet id=${wallet.id}, balance=£${wallet.balance}`)
 
+  const balanceBefore = Number(wallet.balance)
+  const newBalance    = Math.round((balanceBefore + amount) * 100) / 100
+
   // INSERT transaction first — if this fails (duplicate reference_id), abort without touching balance
   const { error: txnErr } = await admin.from('wallet_transactions').insert({
-    wallet_id:    wallet.id,
-    type:         'credit',
+    user_id:        user_id,
+    type:           'credit',
     amount,
-    description:  `Wallet top-up via card — £${amount.toFixed(2)}`,
-    reference_id: intent.id,
+    balance_before: balanceBefore,
+    balance_after:  newBalance,
+    reference:      intent.id,
+    reference_id:   intent.id,
+    description:    'Wallet top-up',
+    status:         'completed',
   })
 
   if (txnErr) {
@@ -116,8 +123,7 @@ async function confirmTopupFallback(
   console.log(`[wallet/fallback] Transaction row inserted OK`)
 
   // Update balance AFTER transaction is committed
-  const newBalance = Math.round((Number(wallet.balance) + amount) * 100) / 100
-  console.log(`[wallet/fallback] Updating balance from £${wallet.balance} → £${newBalance}`)
+  console.log(`[wallet/fallback] Updating balance from £${balanceBefore} → £${newBalance}`)
 
   // Note: updated_at omitted — column may not exist on all deployments.
   // Migration 019 adds it; but the balance update must not fail because of it.
@@ -182,11 +188,11 @@ export default async function WalletPage({
   const balance = (wallet?.balance ?? 0) as number
 
   // ── Transaction history ────────────────────────────────────────────────────
-  const { data: txns, error: txnsErr } = wallet
+  const { data: txns, error: txnsErr } = user
     ? await admin
         .from('wallet_transactions')
-        .select('id, type, amount, description, created_at')
-        .eq('wallet_id', wallet.id)
+        .select('id, type, amount, description, status, created_at')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(30)
     : { data: [], error: null }
