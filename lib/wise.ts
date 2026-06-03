@@ -36,20 +36,27 @@ async function wiseGet<T>(path: string): Promise<T> {
 }
 
 async function wisePost<T>(path: string, body: unknown): Promise<T> {
+  const requestBody = JSON.stringify(body)
+  console.log(`[wise/http] POST ${path} payload:`, requestBody)
+
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${wiseToken()}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(body),
+    body: requestBody,
     cache: 'no-store',
   })
+
+  const responseText = await res.text()
+  console.log(`[wise/http] POST ${path} → ${res.status} response:`, responseText)
+
   if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Wise API POST ${path} returned ${res.status}: ${text}`)
+    throw new Error(`Wise API POST ${path} returned ${res.status}: ${responseText}`)
   }
-  return res.json() as Promise<T>
+
+  return JSON.parse(responseText) as T
 }
 
 // ── Profile ───────────────────────────────────────────────────────────────────
