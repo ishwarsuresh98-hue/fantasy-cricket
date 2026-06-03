@@ -61,7 +61,7 @@ function MatchList({ matches }: { matches: GameweekMatch[] }) {
               <p className="text-base font-bold text-[#0b0b0b]/80 leading-tight truncate">{label}</p>
               {m.venue && <p className="text-sm text-[#0b0b0b]/40 truncate">{m.venue}</p>}
             </div>
-            <span className="text-[10px] font-semibold text-[#C9A84C] whitespace-nowrap flex-shrink-0 mt-0.5">{time}</span>
+            <span className="text-base font-semibold text-[#C9A84C] whitespace-nowrap flex-shrink-0 mt-0.5">{time}</span>
           </div>
         )
       })}
