@@ -48,18 +48,16 @@ export default async function ClubAdminPage({
           <CardContent className="pt-4">
             <p className="text-xl font-bold text-[#C9A84C]">{season.name}</p>
             <div className="grid grid-cols-3 gap-4 mt-4">
-              <div className="text-center p-3 bg-[#f0f0f0] rounded-lg">
-                <p className="text-2xl font-bold text-[#C9A84C]">{playerCount ?? 0}</p>
-                <p className="text-xs text-[#C9A84C]/70 mt-0.5">Players</p>
-              </div>
-              <div className="text-center p-3 bg-[#f0f0f0] rounded-lg">
-                <p className="text-2xl font-bold text-[#C9A84C]">{matchCount ?? 0}</p>
-                <p className="text-xs text-[#C9A84C]/70 mt-0.5">Matches</p>
-              </div>
-              <div className="text-center p-3 bg-[#f0f0f0] rounded-lg">
-                <p className="text-2xl font-bold text-[#C9A84C]">{teamCount ?? 0}</p>
-                <p className="text-xs text-[#C9A84C]/70 mt-0.5">Fantasy Teams</p>
-              </div>
+              {[
+                { value: playerCount ?? 0,  label: 'Players'      },
+                { value: matchCount ?? 0,   label: 'Matches'      },
+                { value: teamCount ?? 0,    label: 'Fantasy Teams' },
+              ].map(({ value, label }) => (
+                <div key={label} className="group text-center p-3 bg-[#f0f0f0] rounded-lg border border-transparent hover:bg-[#fdf6e3] hover:border-[#C9A84C] transition-colors cursor-default">
+                  <p className="text-2xl font-bold text-[#C9A84C] group-hover:text-[#a8892e]">{value}</p>
+                  <p className="text-xs text-[#C9A84C]/70 mt-0.5 group-hover:text-[#a8892e]">{label}</p>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
