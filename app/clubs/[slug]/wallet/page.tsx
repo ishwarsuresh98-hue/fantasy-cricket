@@ -3,8 +3,9 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getClubBySlug }     from '@/lib/club'
 import { notFound, redirect } from 'next/navigation'
 import { headers }            from 'next/headers'
-import Stripe                 from 'stripe'
-import WalletTopup            from '@/components/WalletTopup'
+import Stripe                          from 'stripe'
+import { transferStripeRevenueToWise } from '@/lib/wise'
+import WalletTopup                    from '@/components/WalletTopup'
 import WalletBanner           from '@/components/WalletBanner'
 import WithdrawForm           from '@/components/WithdrawForm'
 import CleanUrl               from '@/components/CleanUrl'
@@ -142,6 +143,15 @@ async function confirmTopupFallback(
   } else {
     console.log(`[wallet/fallback] Balance updated OK to £${newBalance}`)
   }
+
+  // ── Sweep revenue to platform Wise account (best-effort, non-blocking) ────
+  console.log(`[wallet/fallback] Triggering Wise revenue sweep for £${amount} (PI: ${paymentIntentId})`)
+  transferStripeRevenueToWise(amount, paymentIntentId).catch((e: unknown) => {
+    const err = e as Error & { cause?: unknown }
+    console.error('[wallet/fallback] Wise revenue sweep FAILED:', err.message)
+    console.error('[wallet/fallback] Wise error stack:', err.stack ?? '(no stack)')
+    if (err.cause) console.error('[wallet/fallback] Wise error cause:', err.cause)
+  })
 
   return null
 }
