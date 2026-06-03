@@ -118,3 +118,55 @@ export async function POST(
 
   return NextResponse.json({ ok: true, status: finalStatus, stripe_payout_id: stripePayoutId })
 }
+
+// PATCH /api/admin/withdrawals/[id]
+// Body: { action: 'mark_paid', admin_notes?: string }
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { data: profile } = await supabase
+    .from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  let body: { action?: string; admin_notes?: string }
+  try { body = await request.json() } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
+
+  if (body.action !== 'mark_paid') {
+    return NextResponse.json({ error: 'action must be mark_paid' }, { status: 400 })
+  }
+
+  const admin = createAdminClient()
+
+  const { data: req } = await admin
+    .from('withdrawal_requests').select('status').eq('id', id).single()
+
+  if (!req) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (req.status === 'completed') {
+    return NextResponse.json({ ok: true, status: 'completed' }) // idempotent
+  }
+
+  const { error: updateErr } = await admin
+    .from('withdrawal_requests')
+    .update({
+      status:      'completed',
+      admin_notes: body.admin_notes ?? null,
+      updated_at:  new Date().toISOString(),
+    })
+    .eq('id', id)
+
+  if (updateErr) {
+    console.error('[admin/withdrawals] mark_paid update error:', updateErr)
+    return NextResponse.json({ error: 'Failed to update status.' }, { status: 500 })
+  }
+
+  return NextResponse.json({ ok: true, status: 'completed' })
+}

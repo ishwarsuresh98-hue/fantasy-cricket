@@ -3,6 +3,7 @@ import { getClubBySlug }     from '@/lib/club'
 import { notFound }          from 'next/navigation'
 import { cn }                from '@/lib/utils'
 import WithdrawalActions     from '@/components/admin/WithdrawalActions'
+import MarkPaidButton        from '@/components/admin/MarkPaidButton'
 
 const STATUS_STYLE: Record<string, string> = {
   pending:         'bg-yellow-100 text-yellow-800',
@@ -93,6 +94,7 @@ export default async function AdminWithdrawalsPage({
                   <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Status</th>
                   <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Date</th>
                   <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Stripe Payout</th>
+                  <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -110,6 +112,11 @@ export default async function AdminWithdrawalsPage({
                     </td>
                     <td className="px-4 py-3 text-gray-400 text-xs font-mono truncate max-w-[160px]">
                       {req.stripe_payout_id ?? '—'}
+                    </td>
+                    <td className="px-4 py-3">
+                      {req.status === 'manual_required' && (
+                        <MarkPaidButton id={req.id} />
+                      )}
                     </td>
                   </tr>
                 ))}
