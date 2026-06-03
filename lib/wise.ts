@@ -168,10 +168,12 @@ export async function createTransfer(
   quoteUuid: string,
   reference: string,
 ): Promise<WiseTransfer> {
+  // customerTransactionId must be a unique UUID v4 — Wise rejects non-UUID values
+  const customerTransactionId = crypto.randomUUID()
   return wisePost<WiseTransfer>('/v1/transfers', {
-    targetAccount:          targetAccountId,
+    targetAccount:         targetAccountId,
     quoteUuid,
-    customerTransactionId:  reference,
+    customerTransactionId,
     details: { reference },
   })
 }
