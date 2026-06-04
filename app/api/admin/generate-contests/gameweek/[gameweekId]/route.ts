@@ -59,6 +59,18 @@ const DEFAULT_TEMPLATES = [
     platform_fee_pct: 15,
     prize_structure: [{ rank_from: 1, rank_to: 1, prize_pct: 100 }],   // £34 winner takes all
   },
+  {
+    name: 'Open League',
+    type: 'open_league',
+    entry_fee: 4,
+    max_entries: null,   // unlimited — pot grows as players join
+    platform_fee_pct: 15,
+    prize_structure: [                                                   // top 3 split of final pot
+      { rank_from: 1, rank_to: 1, prize_pct: 45 },
+      { rank_from: 2, rank_to: 2, prize_pct: 35 },
+      { rank_from: 3, rank_to: 3, prize_pct: 20 },
+    ],
+  },
 ]
 
 export async function POST(
@@ -77,19 +89,23 @@ export async function POST(
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   // ── Load gameweek ─────────────────────────────────────────────────────────
+  // DB columns: gameweek_number, start_date — not number/match_id/match_date
   const { data: gw } = await supabase
     .from('gameweeks')
-    .select('id, season_id, match_id, number, name, match_date')
+    .select('id, season_id, club_id, gameweek_number, name, start_date')
     .eq('id', gameweekId)
     .single()
 
   if (!gw) return NextResponse.json({ error: 'Gameweek not found' }, { status: 404 })
 
-  // ── Load season to get club_id ────────────────────────────────────────────
-  const { data: season } = await supabase
-    .from('seasons').select('id, club_id').eq('id', gw.season_id).single()
-
-  if (!season) return NextResponse.json({ error: 'Season not found' }, { status: 404 })
+  // club_id is on the gameweek directly; fall back to season lookup for older rows
+  let clubId = (gw as unknown as Record<string, unknown>).club_id as string | undefined
+  if (!clubId) {
+    const { data: season } = await supabase
+      .from('seasons').select('id, club_id').eq('id', gw.season_id).single()
+    if (!season) return NextResponse.json({ error: 'Season not found' }, { status: 404 })
+    clubId = season.club_id as string
+  }
 
   let admin: ReturnType<typeof createAdminClient>
   try { admin = createAdminClient() } catch (e: unknown) {
@@ -97,18 +113,19 @@ export async function POST(
   }
 
   // ── Check existing contests for this gameweek ─────────────────────────────
+  // DB uses 'title' not 'name'
   const { data: existing } = await admin
     .from('contests')
-    .select('name')
+    .select('title')
     .eq('gameweek_id', gameweekId)
 
-  const existingNames = new Set((existing ?? []).map((c: { name: string }) => c.name))
+  const existingTitles = new Set((existing ?? []).map((c: { title: string }) => c.title))
 
   // ── Try to use contest_templates; fall back to DEFAULT_TEMPLATES ──────────
   const { data: templates } = await admin
     .from('contest_templates')
     .select('*')
-    .eq('club_id', season.club_id)
+    .eq('club_id', clubId)
     .eq('is_active', true)
     .order('entry_fee', { ascending: true })
 
@@ -116,18 +133,23 @@ export async function POST(
     ? (templates as typeof DEFAULT_TEMPLATES)
     : DEFAULT_TEMPLATES
 
+  const gwNumber = (gw as unknown as Record<string, unknown>).gameweek_number as number | undefined
+
   // ── Insert contests ───────────────────────────────────────────────────────
   const toInsert = contestDefs
-    .filter((t) => !existingNames.has(t.name))
+    .filter((t) => {
+      const title = t.type === 'open_league'
+        ? `Gameweek ${gwNumber ?? '?'} — Open League`
+        : t.name
+      return !existingTitles.has(title)
+    })
     .map((t) => ({
-      season_id:        gw.season_id,
-      match_id:         gw.match_id ?? null,
+      club_id:          clubId,
       gameweek_id:      gameweekId,
-      name:             t.name,
+      title:            t.type === 'open_league' ? `Gameweek ${gwNumber ?? '?'} — Open League` : t.name,
       type:             t.type,
       entry_fee:        t.entry_fee,
-      max_entries:      t.max_entries,
-      max_teams:        t.max_entries,
+      max_entries:      t.max_entries ?? null,
       platform_fee_pct: t.platform_fee_pct,
       prize_structure:  t.prize_structure,
       is_guaranteed:    false,

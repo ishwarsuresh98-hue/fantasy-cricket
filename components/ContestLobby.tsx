@@ -31,15 +31,15 @@ type TypeFilter = 'all' | ContestCategory
 // ── Per-type visual config ────────────────────────────────────────────────────
 
 interface TypeConfig {
-  accent:      string   // Tailwind border/text colour class
-  badgeBg:     string   // badge background
-  badgeText:   string   // badge text colour
-  cardBorder:  string   // card border colour
-  cardBg:      string   // card background tint
-  stripe:      string   // left accent stripe colour
+  accent:      string
+  badgeBg:     string
+  badgeText:   string
+  cardBorder:  string
+  cardBg:      string
+  stripe:      string
   icon:        string
-  badge:       (maxTeams: number) => string   // badge label
-  prizeLabel:  (pool: number, maxTeams: number, fee: number) => string
+  badge:       (maxTeams: number | null) => string
+  prizeLabel:  (pool: number, maxTeams: number | null, fee: number, isGrowing?: boolean) => string
 }
 
 const TYPE_CONFIG: Record<ContestCategory, TypeConfig> = {
@@ -74,13 +74,13 @@ const TYPE_CONFIG: Record<ContestCategory, TypeConfig> = {
     stripe:     'bg-green-500',
     icon:       '👥',
     badge:      (max) => {
+      if (max == null || max > 6) return 'Big League'
       if (max <= 3)  return 'Trio'
       if (max <= 4)  return 'Four Way'
-      if (max <= 6)  return 'Small League'
-      return 'Big League'
+      return 'Small League'
     },
     prizeLabel: (pool, max) => {
-      const winners = max <= 3 ? 1 : max <= 4 ? 2 : 3
+      const winners = (max ?? 10) <= 3 ? 1 : (max ?? 10) <= 4 ? 2 : 3
       return pool > 0 ? `Top ${winners} win` : `Top ${winners} win`
     },
   },
@@ -105,9 +105,23 @@ const TYPE_CONFIG: Record<ContestCategory, TypeConfig> = {
     icon:       '🔥',
     badge:      () => 'Mega',
     prizeLabel: (pool, max) => {
-      const winners = Math.max(1, Math.floor(max * 0.3))
+      const winners = max != null ? Math.max(1, Math.floor(max * 0.3)) : 3
       return pool > 0 ? `Top ${winners} win` : `Top ${winners} win`
     },
+  },
+  open_league: {
+    accent:     'text-violet-600',
+    badgeBg:    'bg-violet-100',
+    badgeText:  'text-violet-700',
+    cardBorder: 'border-violet-200',
+    cardBg:     'bg-violet-50/20',
+    stripe:     'bg-violet-500',
+    icon:       '🌐',
+    badge:      () => 'Open League',
+    prizeLabel: (pool, _max, _fee, isGrowing) =>
+      pool > 0
+        ? isGrowing ? `🏆 £${pool % 1 === 0 ? pool : pool.toFixed(2)} pot — growing` : `🏆 £${pool % 1 === 0 ? pool : pool.toFixed(2)} final pot`
+        : 'Prize pot grows with entries',
   },
 }
 
@@ -119,12 +133,13 @@ const TABS: { value: TabFilter; label: string }[] = [
 ]
 
 const TYPE_FILTERS: { value: TypeFilter; label: string; icon: string }[] = [
-  { value: 'all',          label: 'All',          icon: '🏆' },
-  { value: 'mega',         label: 'Mega',         icon: '🔥' },
-  { value: 'h2h',          label: 'H2H',          icon: '⚔️' },
-  { value: 'small_league', label: 'Small League', icon: '👥' },
+  { value: 'all',          label: 'All',            icon: '🏆' },
+  { value: 'open_league',  label: 'Open League',    icon: '🌐' },
+  { value: 'mega',         label: 'Mega',           icon: '🔥' },
+  { value: 'h2h',          label: 'H2H',            icon: '⚔️' },
+  { value: 'small_league', label: 'Small League',   icon: '👥' },
   { value: 'jackpot',      label: 'Winner Takes All', icon: '🏆' },
-  { value: 'practice',     label: 'Practice',     icon: '🎯' },
+  { value: 'practice',     label: 'Practice',       icon: '🎯' },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -140,11 +155,12 @@ function ordinal(n: number): string {
   return n + (s[(v - 20) % 10] ?? s[v] ?? s[0])
 }
 
-function defaultPayoutSlots(cat: ContestCategory, maxTeams: number): { label: string; pct: number }[] {
+function defaultPayoutSlots(cat: ContestCategory, maxTeams: number | null): { label: string; pct: number }[] {
+  if (cat === 'open_league') return [{ label: '1st', pct: 45 }, { label: '2nd', pct: 35 }, { label: '3rd', pct: 20 }]
   if (cat === 'practice') return []
   if (cat === 'h2h' || cat === 'jackpot') return [{ label: '1st', pct: 85 }]
   if (cat === 'mega') {
-    const w = Math.max(1, Math.floor(maxTeams * 0.3))
+    const w = Math.max(1, Math.floor((maxTeams ?? 10) * 0.3))
     if (w === 1) return [{ label: '1st', pct: 75 }]
     return [
       { label: '1st', pct: 40 }, { label: '2nd', pct: 25 }, { label: '3rd', pct: 15 },
@@ -152,8 +168,9 @@ function defaultPayoutSlots(cat: ContestCategory, maxTeams: number): { label: st
     ]
   }
   // small_league
-  if (maxTeams <= 3)  return [{ label: '1st', pct: 75 }]
-  if (maxTeams <= 4)  return [{ label: '1st', pct: 65 }, { label: '2nd', pct: 20 }]
+  const mt = maxTeams ?? 10
+  if (mt <= 3)  return [{ label: '1st', pct: 75 }]
+  if (mt <= 4)  return [{ label: '1st', pct: 65 }, { label: '2nd', pct: 20 }]
   return [{ label: '1st', pct: 50 }, { label: '2nd', pct: 30 }, { label: '3rd', pct: 20 }]
 }
 
@@ -373,12 +390,15 @@ interface ContestCardProps {
 
 function ContestCard({ contest, walletBalance, fantasyTeamId, isLocked, expanded, clubSlug, onToggleExpand, onJoin }: ContestCardProps) {
   const cfg       = TYPE_CONFIG[contest.contest_category] ?? TYPE_CONFIG.small_league
-  const pct       = contest.max_teams > 0 ? Math.min(100, Math.round((contest.entry_count / contest.max_teams) * 100)) : 0
-  const isFull    = contest.entry_count >= contest.max_teams
-  const isPaid    = contest.entry_fee > 0
+  const isUnlimited = contest.max_teams == null
+  const pct         = !isUnlimited && contest.max_teams! > 0 ? Math.min(100, Math.round((contest.entry_count / contest.max_teams!) * 100)) : 0
+  const isFull      = !isUnlimited && contest.entry_count >= contest.max_teams!
+  const isOpen      = contest.contest_category === 'open_league'
+  const isGrowing   = isOpen && !contest.final_prize_pool
+  const isPaid      = contest.entry_fee > 0
   const canAfford = walletBalance >= contest.entry_fee
   const isPractice = contest.contest_category === 'practice'
-  const payoutSlots = defaultPayoutSlots(contest.contest_category, contest.max_teams)
+  const payoutSlots = defaultPayoutSlots(contest.contest_category, contest.max_teams ?? contest.entry_count)
   const prizePool   = Number(contest.prize_pool ?? 0)
 
   return (
@@ -422,7 +442,7 @@ function ContestCard({ contest, walletBalance, fantasyTeamId, isLocked, expanded
                 {prizePool > 0 ? fmt(prizePool) : '—'}
               </p>
               <p className={cn('text-xs font-bold mt-0', cfg.accent)}>
-                {cfg.prizeLabel(prizePool, contest.max_teams, contest.entry_fee)}
+                {cfg.prizeLabel(prizePool, contest.max_teams, contest.entry_fee, isGrowing)}
               </p>
             </>
           )}
@@ -465,14 +485,26 @@ function ContestCard({ contest, walletBalance, fantasyTeamId, isLocked, expanded
       <div className="px-4 pb-3">
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs text-gray-500">
-            <span className="font-bold text-gray-700">{contest.entry_count}</span> / {contest.max_teams} spots
+            {isUnlimited ? (
+              <><span className="font-bold text-gray-700">{contest.entry_count}</span> joined — <span className="text-violet-600 font-semibold">unlimited spots</span></>
+            ) : (
+              <><span className="font-bold text-gray-700">{contest.entry_count}</span> / {contest.max_teams} spots</>
+            )}
           </span>
-          <span className="text-xs text-gray-400">{100 - pct}% left</span>
+          {!isUnlimited && <span className="text-xs text-gray-400">{100 - pct}% left</span>}
+          {isUnlimited && isGrowing && (
+            <span className="text-xs font-bold text-violet-600 animate-pulse">Pot growing…</span>
+          )}
         </div>
         <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-          <div className={cn('h-full rounded-full transition-all',
-            pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-orange-400' : pct >= 50 ? 'bg-[#C9A84C]' : cfg.stripe)}
-            style={{ width: `${pct}%` }} />
+          {isUnlimited ? (
+            // Open league: animated pulse bar showing activity
+            <div className="h-full rounded-full bg-violet-400 animate-pulse" style={{ width: '100%' }} />
+          ) : (
+            <div className={cn('h-full rounded-full transition-all',
+              pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-orange-400' : pct >= 50 ? 'bg-[#C9A84C]' : cfg.stripe)}
+              style={{ width: `${pct}%` }} />
+          )}
         </div>
       </div>
 

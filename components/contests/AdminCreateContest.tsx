@@ -20,7 +20,7 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
   const router = useRouter()
   const [open, setOpen]         = useState(false)
   const [name, setName]         = useState('')
-  const [type, setType]         = useState<'public' | 'private'>('public')
+  const [type, setType]         = useState<'public' | 'private' | 'open_league'>('public')
   const [maxTeams, setMaxTeams] = useState(100)
   const [prize, setPrize]       = useState('')
   const [saving, setSaving]     = useState(false)
@@ -34,15 +34,21 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
     const supabase = createClient()
 
     const entryCode = type === 'private' ? generateCode() : null
+    const isOpenLeague = type === 'open_league'
 
     const { data, error: err } = await supabase
       .from('contests')
       .insert({
         season_id:         seasonId,
         name:              name.trim(),
-        type,
+        type:              isOpenLeague ? 'open_league' : type,
         entry_code:        entryCode,
-        max_teams:         maxTeams,
+        max_teams:         isOpenLeague ? null : maxTeams,
+        entry_fee:         isOpenLeague ? 4 : undefined,
+        platform_fee_pct:  isOpenLeague ? 15 : undefined,
+        prize_structure:   isOpenLeague
+          ? [{ rank_from: 1, rank_to: 1, prize_pct: 45 }, { rank_from: 2, rank_to: 2, prize_pct: 35 }, { rank_from: 3, rank_to: 3, prize_pct: 20 }]
+          : undefined,
         prize_description: prize.trim() || null,
         created_by:        userId,
       })
@@ -52,7 +58,7 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
     if (err) { setError(err.message); setSaving(false); return }
 
     setSaving(false)
-    setDone(entryCode ?? '(public — anyone can join)')
+    setDone(entryCode ?? (type === 'open_league' ? '(open league — unlimited entries)' : '(public — anyone can join)'))
     router.refresh()
   }
 
@@ -102,38 +108,48 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Type</label>
-                    <div className="flex gap-2">
-                      {(['public', 'private'] as const).map((t) => (
+                    <div className="flex gap-2 flex-wrap">
+                      {([
+                        { value: 'public',      label: 'Public' },
+                        { value: 'private',     label: 'Private' },
+                        { value: 'open_league', label: '🌐 Open League' },
+                      ] as const).map(({ value, label }) => (
                         <button
-                          key={t}
-                          onClick={() => setType(t)}
-                          className={`flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-all capitalize ${
-                            type === t
+                          key={value}
+                          onClick={() => setType(value)}
+                          className={`flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-all ${
+                            type === value
                               ? 'bg-[#f0f0f0] border-[#C9A84C] text-[#0b0b0b]'
                               : 'bg-[#f0f0f0] border-[#d8d8d8] text-gray-600 hover:border-[#C9A84C]/40'
                           }`}
                         >
-                          {t}
+                          {label}
                         </button>
                       ))}
                     </div>
-                    {type === 'public'
-                      ? <p className="text-xs text-gray-400">Anyone with a team can join from the contests page.</p>
-                      : <p className="text-xs text-gray-400">A unique 6-character code will be generated for invites.</p>}
+                    {type === 'public' && <p className="text-xs text-gray-400">Anyone with a team can join from the contests page.</p>}
+                    {type === 'private' && <p className="text-xs text-gray-400">A unique 6-character code will be generated for invites.</p>}
+                    {type === 'open_league' && (
+                      <p className="text-xs text-violet-600 font-medium">
+                        Unlimited entries · £4 fee · Prize pot calculated at gameweek lock (entries × £4 × 0.85). Top 3 split 45/35/20%.
+                      </p>
+                    )}
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Max Teams</label>
-                    <select
-                      value={maxTeams}
-                      onChange={(e) => setMaxTeams(Number(e.target.value))}
-                      className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#444444] bg-[#f0f0f0] focus:outline-none focus:border-[#C9A84C] transition-colors"
-                    >
-                      {[10, 20, 50, 100, 200, 500].map((n) => (
-                        <option key={n} value={n}>{n} teams</option>
-                      ))}
-                    </select>
-                  </div>
+                  {type !== 'open_league' && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Max Teams</label>
+                      <select
+                        value={maxTeams}
+                        onChange={(e) => setMaxTeams(Number(e.target.value))}
+                        className="w-full px-3 py-2.5 rounded-xl border border-[#d8d8d8] text-sm text-[#444444] bg-[#f0f0f0] focus:outline-none focus:border-[#C9A84C] transition-colors"
+                      >
+                        {[10, 20, 50, 100, 200, 500].map((n) => (
+                          <option key={n} value={n}>{n} teams</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold uppercase tracking-widest text-gray-500">
@@ -173,6 +189,9 @@ export default function AdminCreateContest({ seasonId, userId }: Props) {
                       <p className="text-xs font-bold uppercase tracking-widest text-[#C9A84C]/60 mb-1">Invite Code</p>
                       <p className="text-3xl font-black tracking-[0.3em] text-[#C9A84C] font-mono">{done}</p>
                     </div>
+                  )}
+                  {type === 'open_league' && (
+                    <p className="text-sm text-violet-600 font-medium">Unlimited entries open. Prize pot grows as players join — frozen at gameweek lock.</p>
                   )}
                   <button onClick={handleClose} className="w-full py-2.5 rounded-xl bg-[#f0f0f0] text-[#0b0b0b] text-sm font-bold hover:bg-[#fafafa] transition-colors">
                     Done

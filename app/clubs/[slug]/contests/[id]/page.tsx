@@ -48,6 +48,11 @@ const CATEGORY_CONFIG: Record<ContestCategory, {
     headerBg: 'bg-orange-50 border border-orange-200', headerText: 'text-orange-900',
     accent: 'text-orange-600', stripe: 'bg-[#C9A84C]',
   },
+  open_league: {
+    icon: '🌐', label: 'Open League', desc: 'Unlimited entries — prize pot grows until gameweek locks',
+    headerBg: 'bg-violet-50 border border-violet-200', headerText: 'text-violet-900',
+    accent: 'text-violet-600', stripe: 'bg-violet-500',
+  },
 }
 
 function ordinal(n: number) {

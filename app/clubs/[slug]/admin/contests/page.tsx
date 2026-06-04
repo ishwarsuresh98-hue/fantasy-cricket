@@ -18,6 +18,7 @@ const TYPE_BADGE: Record<string, string> = {
   mega:             'bg-[#fef9ee] text-[#C9A84C] border border-[#C9A84C]/30',
   winner_takes_all: 'bg-red-100 text-red-600',
   practice:         'bg-gray-100 text-gray-500',
+  open_league:      'bg-violet-100 text-violet-700',
 }
 
 const STATUS_BADGE: Record<string, string> = {
@@ -45,14 +46,16 @@ function ContestTableRow({
   entryCount: number
   base:       string
 }) {
-  const raw    = contest as unknown as Record<string, unknown>
-  const max    = Number(contest.max_teams ?? raw.max_entries ?? 10)
-  const fee    = Number(contest.entry_fee  ?? 0)
-  const prize  = Number(contest.prize_pool ?? 0)
-  const pct    = max > 0 ? Math.min(100, Math.round((entryCount / max) * 100)) : 0
-  const status = (contest.status ?? 'open') as string
-  const cType  = (contest.type ?? 'public') as string
-  const isGW   = Boolean(contest.gameweek_id)
+  const raw        = contest as unknown as Record<string, unknown>
+  const rawMax     = contest.max_teams ?? raw.max_entries
+  const isUnlimited = rawMax == null
+  const max        = isUnlimited ? null : Number(rawMax)
+  const fee        = Number(contest.entry_fee  ?? 0)
+  const prize      = Number((raw.final_prize_pool ?? contest.prize_pool) ?? 0)
+  const pct        = (!isUnlimited && max! > 0) ? Math.min(100, Math.round((entryCount / max!) * 100)) : 0
+  const status     = (contest.status ?? 'open') as string
+  const cType      = (contest.type ?? 'public') as string
+  const isGW       = Boolean(contest.gameweek_id)
 
   return (
     <div className="flex items-center gap-3 px-5 py-3 hover:bg-[#fafafa] transition-colors flex-wrap min-h-[56px]">
@@ -91,16 +94,22 @@ function ContestTableRow({
       <div className="min-w-[5.5rem]">
         <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 leading-none mb-1">Teams</p>
         <div className="flex items-center gap-1.5">
-          <p className="text-sm font-black text-gray-700 tabular-nums">{entryCount}/{max}</p>
-          <div className="w-12 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className={cn(
-                'h-full rounded-full transition-all',
-                pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-orange-400' : 'bg-[#C9A84C]',
-              )}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
+          {isUnlimited ? (
+            <p className="text-sm font-black text-violet-600 tabular-nums">{entryCount} / ∞</p>
+          ) : (
+            <>
+              <p className="text-sm font-black text-gray-700 tabular-nums">{entryCount}/{max}</p>
+              <div className="w-12 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    'h-full rounded-full transition-all',
+                    pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-orange-400' : 'bg-[#C9A84C]',
+                  )}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -108,7 +117,11 @@ function ContestTableRow({
       <div className="text-center min-w-[4rem]">
         <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 leading-none mb-0.5">Prize</p>
         <p className="text-sm font-black text-[#C9A84C] tabular-nums">
-          {prize > 0 ? `£${prize % 1 === 0 ? prize : prize.toFixed(2)}` : '—'}
+          {prize > 0
+            ? `£${prize % 1 === 0 ? prize : prize.toFixed(2)}`
+            : isUnlimited
+            ? <span className="text-violet-500 text-[10px]">growing</span>
+            : '—'}
         </p>
       </div>
 
@@ -134,6 +147,7 @@ function ContestTableRow({
           contestId={contest.id}
           initialStatus={status}
           isGameweek={isGW}
+          contestType={cType}
         />
       </div>
     </div>

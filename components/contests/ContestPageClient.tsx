@@ -56,8 +56,8 @@ export default function ContestPageClient({
     if (sort === 'fee_asc')    copy.sort((a, b) => a.entry_fee - b.entry_fee)
     if (sort === 'prize_desc') copy.sort((a, b) => b.prize_pool - a.prize_pool)
     if (sort === 'filling')    copy.sort((a, b) => {
-      const pctA = a.max_teams > 0 ? a.entry_count / a.max_teams : 0
-      const pctB = b.max_teams > 0 ? b.entry_count / b.max_teams : 0
+      const pctA = (a.max_teams != null && a.max_teams > 0) ? a.entry_count / a.max_teams : 0
+      const pctB = (b.max_teams != null && b.max_teams > 0) ? b.entry_count / b.max_teams : 0
       return pctB - pctA
     })
     return copy

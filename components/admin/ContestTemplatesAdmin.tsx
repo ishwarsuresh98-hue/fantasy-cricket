@@ -34,16 +34,18 @@ function prizeLabel(type: string): string {
     case 'mega':            return 'Top 30% win'
     case 'winner_takes_all': return 'Winner 85%'
     case 'practice':        return 'No prize'
+    case 'open_league':     return 'Top 3 — pot at lock'
     default:                return type
   }
 }
 
 const TYPE_LABELS: Record<string, { label: string; colour: string }> = {
-  head_to_head:    { label: 'H2H',         colour: 'bg-blue-100 text-blue-700' },
-  small_league:    { label: 'Small League', colour: 'bg-gray-100 text-gray-700' },
-  mega:            { label: 'Mega',         colour: 'bg-red-100 text-red-700' },
-  winner_takes_all: { label: 'Jackpot',     colour: 'bg-[#fef9ee] text-[#C9A84C]' },
-  practice:        { label: 'Practice',     colour: 'bg-green-100 text-green-700' },
+  head_to_head:    { label: 'H2H',          colour: 'bg-blue-100 text-blue-700' },
+  small_league:    { label: 'Small League',  colour: 'bg-gray-100 text-gray-700' },
+  mega:            { label: 'Mega',          colour: 'bg-red-100 text-red-700' },
+  winner_takes_all: { label: 'Jackpot',      colour: 'bg-[#fef9ee] text-[#C9A84C]' },
+  practice:        { label: 'Practice',      colour: 'bg-green-100 text-green-700' },
+  open_league:     { label: 'Open League',   colour: 'bg-violet-100 text-violet-700' },
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -292,10 +294,11 @@ export default function ContestTemplatesAdmin({
                     name="max_entries"
                     type="number"
                     min={2}
-                    defaultValue={editing.max_entries}
-                    required
+                    defaultValue={editing.max_entries ?? ''}
+                    placeholder="Leave blank = unlimited"
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#C9A84C]/30"
                   />
+                  <p className="text-[10px] text-gray-400 mt-0.5">Leave blank for Open League (unlimited)</p>
                 </div>
               </div>
 

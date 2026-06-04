@@ -31,6 +31,7 @@ const CATEGORY_ACCENT: Record<ContestCategory, string> = {
   small_league: 'bg-green-600 hover:bg-green-700',
   jackpot:      'bg-red-600 hover:bg-red-700',
   mega:         'bg-[#C9A84C] hover:bg-[#a8892e]',
+  open_league:  'bg-violet-600 hover:bg-violet-700',
 }
 
 export default function ContestDetailJoin({

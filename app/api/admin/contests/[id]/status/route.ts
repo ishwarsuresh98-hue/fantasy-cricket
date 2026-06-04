@@ -25,6 +25,17 @@ export async function PATCH(
   }
 
   const admin = createAdminClient()
+
+  // Open leagues use the freeze function on lock — it calculates final_prize_pool
+  if (status === 'locked') {
+    const { data: contest } = await admin.from('contests').select('type').eq('id', id).single()
+    if (contest?.type === 'open_league') {
+      const { error: fnErr } = await admin.rpc('freeze_open_league_contest', { p_contest_id: id })
+      if (fnErr) return NextResponse.json({ error: fnErr.message }, { status: 500 })
+      return NextResponse.json({ ok: true, status: 'locked', frozen: true })
+    }
+  }
+
   const { error } = await admin
     .from('contests')
     .update({ status })

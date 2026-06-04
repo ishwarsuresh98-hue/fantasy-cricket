@@ -195,7 +195,7 @@ export interface MatchPlayingXI {
 }
 
 export type ContestType      = 'public' | 'private'
-export type ContestCategory  = 'mega' | 'h2h' | 'small_league' | 'jackpot' | 'practice'
+export type ContestCategory  = 'mega' | 'h2h' | 'small_league' | 'jackpot' | 'practice' | 'open_league'
 export type ContestSlotType  = 'head_to_head' | 'small_league' | 'mega' | 'winner_takes_all' | 'practice'
 export type PaymentGateway   = 'flatpay' | 'stripe'
 export type PaymentStatus    = 'pending' | 'confirmed' | 'failed'
@@ -267,10 +267,11 @@ export interface LobbyContest {
   entry_fee:         number
   prize_pool:        number
   guaranteed_prize:  boolean
-  max_teams:         number
+  max_teams:         number | null   // null = unlimited (open league)
   prize_description: string | null
   entry_count:       number
   is_joined:         boolean
+  final_prize_pool?: number | null   // set at gameweek lock for open leagues
 }
 
 /** Upcoming match with its open contests, used on the contests list page. */

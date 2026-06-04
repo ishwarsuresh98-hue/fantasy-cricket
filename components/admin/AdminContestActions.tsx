@@ -8,9 +8,10 @@ interface Props {
   contestId:     string
   initialStatus: string
   isGameweek:    boolean
+  contestType?:  string
 }
 
-export default function AdminContestActions({ contestId, initialStatus, isGameweek }: Props) {
+export default function AdminContestActions({ contestId, initialStatus, isGameweek, contestType }: Props) {
   const router = useRouter()
   const [status,  setStatus]  = useState(initialStatus)
   const [busy,    setBusy]    = useState(false)
@@ -74,7 +75,7 @@ export default function AdminContestActions({ contestId, initialStatus, isGamewe
           disabled={busy}
           className="px-2 py-1 rounded-lg text-[11px] font-bold border border-amber-300 text-amber-700 hover:bg-amber-50 disabled:opacity-50 transition-colors"
         >
-          Lock
+          {contestType === 'open_league' ? 'Lock & Freeze Pot' : 'Lock'}
         </button>
       )}
 

@@ -14,6 +14,7 @@ const TYPE_TO_CATEGORY: Record<string, ContestCategory> = {
   mega:             'mega',
   winner_takes_all: 'jackpot',
   practice:         'practice',
+  open_league:      'open_league',
   public:           'small_league',
   private:          'small_league',
 }
@@ -155,14 +156,22 @@ export default async function ClubContestsPage({
     const id         = c.id as string
     const cType      = (c.type ?? 'public') as string
     const entryFee   = Number(c.entry_fee ?? 0)
-    const maxTeams   = Number(c.max_entries ?? c.max_teams ?? 10)
+    const rawMax     = c.max_entries ?? c.max_teams
+    const maxTeams   = rawMax != null ? Number(rawMax) : null   // null = unlimited
     const platFee    = Number(c.platform_fee_pct ?? 15)
     const entryCount = Number(c.total_entries ?? entryCountMap[id] ?? 0)
     const guaranteed = Boolean(c.is_guaranteed ?? c.guaranteed_prize ?? false)
     const slots      = (c.prize_structure ?? []) as PrizeSlot[]
-    const prizePool  = guaranteed
-      ? Number(c.prize_pool ?? netPrizePool(entryFee, maxTeams, platFee))
-      : netPrizePool(entryFee, entryCount, platFee)
+    const finalPool  = c.final_prize_pool != null ? Number(c.final_prize_pool) : null
+
+    // Open league: prize pool grows live with entries (or is frozen at final_prize_pool)
+    const isOpen     = cType === 'open_league'
+    const prizePool  = finalPool ??
+      (isOpen
+        ? netPrizePool(entryFee, entryCount, platFee)       // live pot
+        : guaranteed
+        ? Number(c.prize_pool ?? netPrizePool(entryFee, maxTeams ?? 10, platFee))
+        : netPrizePool(entryFee, entryCount, platFee))
 
     const prizeDesc = slots.length > 0
       ? slots.map((s: PrizeSlot) => {
@@ -183,6 +192,7 @@ export default async function ClubContestsPage({
       prize_description: prizeDesc,
       entry_count:       entryCount,
       is_joined:         myEnteredIds.has(id),
+      final_prize_pool:  finalPool,
     }
   }
 
@@ -270,18 +280,25 @@ export default async function ClubContestsPage({
           {/* GW contest cards */}
           <div className="grid gap-3 sm:grid-cols-2">
             {gwLobbyContests.map((c) => {
-              const isFree    = c.entry_fee === 0
-              const isFull    = c.entry_count >= c.max_teams
-              const pct       = c.max_teams > 0 ? Math.min(100, Math.round((c.entry_count / c.max_teams) * 100)) : 0
-              const isJoined  = c.is_joined
-              const hasTeam   = (c as typeof c & { has_team?: boolean }).has_team ?? false
+              const isFree      = c.entry_fee === 0
+              const isUnlimited = c.max_teams == null
+              const isFull      = !isUnlimited && c.entry_count >= c.max_teams!
+              const pct         = !isUnlimited && c.max_teams! > 0 ? Math.min(100, Math.round((c.entry_count / c.max_teams!) * 100)) : 0
+              const isOpen      = c.contest_category === 'open_league'
+              const isGrowing   = isOpen && !c.final_prize_pool
+              const isJoined    = c.is_joined
+              const hasTeam     = (c as typeof c & { has_team?: boolean }).has_team ?? false
               return (
                 <Link
                   key={c.id}
                   href={`${base}/contests/${c.id}`}
                   className={cn(
                     'block rounded-2xl border-2 px-5 py-4 transition-all hover:shadow-md',
-                    isJoined ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-white hover:border-[#C9A84C]/50',
+                    isJoined
+                      ? 'border-green-300 bg-green-50'
+                      : isOpen
+                      ? 'border-violet-200 bg-violet-50/20 hover:border-violet-400/50'
+                      : 'border-gray-200 bg-white hover:border-[#C9A84C]/50',
                   )}
                 >
                   <div className="flex items-start justify-between gap-2 mb-3">
@@ -289,28 +306,51 @@ export default async function ClubContestsPage({
                       <p className="text-sm font-black text-gray-800 truncate">{c.name}</p>
                       {isJoined ? (
                         <span className="text-[10px] font-black text-green-700 bg-green-100 px-2 py-0.5 rounded-full">✓ Entered{hasTeam ? ' · Team saved' : ''}</span>
+                      ) : isOpen ? (
+                        <span className="text-[10px] font-black text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full">🌐 Open League · Unlimited</span>
                       ) : (
                         <span className="text-[10px] font-black uppercase tracking-widest text-[#C9A84C]">🏏 Pick XI to enter</span>
                       )}
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-lg font-black text-[#C9A84C] tabular-nums">
-                        {c.prize_pool > 0 ? `£${c.prize_pool % 1 === 0 ? c.prize_pool : c.prize_pool.toFixed(2)}` : '—'}
-                      </p>
-                      <p className="text-[10px] text-gray-400">prize pool</p>
+                      {isGrowing ? (
+                        <>
+                          <p className="text-lg font-black text-violet-600 tabular-nums">
+                            £{(c.entry_count * Number(c.entry_fee) * 0.85).toFixed(2)}
+                          </p>
+                          <p className="text-[10px] text-violet-400 animate-pulse">pot growing…</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-lg font-black text-[#C9A84C] tabular-nums">
+                            {c.prize_pool > 0 ? `£${c.prize_pool % 1 === 0 ? c.prize_pool : c.prize_pool.toFixed(2)}` : '—'}
+                          </p>
+                          <p className="text-[10px] text-gray-400">{isOpen ? 'final pot' : 'prize pool'}</p>
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center justify-between mb-1.5 text-xs">
-                    <span className="text-gray-500">{c.entry_count}/{c.max_teams} spots</span>
+                    {isUnlimited ? (
+                      <span className="text-gray-500">
+                        <span className="font-bold text-gray-700">{c.entry_count}</span> joined · <span className="text-violet-600 font-semibold">unlimited spots</span>
+                      </span>
+                    ) : (
+                      <span className="text-gray-500">{c.entry_count}/{c.max_teams} spots</span>
+                    )}
                     <span className={cn('font-bold', isFree ? 'text-green-600' : 'text-[#C9A84C]')}>
                       {isFree ? 'Free' : `£${Number(c.entry_fee).toFixed(2)}`}
                     </span>
                   </div>
                   <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className={cn('h-full rounded-full transition-all', pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-orange-400' : 'bg-[#C9A84C]')}
-                      style={{ width: `${pct}%` }}
-                    />
+                    {isUnlimited ? (
+                      <div className="h-full rounded-full bg-violet-400 animate-pulse" style={{ width: '100%' }} />
+                    ) : (
+                      <div
+                        className={cn('h-full rounded-full transition-all', pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-orange-400' : 'bg-[#C9A84C]')}
+                        style={{ width: `${pct}%` }}
+                      />
+                    )}
                   </div>
                   {isFull && <p className="text-xs text-red-500 font-bold mt-1.5">Full — no spots left</p>}
                 </Link>
