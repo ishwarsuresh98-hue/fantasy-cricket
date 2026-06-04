@@ -54,8 +54,8 @@ export default async function ClubAdminPage({
                 { value: teamCount ?? 0,    label: 'Fantasy Teams' },
               ].map(({ value, label }) => (
                 <div key={label} className="group text-center p-3 bg-[#f0f0f0] rounded-lg border border-transparent hover:bg-[#fdf6e3] hover:border-[#C9A84C] transition-colors cursor-default">
-                  <p className="text-2xl font-bold text-[#C9A84C] group-hover:text-[#a8892e]">{value}</p>
-                  <p className="text-xs text-[#C9A84C]/70 mt-0.5 group-hover:text-[#a8892e]">{label}</p>
+                  <p className="text-2xl font-bold text-[#6B5228] group-hover:text-[#a8892e]">{value}</p>
+                  <p className="text-xs text-[#8a7a5a] mt-0.5 group-hover:text-[#a8892e]">{label}</p>
                 </div>
               ))}
             </div>
