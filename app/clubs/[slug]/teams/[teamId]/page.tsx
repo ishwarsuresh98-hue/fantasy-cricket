@@ -18,7 +18,7 @@ const ROLE_BADGE: Record<string, string> = {
 type MatchMeta = { id: string; match_number: number; opponent_team: string; match_date: string; status: string; result: string | null }
 type SelRow    = { match_id: string; player_id: string; is_captain: boolean; is_vice_captain: boolean; is_substitute: boolean; points_earned: number; players: { id: string; name: string; role: string }; matches: MatchMeta }
 type PerfRow   = { match_id: string; player_id: string; runs_scored: number; wickets: number | null; catches: number | null; fours: number | null; sixes: number | null; maidens: number | null; base_points: number; did_not_bat: boolean }
-type GwPlayerRow = { playerId: string; playerName: string; playerRole: string; isCaptain: boolean; isViceCaptain: boolean; isSubstitute: boolean; totalRuns: number; totalWickets: number; totalBasePoints: number; totalEarned: number }
+type GwPlayerRow = { playerId: string; playerName: string; playerRole: string; isCaptain: boolean; isViceCaptain: boolean; isSubstitute: boolean; autoCaptain: boolean; autoVC: boolean; totalRuns: number; totalWickets: number; totalBasePoints: number; totalEarned: number }
 
 export default async function ClubTeamDetailPage({
   params,
@@ -59,6 +59,23 @@ export default async function ClubTeamDetailPage({
     ? await supabase.from('match_performances').select('match_id, player_id, runs_scored, wickets, catches, fours, sixes, maidens, base_points, did_not_bat').in('match_id', completedMatchIds)
     : { data: [] }
 
+  // Fetch auto-substitution records so we can show "(auto)" badges
+  const { data: autoSubData } = completedMatchIds.length > 0
+    ? await supabase
+        .from('auto_substitutions')
+        .select('match_id, player_in_id, captain_changed, vc_changed')
+        .eq('fantasy_team_id', teamId)
+        .in('match_id', completedMatchIds)
+    : { data: [] }
+
+  // Build a lookup: matchId+playerId → { autoCaptain, autoVC, autoSub }
+  type AutoSubInfo = { autoCaptain: boolean; autoVC: boolean }
+  const autoSubMap = new Map<string, AutoSubInfo>()
+  for (const a of (autoSubData ?? []) as Array<{ match_id: string; player_in_id: string; captain_changed: boolean; vc_changed: boolean }>) {
+    const key = `${a.match_id}:${a.player_in_id}`
+    autoSubMap.set(key, { autoCaptain: a.captain_changed, autoVC: a.vc_changed })
+  }
+
   const performances = (perfData ?? []) as unknown as PerfRow[]
   const perfByMatchPlayer = new Map<string, Map<string, PerfRow>>()
   for (const perf of performances) {
@@ -89,8 +106,10 @@ export default async function ClubTeamDetailPage({
       for (const sel of sels) {
         const pid = sel.player_id
         if (!byPlayer.has(pid)) {
+          const autoInfo = autoSubMap.get(`${matchId}:${pid}`)
           byPlayer.set(pid, { playerId: pid, playerName: sel.players.name, playerRole: sel.players.role,
             isCaptain: sel.is_captain, isViceCaptain: sel.is_vice_captain, isSubstitute: sel.is_substitute ?? false,
+            autoCaptain: autoInfo?.autoCaptain ?? false, autoVC: autoInfo?.autoVC ?? false,
             totalRuns: 0, totalWickets: 0, totalBasePoints: 0, totalEarned: 0 })
         }
         const row  = byPlayer.get(pid)!
@@ -182,7 +201,13 @@ export default async function ClubTeamDetailPage({
                                       <span className="flex-shrink-0 w-5" />
                                     )}
                                     <Link href={`${base}/players/${row.playerId}`} className="font-medium hover:text-[#C9A84C] hover:underline">{row.playerName}</Link>
-                                    {row.isSubstitute && (
+                                    {row.autoCaptain && (
+                                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#fef9ee] text-[#C9A84C] border border-[#C9A84C]/30 whitespace-nowrap">⭐ Captain (auto)</span>
+                                    )}
+                                    {row.autoVC && (
+                                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-gray-50 text-gray-600 border border-gray-200 whitespace-nowrap">★ Vice-Captain (auto)</span>
+                                    )}
+                                    {row.isSubstitute && !row.autoCaptain && !row.autoVC && (
                                       <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-50 text-blue-600 border border-blue-200 whitespace-nowrap">↔ Auto sub</span>
                                     )}
                                   </div>
