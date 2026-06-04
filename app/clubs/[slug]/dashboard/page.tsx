@@ -9,6 +9,7 @@ import { computeMatchDayLockWindow } from '@/lib/deadline'
 import { buildGameweeks } from '@/lib/gameweeks'
 import HeroCountdown from '@/components/HeroCountdown'
 import PushPermissionButton from '@/components/push/PushPermissionButton'
+import OnboardingModal from '@/components/OnboardingModal'
 import type { Match, Season, TeamBooster, FantasyTeam } from '@/types'
 
 function fmtPts(n: number) {
@@ -472,6 +473,15 @@ export default async function ClubDashboardPage({
       )}
 
       <PushPermissionButton />
+
+      {/* Onboarding modal — shown once for new users until dismissed */}
+      {!profile?.onboarding_complete && (
+        <OnboardingModal
+          clubName={club.name}
+          slug={slug}
+          displayName={profile?.display_name}
+        />
+      )}
     </div>
   )
 }
