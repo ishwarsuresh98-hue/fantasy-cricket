@@ -40,6 +40,25 @@ export interface Profile {
   created_at: string
   whatsapp_number?: string | null
   onboarding_complete?: boolean
+  club_id?: string | null
+}
+
+export interface ClubMembership {
+  id: string
+  user_id: string
+  club_id: string
+  created_at: string
+}
+
+export interface Membership {
+  id: string
+  user_id: string
+  stripe_subscription_id: string | null
+  stripe_customer_id: string | null
+  status: 'active' | 'inactive' | 'cancelled' | 'past_due'
+  expires_at: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface Season {

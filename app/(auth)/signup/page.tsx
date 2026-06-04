@@ -9,15 +9,22 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
+// ── Available clubs ───────────────────────────────────────────────────────────
+// Add new clubs here as they go live. id must match the clubs.id in Supabase.
+const CLUBS = [
+  { slug: 'slough-cc', name: 'Slough CC', label: 'Slough CC — Free to join' },
+] as const
+
 export default function SignupPage() {
   const router = useRouter()
   const [displayName, setDisplayName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [whatsapp, setWhatsapp] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [checkEmail, setCheckEmail] = useState(false)
+  const [email,       setEmail]       = useState('')
+  const [password,    setPassword]    = useState('')
+  const [whatsapp,    setWhatsapp]    = useState('')
+  const [clubSlug,    setClubSlug]    = useState<string>(CLUBS[0].slug)
+  const [error,       setError]       = useState<string | null>(null)
+  const [loading,     setLoading]     = useState(false)
+  const [checkEmail,  setCheckEmail]  = useState(false)
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
@@ -25,7 +32,7 @@ export default function SignupPage() {
     setError(null)
 
     const supabase = createClient()
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error: signUpErr } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -33,18 +40,53 @@ export default function SignupPage() {
       },
     })
 
-    if (error) {
-      setError(error.message)
+    if (signUpErr) {
+      setError(signUpErr.message)
       setLoading(false)
-    } else if (data.session) {
-      // Email confirmation is disabled — user is logged in immediately
-      if (whatsapp.trim()) {
-        await supabase.from('profiles').update({ whatsapp_number: whatsapp.trim() }).eq('id', data.user!.id)
+      return
+    }
+
+    const userId = data.user?.id
+    if (!userId) {
+      setCheckEmail(true)
+      setLoading(false)
+      return
+    }
+
+    // ── Update profile with optional WhatsApp ─────────────────────────────
+    if (whatsapp.trim()) {
+      await supabase
+        .from('profiles')
+        .update({ whatsapp_number: whatsapp.trim() })
+        .eq('id', userId)
+    }
+
+    // ── Join selected club (sets profiles.club_id + creates club_membership) ─
+    try {
+      // Resolve club id from slug
+      const { data: club } = await supabase
+        .from('clubs')
+        .select('id')
+        .eq('slug', clubSlug)
+        .single()
+
+      if (club?.id) {
+        await fetch('/api/clubs/join', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ club_id: club.id }),
+        })
       }
-      router.push('/dashboard')
+    } catch {
+      // Non-fatal — user can join a club later
+    }
+
+    if (data.session) {
+      // Email confirmation disabled — user is logged in immediately
+      router.push(`/clubs/${clubSlug}/dashboard`)
       router.refresh()
     } else {
-      // Email confirmation is enabled — ask them to check their inbox
+      // Email confirmation enabled
       setCheckEmail(true)
       setLoading(false)
     }
@@ -94,6 +136,7 @@ export default function SignupPage() {
                       {error}
                     </div>
                   )}
+
                   <div className="space-y-1.5">
                     <Label htmlFor="displayName">Your Name</Label>
                     <Input
@@ -105,6 +148,7 @@ export default function SignupPage() {
                       required
                     />
                   </div>
+
                   <div className="space-y-1.5">
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -116,6 +160,7 @@ export default function SignupPage() {
                       required
                     />
                   </div>
+
                   <div className="space-y-1.5">
                     <Label htmlFor="password">Password</Label>
                     <Input
@@ -128,8 +173,39 @@ export default function SignupPage() {
                       required
                     />
                   </div>
+
+                  {/* ── Club selector ──────────────────────────────────────── */}
                   <div className="space-y-1.5">
-                    <Label htmlFor="whatsapp">WhatsApp Number <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                    <Label htmlFor="club">Select Your Club</Label>
+                    {CLUBS.length === 1 ? (
+                      /* Single club — show as a read-only badge */
+                      <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                        <span className="text-sm font-semibold text-gray-800">{CLUBS[0].name}</span>
+                        <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">Free to join</span>
+                      </div>
+                    ) : (
+                      <select
+                        id="club"
+                        value={clubSlug}
+                        onChange={(e) => setClubSlug(e.target.value)}
+                        required
+                        className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 focus:border-[#C9A84C] focus:outline-none focus:ring-1 focus:ring-[#C9A84C]"
+                      >
+                        {CLUBS.map((c) => (
+                          <option key={c.slug} value={c.slug}>{c.label}</option>
+                        ))}
+                      </select>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      You can join additional clubs later with a £5/year membership.
+                    </p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="whatsapp">
+                      WhatsApp Number{' '}
+                      <span className="text-muted-foreground font-normal">(optional)</span>
+                    </Label>
                     <Input
                       id="whatsapp"
                       type="tel"
@@ -137,12 +213,15 @@ export default function SignupPage() {
                       value={whatsapp}
                       onChange={(e) => setWhatsapp(e.target.value)}
                     />
-                    <p className="text-xs text-muted-foreground">We&apos;ll send you deadline reminders and score updates via WhatsApp.</p>
+                    <p className="text-xs text-muted-foreground">
+                      We&apos;ll send deadline reminders and score updates via WhatsApp.
+                    </p>
                   </div>
                 </CardContent>
+
                 <CardFooter className="flex flex-col gap-3">
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Creating account...' : 'Create Account'}
+                    {loading ? 'Creating account…' : 'Create Account'}
                   </Button>
                   <p className="text-sm text-muted-foreground text-center">
                     Already have an account?{' '}
