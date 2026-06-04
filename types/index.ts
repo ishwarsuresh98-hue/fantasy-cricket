@@ -15,6 +15,7 @@ export type BoosterType =
   | 'batting_surge'
   | 'keeping_surge'
   | 'bowling_surge'
+  | 'all_round_surge'
   | 'free_hit'
   | 'triple_captain'
   | 'mega_transfer'
