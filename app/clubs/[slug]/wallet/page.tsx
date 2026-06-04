@@ -281,16 +281,20 @@ export default async function WalletPage({
                 debit:        'Debit',
               }
               const isCredit = t.type in CREDIT_TYPES
+              const isWin    = t.type === 'contest_win'
               const typeLabel = CREDIT_TYPES[t.type] ?? DEBIT_TYPES[t.type] ?? t.type
               const date = new Date(t.created_at).toLocaleDateString('en-GB', {
                 day: 'numeric', month: 'short', year: 'numeric',
               })
               return (
-                <li key={t.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 transition-colors">
+                <li key={t.id} className={`flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 transition-colors ${isWin ? 'bg-[#fef9ee]/60' : ''}`}>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
+                      {isWin && <span className="text-base leading-none">🏆</span>}
                       <span className={`text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                        isCredit ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-500'
+                        isWin    ? 'bg-[#C9A84C]/15 text-[#a8892e]'
+                        : isCredit ? 'bg-green-100 text-green-700'
+                        : 'bg-red-50 text-red-500'
                       }`}>
                         {typeLabel}
                       </span>
@@ -298,7 +302,9 @@ export default async function WalletPage({
                     </div>
                     <p className="text-xs text-gray-400 mt-0.5">{date}</p>
                   </div>
-                  <span className={`ml-4 flex-shrink-0 text-base font-black tabular-nums ${isCredit ? 'text-green-600' : 'text-red-500'}`}>
+                  <span className={`ml-4 flex-shrink-0 text-base font-black tabular-nums ${
+                    isWin ? 'text-[#C9A84C]' : isCredit ? 'text-green-600' : 'text-red-500'
+                  }`}>
                     {isCredit ? '+' : '−'}£{Number(t.amount).toFixed(2)}
                   </span>
                 </li>

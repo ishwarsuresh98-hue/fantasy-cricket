@@ -109,9 +109,34 @@ export async function POST(
     else console.error(`[calc-gw-points] update error for team ${id}:`, error)
   }
 
+  // ── Distribute prizes now that every team has a rank ─────────────────────
+  const contestTitle = ((contest as unknown as Record<string, unknown>).title as string | null)
+    ?? (contest as unknown as Record<string, unknown>).name as string
+    ?? contestId
+
+  if (updatedCount > 0) {
+    const { error: distErr } = await admin.rpc('distribute_contest_prizes', {
+      p_contest_id: contestId,
+    })
+
+    if (distErr) {
+      // Non-fatal: log and surface in the response but don't fail the request
+      console.error(`[calc-gw-points] prize distribution error for ${contestId}:`, distErr.message)
+      return NextResponse.json({
+        ok:            true,
+        updated:       updatedCount,
+        contest:       contestTitle,
+        prizes_error:  distErr.message,
+      })
+    }
+
+    console.log(`[calc-gw-points] Prizes distributed for contest ${contestTitle} (${contestId})`)
+  }
+
   return NextResponse.json({
     ok:      true,
     updated: updatedCount,
-    contest: contest.name,
+    contest: contestTitle,
+    prizes:  updatedCount > 0 ? 'distributed' : 'skipped — no teams updated',
   })
 }
