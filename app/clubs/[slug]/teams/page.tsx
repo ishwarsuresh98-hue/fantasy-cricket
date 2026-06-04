@@ -137,11 +137,16 @@ export default async function ClubTeamsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-[#C9A84C]">All Teams</h1>
+        <h1 className="text-3xl font-bold text-[#C9A84C]">Season Leaderboard</h1>
         <p className="text-muted-foreground mt-1">
           {season.name}
           {refLabel && <span className="ml-2 text-sm">— squads for <span className="font-medium">{refLabel}</span></span>}
         </p>
+        {/* 2026 free league banner */}
+        <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm font-semibold">
+          <span>🏏</span>
+          <span>2026 Season League — <span className="font-black">Free to play</span></span>
+        </div>
         {hiddenBehindDeadline && (
           <p className="mt-2 text-sm text-[#C9A84C] bg-[#fef9ee] border border-[#C9A84C]/30 rounded-lg px-3 py-2 inline-flex items-center gap-1.5">
             🔒 Transfer changes for{' '}

@@ -579,11 +579,25 @@ function JoinModal({ contest, walletBalance, stage, error, fantasyTeamId, clubSl
                     {isJoining ? 'Joining…' : `Pay from Wallet · £${walletBalance.toFixed(2)}`}
                   </button>
                 )}
+                {!canAfford && (
+                  <div className="rounded-xl bg-orange-50 border border-orange-200 px-4 py-3">
+                    <p className="text-xs font-bold text-orange-700">
+                      You need{' '}
+                      <span className="font-black">£{(contest.entry_fee - walletBalance).toFixed(2)}</span>
+                      {' '}more to enter
+                    </p>
+                    <Link href={`/clubs/${clubSlug}/wallet`}
+                      onClick={onCancel}
+                      className="text-xs text-orange-600 underline font-semibold hover:text-orange-800">
+                      Top up your wallet →
+                    </Link>
+                  </div>
+                )}
                 <button onClick={onStripe} disabled={isJoining}
                   className={cn('w-full py-3 rounded-xl font-black text-sm transition-colors disabled:opacity-60',
                     canAfford ? 'border-2 border-gray-200 text-gray-600 hover:border-[#C9A84C]/40 hover:text-[#C9A84C]'
                               : 'bg-[#C9A84C] text-black hover:bg-[#a8892e]')}>
-                  {canAfford ? 'Pay by Card instead' : `Top up & Pay · £${contest.entry_fee.toFixed(2)}`}
+                  {canAfford ? 'Pay by Card instead' : `Pay by Card · £${contest.entry_fee.toFixed(2)}`}
                 </button>
                 <button onClick={onCancel} disabled={isJoining}
                   className="w-full py-2.5 rounded-xl text-sm text-gray-400 hover:text-gray-600 disabled:opacity-50 transition-colors">
