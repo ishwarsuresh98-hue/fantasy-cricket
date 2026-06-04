@@ -60,34 +60,54 @@ export default async function ClubContestsPage({
   const walletBalance = Number(wallet?.balance ?? 0)
 
   // ── Active gameweek + its contests ────────────────────────────────────────
+  // DB columns: gameweek_number, start_date, end_date (not number/match_id/match_date)
   const { data: activeGw } = await supabase
     .from('gameweeks')
-    .select('id, number, name, match_date, match_id')
+    .select('id, gameweek_number, name, start_date, end_date, deadline')
     .eq('season_id', season.id)
     .eq('is_active', true)
     .maybeSingle()
 
   let gwContests: Record<string, unknown>[] = []
   let myGwContestTeamIds = new Set<string>()
-  let gwPlayerCount = 0          // confirmed playing XI count for active GW
+  let gwPlayerCount = 0
+  let gwMatches: { id: string; our_team: string; opponent_team: string; venue: string | null; match_date: string }[] = []
 
   if (activeGw) {
-    const [{ data: gwRows }, { count: xiCount }] = await Promise.all([
+    const gw = activeGw as unknown as {
+      id: string; gameweek_number: number; name: string
+      start_date: string; end_date: string; deadline: string
+    }
+
+    const [{ data: gwRows }, { data: matchRows }] = await Promise.all([
       supabase
         .from('contests')
         .select('*')
-        .eq('gameweek_id', activeGw.id)
+        .eq('gameweek_id', gw.id)
         .or('status.eq.open,status.is.null')
         .order('entry_fee', { ascending: true }),
-      activeGw.match_id
-        ? supabase
-            .from('match_playing_xi')
-            .select('player_id', { count: 'exact', head: true })
-            .eq('match_id', activeGw.match_id)
-        : Promise.resolve({ count: 0 }),
+      // Fetch all matches that fall within the gameweek window
+      supabase
+        .from('matches')
+        .select('id, our_team, opponent_team, venue, match_date')
+        .eq('season_id', season.id)
+        .gte('match_date', gw.start_date)
+        .lte('match_date', gw.end_date)
+        .order('match_date', { ascending: true }),
     ])
-    gwContests    = (gwRows ?? []) as Record<string, unknown>[]
-    gwPlayerCount = xiCount ?? 0
+
+    gwContests = (gwRows ?? []) as Record<string, unknown>[]
+    gwMatches  = (matchRows ?? []) as typeof gwMatches
+
+    // Count players with confirmed XI across all GW matches
+    if (gwMatches.length > 0) {
+      const matchIds = gwMatches.map((m) => m.id)
+      const { count: xiCount } = await supabase
+        .from('match_playing_xi')
+        .select('player_id', { count: 'exact', head: true })
+        .in('match_id', matchIds)
+      gwPlayerCount = xiCount ?? 0
+    }
 
     // Which GW contests does the user already have a contest_team for?
     if (userId && gwContests.length > 0) {
@@ -228,8 +248,9 @@ export default async function ClubContestsPage({
     return { ...base, gameweek_id: activeGw?.id ?? null, has_team: myGwContestTeamIds.has(base.id) }
   })
 
-  const gwDate = activeGw
-    ? new Date(activeGw.match_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' })
+  const gwTyped = activeGw as unknown as { id: string; gameweek_number: number; name: string; start_date: string; end_date: string; deadline: string } | null
+  const gwDate = gwTyped
+    ? new Date(gwTyped.start_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' })
     : null
 
   return (
@@ -266,7 +287,7 @@ export default async function ClubContestsPage({
             <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">
               Active · {gwDate}
             </p>
-            <p className="text-2xl font-black leading-tight">Gameweek {activeGw.number}</p>
+            <p className="text-2xl font-black leading-tight">{gwTyped?.name ?? 'Gameweek'}</p>
             {gwPlayerCount > 0 ? (
               <p className="text-base font-black mt-0.5">{gwPlayerCount} players available</p>
             ) : (
@@ -276,6 +297,42 @@ export default async function ClubContestsPage({
               {gwLobbyContests.length} contest{gwLobbyContests.length !== 1 ? 's' : ''} · Pick a fresh XI for each you enter
             </p>
           </div>
+
+          {/* ── This Gameweek — match strip ──────────────────────────────── */}
+          {gwMatches.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-0.5">
+                This Gameweek · {gwMatches.length} match{gwMatches.length !== 1 ? 'es' : ''}
+              </p>
+              <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+                {gwMatches.map((m) => {
+                  const ourXI    = m.our_team?.replace(/^Slough CC\s*[-–]\s*/i, '') ?? m.our_team
+                  const opponent = m.opponent_team?.replace(/\s*-\s*\d+st XI|\s*-\s*\d+nd XI|\s*-\s*\d+rd XI|\s*-\s*\d+th XI/i, '').replace(/\s+CC$/, ' CC') ?? m.opponent_team
+                  const kickoff  = new Date(m.match_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })
+                  return (
+                    <div
+                      key={m.id}
+                      className="flex-shrink-0 w-48 rounded-xl border border-[#C9A84C]/20 bg-black/10 backdrop-blur-sm px-3.5 py-3 space-y-1.5"
+                    >
+                      {/* Teams */}
+                      <div className="space-y-0.5">
+                        <p className="text-[11px] font-black text-black leading-tight truncate">{ourXI}</p>
+                        <p className="text-[9px] font-bold text-black/50 uppercase tracking-widest">vs</p>
+                        <p className="text-[11px] font-black text-black leading-tight truncate">{opponent}</p>
+                      </div>
+                      {/* Venue + time */}
+                      <div className="border-t border-[#C9A84C]/20 pt-1.5 space-y-0.5">
+                        {m.venue && (
+                          <p className="text-[9px] text-black/60 truncate">{m.venue}</p>
+                        )}
+                        <p className="text-[10px] font-bold text-black/80">🕐 {kickoff}</p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* GW contest cards */}
           <div className="grid gap-3 sm:grid-cols-2">
