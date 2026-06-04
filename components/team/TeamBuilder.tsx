@@ -38,11 +38,39 @@ interface TeamBuilderProps {
   allXIConfirmed?: boolean
 }
 
+// ── Role colour system ────────────────────────────────────────────────────────
+// WK = purple, BAT = blue, AR = green, BOWL = red
+
+/** Solid active colour for the selected tab button */
+const ROLE_TAB_ACTIVE: Record<string, string> = {
+  wicket_keeper: 'bg-[#7C3AED] text-white border-[#7C3AED]',
+  batsman:       'bg-[#2563EB] text-white border-[#2563EB]',
+  all_rounder:   'bg-[#16A34A] text-white border-[#16A34A]',
+  bowler:        'bg-[#DC2626] text-white border-[#DC2626]',
+}
+
+/** Light tint for inactive tab buttons */
+const ROLE_TAB_INACTIVE: Record<string, string> = {
+  wicket_keeper: 'bg-[#EDE9FE] text-[#7C3AED] border-[#DDD6FE] hover:border-[#7C3AED]',
+  batsman:       'bg-[#DBEAFE] text-[#2563EB] border-[#BFDBFE] hover:border-[#2563EB]',
+  all_rounder:   'bg-[#DCFCE7] text-[#16A34A] border-[#BBF7D0] hover:border-[#16A34A]',
+  bowler:        'bg-[#FEE2E2] text-[#DC2626] border-[#FECACA] hover:border-[#DC2626]',
+}
+
+/** Badge pill colour for player cards */
 const ROLE_COLORS: Record<string, string> = {
-  batsman: 'bg-blue-100 text-blue-700',
-  bowler: 'bg-[#fceaea] text-[#b5211e]',
-  all_rounder: 'bg-[#f0f0f0] text-[#C9A84C]',
-  wicket_keeper: 'bg-[#fef9ee] text-[#C9A84C]',
+  wicket_keeper: 'bg-[#EDE9FE] text-[#7C3AED]',
+  batsman:       'bg-[#DBEAFE] text-[#2563EB]',
+  all_rounder:   'bg-[#DCFCE7] text-[#16A34A]',
+  bowler:        'bg-[#FEE2E2] text-[#DC2626]',
+}
+
+/** Progress card accent — border when active tab, fill bar */
+const ROLE_PROGRESS: Record<string, { border: string; bar: string; text: string; activeBg: string }> = {
+  wicket_keeper: { border: 'border-[#7C3AED]', bar: 'bg-[#7C3AED]', text: 'text-[#7C3AED]', activeBg: 'bg-[#EDE9FE]' },
+  batsman:       { border: 'border-[#2563EB]', bar: 'bg-[#2563EB]', text: 'text-[#2563EB]', activeBg: 'bg-[#DBEAFE]' },
+  all_rounder:   { border: 'border-[#16A34A]', bar: 'bg-[#16A34A]', text: 'text-[#16A34A]', activeBg: 'bg-[#DCFCE7]' },
+  bowler:        { border: 'border-[#DC2626]', bar: 'bg-[#DC2626]', text: 'text-[#DC2626]', activeBg: 'bg-[#FEE2E2]' },
 }
 
 const ROLE_CONSTRAINTS: Record<string, { min: number; max: number; label: string }> = {
@@ -473,25 +501,23 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
               onClick={() => setRoleFilter(r)}
               className={`cursor-pointer rounded-2xl p-3 border-2 transition-all select-none ${
                 roleFilter === r
-                  ? 'border-[#C9A84C] bg-[#fef9ee]'
-                  : done
-                  ? 'border-green-300 bg-green-50 hover:border-green-400'
+                  ? `${ROLE_PROGRESS[r].border} ${ROLE_PROGRESS[r].activeBg}`
                   : over
                   ? 'border-red-300 bg-red-50'
-                  : 'border-gray-200 bg-white hover:border-gray-300'
+                  : `border-gray-200 bg-white hover:${ROLE_PROGRESS[r].border}`
               }`}
             >
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">{SHORT_LABELS[r]}</span>
-                {done && <span className="text-[10px] font-black text-green-600 bg-green-100 px-1.5 py-0.5 rounded-full">✓ Done</span>}
+                <span className={`text-xs font-bold uppercase tracking-wide ${roleFilter === r ? ROLE_PROGRESS[r].text : 'text-gray-600'}`}>{SHORT_LABELS[r]}</span>
+                {done && <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${ROLE_PROGRESS[r].activeBg} ${ROLE_PROGRESS[r].text}`}>✓ Done</span>}
                 {over && <span className="text-[10px] font-black text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full">Over</span>}
               </div>
-              <p className={`text-lg font-black tabular-nums leading-none ${done ? 'text-green-600' : over ? 'text-red-600' : under && count > 0 ? 'text-[#C9A84C]' : 'text-gray-700'}`}>
+              <p className={`text-lg font-black tabular-nums leading-none ${over ? 'text-red-600' : count > 0 ? ROLE_PROGRESS[r].text : 'text-gray-700'}`}>
                 {count}<span className="text-xs font-normal text-gray-400">/{min}–{max}</span>
               </p>
               <div className="mt-1.5 h-1 rounded-full bg-gray-100 overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all ${done ? 'bg-green-400' : over ? 'bg-red-400' : 'bg-[#C9A84C]'}`}
+                  className={`h-full rounded-full transition-all ${over ? 'bg-red-400' : ROLE_PROGRESS[r].bar}`}
                   style={{ width: `${pct}%` }}
                 />
               </div>
@@ -524,12 +550,10 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                       onClick={() => setRoleFilter(r)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
                         isActive
-                          ? 'bg-[#C9A84C] text-black border-[#C9A84C] shadow-sm'
-                          : done
-                          ? 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100'
+                          ? `${ROLE_TAB_ACTIVE[r]} shadow-sm`
                           : over
                           ? 'bg-red-50 text-red-600 border-red-300'
-                          : 'bg-white text-gray-600 border-gray-200 hover:border-[#C9A84C] hover:text-[#C9A84C]'
+                          : ROLE_TAB_INACTIVE[r]
                       }`}
                     >
                       {SHORT_LABELS[r]}
@@ -598,7 +622,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                       key={player.id}
                       className={`px-4 py-3 transition-colors ${
                         isSelected
-                          ? 'bg-[#fef9ee] border-l-4 border-l-[#C9A84C]'
+                          ? `bg-gray-50 border-l-4 ${ROLE_PROGRESS[player.role]?.border ?? 'border-l-gray-300'}`
                           : disabled
                           ? 'opacity-40 bg-white'
                           : 'bg-white hover:bg-gray-50 cursor-pointer'
@@ -642,7 +666,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
 
                         {/* Price + trend */}
                         <div className="flex items-center gap-0.5 shrink-0">
-                          <span className={`text-sm font-black tabular-nums ${isSelected ? 'text-[#C9A84C]' : 'text-gray-700'}`}>
+                          <span className={`text-sm font-black tabular-nums ${isSelected ? ROLE_PROGRESS[player.role]?.text ?? 'text-[#C9A84C]' : 'text-gray-700'}`}>
                             £{Number(player.price).toFixed(1)}
                           </span>
                           {creditTrends[player.id] === 'up'   && <span className="text-green-500 text-xs">↑</span>}
