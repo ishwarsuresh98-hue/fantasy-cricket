@@ -420,24 +420,20 @@ export default async function ClubContestsPage({
             })}
           </div>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 pt-2">
-            <div className="h-px flex-1 bg-gray-200" />
-            <span className="text-xs font-bold uppercase tracking-widest text-gray-400 flex-shrink-0">All Contests</span>
-            <div className="h-px flex-1 bg-gray-200" />
-          </div>
         </div>
       )}
 
-      {/* Client component handles filtering, sorting, and rendering */}
-      <ContestPageClient
-        matchGroups={matchGroups}
-        seasonContests={seasonLobby}
-        walletBalance={walletBalance}
-        fantasyTeamId={myTeamId}
-        matchLockTime={matchLockTime}
-        clubSlug={slug}
-      />
+      {/* When there is no active gameweek, fall back to the match/season contest browser */}
+      {!activeGw && (
+        <ContestPageClient
+          matchGroups={matchGroups}
+          seasonContests={seasonLobby}
+          walletBalance={walletBalance}
+          fantasyTeamId={myTeamId}
+          matchLockTime={matchLockTime}
+          clubSlug={slug}
+        />
+      )}
     </div>
   )
 }
