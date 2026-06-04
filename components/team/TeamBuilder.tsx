@@ -65,9 +65,19 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
+  const SQUAD_SIZE   = 15 // 11 starters + 4 subs
+  const STARTER_SIZE = 11
+
   const [teamName, setTeamName] = useState(myTeam?.team_name ?? '')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     new Set(existingSelections.map((s) => s.player_id))
+  )
+  // subOrder: array of sub player IDs in priority order (index 0 = sub 1)
+  const [subOrder, setSubOrder] = useState<string[]>(() =>
+    existingSelections
+      .filter((s) => s.is_substitute && s.sub_priority != null)
+      .sort((a, b) => (a.sub_priority ?? 99) - (b.sub_priority ?? 99))
+      .map((s) => s.player_id)
   )
   const [captainId, setCaptainId] = useState<string | null>(
     existingSelections.find((s) => s.is_captain)?.player_id ?? null
@@ -87,10 +97,14 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   const playingSet = useMemo(() => new Set(playingXI), [playingXI])
   const hasPlayingXI = playingXI.length > 0
 
-  const maxPlayers = season.players_per_team
+  const maxPlayers = SQUAD_SIZE  // 15 total
   const budget = season.team_budget
 
+  const subIds = new Set(subOrder)
+  const starterIds = new Set([...selectedIds].filter((id) => !subIds.has(id)))
   const selectedPlayers = players.filter((p) => selectedIds.has(p.id))
+  const starterPlayers  = players.filter((p) => starterIds.has(p.id))
+  const substitutePlayers = subOrder.map((id) => players.find((p) => p.id === id)).filter(Boolean) as typeof players
 
   // Transfer tracking
   const baseSet = new Set(baseSquadIds)
@@ -103,12 +117,12 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   const budgetPct = Math.min(100, (budgetUsed / budget) * 100)
   const budgetLow = budgetRemaining < budget * 0.15
 
-  // Per-role counts
+  // Role counts based on STARTERS only (formation applies to starters)
   const roleCounts = useMemo(() => {
     const counts: Record<string, number> = {}
-    for (const r of ROLE_ORDER) counts[r] = selectedPlayers.filter((p) => p.role === r).length
+    for (const r of ROLE_ORDER) counts[r] = starterPlayers.filter((p) => p.role === r).length
     return counts
-  }, [selectedPlayers])
+  }, [starterPlayers])
 
   const roleComplete = (r: string) => {
     const { min, max } = ROLE_CONSTRAINTS[r]
@@ -117,7 +131,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
   }
   const roleAtMax = (r: string) => roleCounts[r] >= ROLE_CONSTRAINTS[r].max
 
-  // Auto-advance to next tab when current role hits max
+  // Auto-advance to next tab when starter formation for current role is full
   useEffect(() => {
     if (!roleAtMax(roleFilter)) return
     const idx = ROLE_ORDER.indexOf(roleFilter)
@@ -125,9 +139,10 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
     if (next) setRoleFilter(next)
   }, [roleCounts]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const allSelected = selectedIds.size === maxPlayers
-  const needsCaptain = allSelected && !captainId
-  const needsVC      = allSelected && captainId && !vcId
+  const allStartersSelected = starterIds.size === STARTER_SIZE
+  const allSelected  = selectedIds.size === SQUAD_SIZE
+  const needsCaptain = allStartersSelected && !captainId
+  const needsVC      = allStartersSelected && captainId && !vcId
 
   const filteredPlayers = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -162,16 +177,47 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
       newSet.delete(player.id)
       if (captainId === player.id) setCaptainId(null)
       if (vcId === player.id) setVcId(null)
+      // If it was a sub, remove from subOrder too
+      if (subIds.has(player.id)) {
+        setSubOrder((prev) => prev.filter((id) => id !== player.id))
+      }
     } else {
-      if (newSet.size >= maxPlayers) return
-      // Skip budget check when Free Hit is active
+      if (newSet.size >= SQUAD_SIZE) return
       if (!freeHitActive && budgetUsed + player.price > budget) return
-      // Enforce role maximum
-      const roleCount = selectedPlayers.filter((p) => p.role === player.role).length
-      if (roleCount >= ROLE_CONSTRAINTS[player.role].max) return
       newSet.add(player.id)
+      // Route to starters first; once 11 starters filled, add as sub
+      if (starterIds.size >= STARTER_SIZE) {
+        // Adding as substitute — no role constraint on subs
+        if (subOrder.length < 4) {
+          setSubOrder((prev) => [...prev, player.id])
+        }
+      } else {
+        // Adding as starter — enforce role maximum for starters
+        const roleCount = starterPlayers.filter((p) => p.role === player.role).length
+        if (roleCount >= ROLE_CONSTRAINTS[player.role].max) return
+      }
     }
     setSelectedIds(newSet)
+  }
+
+  function moveSubUp(playerId: string) {
+    setSubOrder((prev) => {
+      const idx = prev.indexOf(playerId)
+      if (idx <= 0) return prev
+      const next = [...prev]
+      ;[next[idx - 1], next[idx]] = [next[idx], next[idx - 1]]
+      return next
+    })
+  }
+
+  function moveSubDown(playerId: string) {
+    setSubOrder((prev) => {
+      const idx = prev.indexOf(playerId)
+      if (idx < 0 || idx >= prev.length - 1) return prev
+      const next = [...prev]
+      ;[next[idx], next[idx + 1]] = [next[idx + 1], next[idx]]
+      return next
+    })
   }
 
   function setCaptain(playerId: string) {
@@ -192,11 +238,12 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
     setError(null)
     if (isLocked) { setError('Match is in progress. Team selection is locked until the match starts.'); return }
     if (!teamName.trim()) { setError('Please enter a team name.'); return }
-    if (selectedIds.size !== maxPlayers) { setError(`Select exactly ${maxPlayers} players (currently ${selectedIds.size}).`); return }
-    // Validate all role constraints at once and report every violation
+    if (starterIds.size !== STARTER_SIZE) { setError(`Select exactly ${STARTER_SIZE} starting players (currently ${starterIds.size}).`); return }
+    if (subOrder.length < 4) { setError(`Add ${4 - subOrder.length} more substitute${4 - subOrder.length !== 1 ? 's' : ''} (need 4 total).`); return }
+    // Validate role constraints on STARTERS only
     const roleViolations: string[] = []
     for (const [role, { min, max, label }] of Object.entries(ROLE_CONSTRAINTS)) {
-      const count = Array.from(selectedIds).filter((id) => players.find((p) => p.id === id)?.role === role).length
+      const count = Array.from(starterIds).filter((id) => players.find((p) => p.id === id)?.role === role).length
       if (count < min) roleViolations.push(`${label}: need at least ${min} (you have ${count})`)
       if (count > max) roleViolations.push(`${label}: maximum is ${max} (you have ${count})`)
     }
@@ -226,14 +273,20 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
     // Delete existing selections for this match
     await supabase.from('fantasy_selections').delete().eq('fantasy_team_id', teamId).eq('match_id', nextMatch.id)
 
-    // Insert new selections
-    const insertData = Array.from(selectedIds).map((pid) => ({
-      fantasy_team_id: teamId!,
-      match_id: nextMatch.id,
-      player_id: pid,
-      is_captain: pid === captainId,
-      is_vice_captain: pid === vcId,
-    }))
+    // Insert new selections (starters + subs)
+    const insertData = Array.from(selectedIds).map((pid) => {
+      const isSub = subIds.has(pid)
+      const subIdx = subOrder.indexOf(pid)
+      return {
+        fantasy_team_id: teamId!,
+        match_id:        nextMatch.id,
+        player_id:       pid,
+        is_captain:      pid === captainId,
+        is_vice_captain: pid === vcId,
+        is_substitute:   isSub,
+        sub_priority:    isSub && subIdx >= 0 ? subIdx + 1 : null,
+      }
+    })
 
     const { error: selErr } = await supabase.from('fantasy_selections').insert(insertData)
     if (selErr) { setError(selErr.message); return }
@@ -376,9 +429,10 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
               />
             </div>
             <div className="text-right shrink-0">
-              <p className="text-sm text-muted-foreground">Players</p>
-              <p className={`text-2xl font-bold tabular-nums ${allSelected ? 'text-[#C9A84C]' : 'text-[#aaaaaa]'}`}>
-                {selectedIds.size}<span className="text-sm font-normal text-muted-foreground">/{maxPlayers}</span>
+              <p className="text-sm text-muted-foreground">Starters / Subs</p>
+              <p className={`text-xl font-bold tabular-nums ${allStartersSelected ? 'text-[#C9A84C]' : 'text-[#aaaaaa]'}`}>
+                {starterIds.size}<span className="text-sm font-normal text-muted-foreground">/11</span>
+                <span className="ml-1 text-sm font-normal text-gray-400">+{subOrder.length}/4</span>
               </p>
             </div>
           </div>
@@ -530,8 +584,11 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                 {filteredPlayers.map((player) => {
                   const isSelected   = selectedIds.has(player.id)
                   const isAffordable = freeHitActive || isSelected || budgetUsed + player.price <= budget
-                  const isFull       = !isSelected && selectedIds.size >= maxPlayers
-                  const isRoleFull   = !isSelected && roleAtMax(player.role)
+                  const isSub        = subIds.has(player.id)
+                  // Full when: 11 starters filled AND 4 subs filled
+                  const isFull       = !isSelected && selectedIds.size >= SQUAD_SIZE
+                  // Role max only applies to starters; subs are free picks
+                  const isRoleFull   = !isSelected && !isSub && starterIds.size < STARTER_SIZE && roleAtMax(player.role)
                   const disabled     = (!isAffordable || isFull || isRoleFull) && !isSelected
                   const isCap        = captainId === player.id
                   const isVCP        = vcId === player.id
@@ -558,8 +615,9 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
                             >
                               {player.name}
                             </Link>
-                            {isCap && <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-yellow-400 text-black">C</span>}
-                            {isVCP && <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-blue-400 text-black">VC</span>}
+                            {isCap  && <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-yellow-400 text-black">C</span>}
+                            {isVCP  && <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-blue-400 text-black">VC</span>}
+                            {isSub  && <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-200 text-gray-600">SUB {subOrder.indexOf(player.id) + 1}</span>}
                             {hasPlayingXI && (
                               playingSet.has(player.id) ? (
                                 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700 border border-green-200">🟢 Playing</span>
@@ -656,7 +714,7 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
           </div>
 
           <PitchView
-            selectedPlayers={selectedPlayers}
+            selectedPlayers={starterPlayers}
             captainId={captainId}
             vcId={vcId}
             playingXI={playingXI}
@@ -669,6 +727,13 @@ export default function TeamBuilder({ season, nextMatch, players, myTeam, existi
             onSetCaptain={(id) => setCaptain(id)}
             onSetVC={(id) => setVC(id)}
             isLocked={isLocked}
+            substitutePlayers={substitutePlayers}
+            onSubPriorityUp={moveSubUp}
+            onSubPriorityDown={moveSubDown}
+            onRemoveSub={(id) => {
+              const p = players.find((pl) => pl.id === id)
+              if (p) togglePlayer(p)
+            }}
           />
 
           {error && (

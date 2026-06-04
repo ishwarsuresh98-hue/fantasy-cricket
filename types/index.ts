@@ -43,6 +43,18 @@ export interface Profile {
   club_id?: string | null
 }
 
+export interface AutoSubstitution {
+  id: string
+  fantasy_team_id: string
+  match_id: string
+  player_out_id: string
+  player_in_id: string
+  sub_priority: number
+  captain_changed: boolean
+  vc_changed: boolean
+  created_at: string
+}
+
 export interface ClubMembership {
   id: string
   user_id: string
@@ -129,6 +141,8 @@ export interface FantasySelection {
   player_id: string
   is_captain: boolean
   is_vice_captain: boolean
+  is_substitute: boolean
+  sub_priority: number | null
   points_earned: number
   players?: Player
 }

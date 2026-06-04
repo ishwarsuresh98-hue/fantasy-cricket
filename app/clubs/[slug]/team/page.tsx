@@ -194,6 +194,8 @@ export default async function ClubTeamPage({
             player_id: s.player_id,
             is_captain: s.is_captain,
             is_vice_captain: s.is_vice_captain,
+            is_substitute: false,
+            sub_priority: null,
             points_earned: 0,
           }))
       }

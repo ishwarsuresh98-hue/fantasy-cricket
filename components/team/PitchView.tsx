@@ -18,6 +18,11 @@ interface PitchViewProps {
   onSetCaptain:    (playerId: string) => void
   onSetVC:         (playerId: string) => void
   isLocked?:       boolean
+  // 15-player squad: subs in priority order (index 0 = SUB 1)
+  substitutePlayers?: Player[]
+  onSubPriorityUp?:   (playerId: string) => void
+  onSubPriorityDown?: (playerId: string) => void
+  onRemoveSub?:       (playerId: string) => void
 }
 
 // Pitch rows — top to bottom display order
@@ -144,6 +149,10 @@ export default function PitchView({
   onSetCaptain,
   onSetVC,
   isLocked,
+  substitutePlayers = [],
+  onSubPriorityUp,
+  onSubPriorityDown,
+  onRemoveSub,
 }: PitchViewProps) {
   const [modalPlayerId, setModalPlayerId] = useState<string | null>(null)
 
@@ -235,6 +244,78 @@ export default function PitchView({
         <p className="text-center text-xs text-gray-400 mt-1">
           Tap a player to assign C / VC or remove
         </p>
+      )}
+
+      {/* ── Substitutes bench ────────────────────────────────────────────── */}
+      {(substitutePlayers.length > 0 || substitutePlayers.length === 0) && (
+        <div className="mt-3">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-2">
+              Substitutes
+            </span>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+
+          {substitutePlayers.length === 0 ? (
+            <div className="rounded-2xl border-2 border-dashed border-gray-200 py-4 text-center">
+              <p className="text-xs text-gray-400">Add 4 substitute players</p>
+              <p className="text-[10px] text-gray-300 mt-0.5">They&apos;ll auto-sub in if a starter doesn&apos;t play</p>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              {substitutePlayers.map((player, i) => (
+                <div
+                  key={player.id}
+                  className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2"
+                >
+                  {/* Priority badge */}
+                  <span className="w-6 h-6 rounded-full bg-[#C9A84C]/15 text-[#C9A84C] text-[10px] font-black flex items-center justify-center shrink-0">
+                    {i + 1}
+                  </span>
+
+                  {/* Player info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-gray-800 truncate">{player.name}</p>
+                    <p className="text-[10px] text-gray-400 truncate">{player.role.replace('_', ' ')}</p>
+                  </div>
+
+                  {/* Priority controls */}
+                  {!isLocked && (
+                    <div className="flex flex-col gap-0.5">
+                      <button
+                        onClick={() => onSubPriorityUp?.(player.id)}
+                        disabled={i === 0}
+                        className="w-5 h-4 flex items-center justify-center text-gray-400 hover:text-[#C9A84C] disabled:opacity-20 disabled:cursor-not-allowed text-[10px] leading-none"
+                        title="Move up"
+                      >▲</button>
+                      <button
+                        onClick={() => onSubPriorityDown?.(player.id)}
+                        disabled={i === substitutePlayers.length - 1}
+                        className="w-5 h-4 flex items-center justify-center text-gray-400 hover:text-[#C9A84C] disabled:opacity-20 disabled:cursor-not-allowed text-[10px] leading-none"
+                        title="Move down"
+                      >▼</button>
+                    </div>
+                  )}
+
+                  {/* Remove */}
+                  {!isLocked && (
+                    <button
+                      onClick={() => onRemoveSub?.(player.id)}
+                      className="w-6 h-6 rounded-full bg-red-50 text-red-400 hover:bg-red-100 text-xs flex items-center justify-center shrink-0"
+                      title="Remove sub"
+                    >×</button>
+                  )}
+                </div>
+              ))}
+              {substitutePlayers.length < 4 && (
+                <p className="text-[10px] text-center text-gray-400 py-1">
+                  Add {4 - substitutePlayers.length} more sub{4 - substitutePlayers.length !== 1 ? 's' : ''} from the player pool
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       )}
 
       {/* C/VC modal */}
