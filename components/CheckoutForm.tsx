@@ -56,11 +56,19 @@ export default function CheckoutForm({ entryFee, returnUrl, onCancel }: Checkout
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Stripe's hosted Payment Element — renders card / wallet / BNPL as appropriate */}
+      {/* Stripe's Payment Element — shows Apple Pay / Google Pay on compatible devices */}
       <div className="rounded-xl border border-[#d8d8d8] p-4 bg-[#f0f0f0]">
         <PaymentElement
           options={{
-            layout: 'tabs',
+            layout: {
+              type:             'accordion',
+              defaultCollapsed: false,
+              spacedAccordionItems: true,
+            },
+            wallets: {
+              applePay:  'auto',
+              googlePay: 'auto',
+            },
           }}
         />
       </div>

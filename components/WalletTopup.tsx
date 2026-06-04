@@ -124,6 +124,8 @@ export default function WalletTopup({ returnUrl }: WalletTopupProps) {
           stripe={stripePromise}
           options={{
             clientSecret,
+            // currency + amount needed for Apple Pay / Google Pay to show the charge sheet
+            currency: 'gbp',
             appearance: {
               theme: 'stripe',
               variables: {
