@@ -2,7 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getClubBySlug } from '@/lib/club'
 import Navbar from '@/components/nav/Navbar'
-import OnboardingTour from '@/components/OnboardingTour'
+import OnboardingGuide from '@/components/OnboardingGuide'
 import type { Profile } from '@/types'
 
 interface ClubLayoutProps {
@@ -52,15 +52,19 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
     redirect('/login')
   }
 
-  const showOnboarding = !(profile as Profile).onboarding_complete
+  const p = profile as Profile
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar profile={profile as Profile} club={club} />
+      <Navbar profile={p} club={club} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
-      {showOnboarding && <OnboardingTour userId={user.id} />}
+      {/* OnboardingGuide: opens automatically for new users, "?" button always visible */}
+      <OnboardingGuide
+        userId={user.id}
+        defaultOpen={!p.onboarding_complete}
+      />
     </div>
   )
 }
