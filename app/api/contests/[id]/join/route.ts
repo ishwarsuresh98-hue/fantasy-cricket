@@ -87,14 +87,24 @@ export async function POST(
   }
 
   // ── Load contest ──────────────────────────────────────────────────────────
+  // DB uses 'title' not 'name', 'max_entries' not 'max_teams'
   const { data: contest } = await supabase
     .from('contests')
-    .select('id, name, max_teams, entry_fee, prize_pool')
+    .select('id, title, max_entries, entry_fee, prize_pool, status')
     .eq('id', contestId)
     .single()
 
   if (!contest) {
     return NextResponse.json({ error: 'Contest not found' }, { status: 404 })
+  }
+
+  // ── Status check: reject if contest is locked or cancelled ────────────────
+  const contestStatus = (contest as unknown as Record<string, unknown>).status as string | null
+  if (contestStatus && contestStatus !== 'open') {
+    return NextResponse.json(
+      { error: 'Contest is no longer open for entries' },
+      { status: 409 },
+    )
   }
 
   // ── Idempotency: already joined? ──────────────────────────────────────────
@@ -109,16 +119,20 @@ export async function POST(
     return NextResponse.json({ error: 'Already joined this contest' }, { status: 409 })
   }
 
-  // ── Capacity check ────────────────────────────────────────────────────────
-  const { count } = await supabase
-    .from('contest_entries')
-    .select('*', { count: 'exact', head: true })
-    .eq('contest_id', contestId)
+  // ── Capacity check (skip for unlimited — max_entries null = open league) ──
+  const maxEntries = (contest as unknown as Record<string, unknown>).max_entries as number | null
+  if (maxEntries != null) {
+    const { count } = await supabase
+      .from('contest_entries')
+      .select('*', { count: 'exact', head: true })
+      .eq('contest_id', contestId)
 
-  if ((count ?? 0) >= contest.max_teams) {
-    return NextResponse.json({ error: 'Contest is full' }, { status: 409 })
+    if ((count ?? 0) >= maxEntries) {
+      return NextResponse.json({ error: 'Contest is full' }, { status: 409 })
+    }
   }
 
+  const contestTitle = ((contest as unknown as Record<string, unknown>).title as string | null) ?? 'Contest'
   const entryFee = Number(contest.entry_fee ?? 0)
 
   // ── Free contest — direct insert ──────────────────────────────────────────
@@ -180,7 +194,7 @@ export async function POST(
       wallet_id:    wallet.id,
       type:         'debit',
       amount:       entryFee,
-      description:  `Entry fee — ${contest.name}`,
+      description:  `Entry fee — ${contestTitle}`,
       reference_id: contestId,
     })
 
@@ -199,7 +213,7 @@ export async function POST(
         wallet_id:    wallet.id,
         type:         'credit',
         amount:       entryFee,
-        description:  `Refund — failed to join ${contest.name}`,
+        description:  `Refund — failed to join ${contestTitle}`,
         reference_id: contestId,
       })
       console.error('[contests/join] entry insert error (refunded):', joinErr)
@@ -236,7 +250,7 @@ export async function POST(
   const redirectUrl = buildFlatpayRedirectUrl({
     intentId:    intent.id,
     amountPence: Math.round(entryFee * 100),
-    description: `${contest.name} — Entry Fee`,
+    description: `${contestTitle} — Entry Fee`,
     returnUrl,
     webhookUrl,
   })

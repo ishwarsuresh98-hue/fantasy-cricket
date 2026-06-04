@@ -252,6 +252,7 @@ export default async function ClubContestsPage({
   const gwDate = gwTyped
     ? new Date(gwTyped.start_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' })
     : null
+  const gwDeadlinePassed = gwTyped ? new Date(gwTyped.deadline) <= new Date() : false
 
   return (
     <div className="space-y-6">
@@ -342,7 +343,8 @@ export default async function ClubContestsPage({
               const isFull      = !isUnlimited && c.entry_count >= c.max_teams!
               const pct         = !isUnlimited && c.max_teams! > 0 ? Math.min(100, Math.round((c.entry_count / c.max_teams!) * 100)) : 0
               const isOpen      = c.contest_category === 'open_league'
-              const isGrowing   = isOpen && !c.final_prize_pool
+              const isLocked    = gwDeadlinePassed
+              const isGrowing   = isOpen && !c.final_prize_pool && !isLocked
               const isJoined    = c.is_joined
               const hasTeam     = (c as typeof c & { has_team?: boolean }).has_team ?? false
               return (
@@ -363,6 +365,8 @@ export default async function ClubContestsPage({
                       <p className="text-sm font-black text-gray-800 truncate">{c.name}</p>
                       {isJoined ? (
                         <span className="text-[10px] font-black text-green-700 bg-green-100 px-2 py-0.5 rounded-full">✓ Entered{hasTeam ? ' · Team saved' : ''}</span>
+                      ) : isLocked ? (
+                        <span className="text-[10px] font-black text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">🔒 Closed</span>
                       ) : isOpen ? (
                         <span className="text-[10px] font-black text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full">🌐 Open League · Unlimited</span>
                       ) : (
@@ -401,7 +405,7 @@ export default async function ClubContestsPage({
                   </div>
                   <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                     {isUnlimited ? (
-                      <div className="h-full rounded-full bg-violet-400 animate-pulse" style={{ width: '100%' }} />
+                      <div className={cn('h-full rounded-full bg-violet-400', isLocked ? 'opacity-40' : 'animate-pulse')} style={{ width: '100%' }} />
                     ) : (
                       <div
                         className={cn('h-full rounded-full transition-all', pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-orange-400' : 'bg-[#C9A84C]')}
@@ -409,7 +413,8 @@ export default async function ClubContestsPage({
                       />
                     )}
                   </div>
-                  {isFull && <p className="text-xs text-red-500 font-bold mt-1.5">Full — no spots left</p>}
+                  {isFull && !isLocked && <p className="text-xs text-red-500 font-bold mt-1.5">Full — no spots left</p>}
+                  {isLocked && !isJoined && <p className="text-xs text-gray-400 font-semibold mt-1.5">Entries closed at deadline</p>}
                 </Link>
               )
             })}
