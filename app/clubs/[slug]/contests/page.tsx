@@ -25,6 +25,7 @@ export default async function ClubContestsPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
+
   const club = await getClubBySlug(slug)
   if (!club) notFound()
 

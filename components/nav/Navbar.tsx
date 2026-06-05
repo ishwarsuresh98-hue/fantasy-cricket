@@ -32,7 +32,7 @@ function buildNavLinks(slug: string | null) {
     { href: `${base}/team`,        label: 'My Team' },
     { href: `${base}/transfers`,   label: 'Transfers' },
     { href: `${base}/leaderboard`, label: 'Leaderboard' },
-    { href: `${base}/contests`,    label: 'Contests' },
+    // { href: `${base}/contests`,    label: 'Contests' },  // temporarily hidden
     { href: `${base}/teams`,       label: 'Teams' },
     { href: `${base}/matches`,     label: 'Matches' },
     { href: `${base}/rules`,       label: 'Rules' },
